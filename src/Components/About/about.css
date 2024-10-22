@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Inria+Sans:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Playwrite+DE+Grund:wght@100..400&display=swap');
+.About-us {
+    background-color: #f3f6fd;
+    overflow: hidden;
+}
+
+.About-us img {
+    height: 100%;
+    width: 30%;
+    object-fit: cover;
+}
+
+.para-font {
+    font-family: "Inria Sans", sans-serif;
+    font-style: normal;
+}
+
+.shop-detail-sub2 :nth-child(1) img{
+    height: 210px;
+}
+
+.shop-detail-sub2 :nth-child(2) img{
+    height: 435px;
+}
+
+.more-detail img{
+    height: auto;
+    width: 100%;
+}

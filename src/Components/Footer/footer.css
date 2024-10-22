@@ -1,0 +1,17 @@
+.store-apps img {
+    height: 300px;
+}
+
+.store-app-sub1 .buttons button img {
+    height: 43px;
+}
+
+.Main-Footer li:hover{
+    color: #0da371;
+}
+
+.Social-border{
+    height: 1px;
+    border-top: 1px solid transparent;
+    background: linear-gradient(to right, #f9fafb , #dcdcdc 30% ,#f9fafb );
+}

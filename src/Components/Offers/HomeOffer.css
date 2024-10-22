@@ -1,0 +1,33 @@
+.coupon {
+    position: relative;
+    background: linear-gradient(to right, #10b981, #16a34a);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Claimed coupon style */
+  .coupon.claimed {
+    background: linear-gradient(to right, #9ca3af, #6b7280); /* Muted grey background */
+    opacity: 0.7; /* Slight fade effect */
+    pointer-events: none; /* Disable interactivity */
+  }
+  
+  /* Claimed label */
+  .coupon .claimed-label {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #dc2626;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 0 10px 0 10px;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  
