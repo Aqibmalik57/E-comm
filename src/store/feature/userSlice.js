@@ -1,14 +1,14 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
-import { toast } from "react-toastify";
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 // Signup thunk
 export const signup = createAsyncThunk(
-  "user/signup",
+  'user/signup',
   async (info, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/v2/signup",
+        'http://localhost:5000/api/v2/signup',
         info,
         { withCredentials: true }
       );
@@ -17,7 +17,7 @@ export const signup = createAsyncThunk(
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -25,20 +25,21 @@ export const signup = createAsyncThunk(
 
 // Login thunk
 export const login = createAsyncThunk(
-  "user/login",
+  'user/login',
   async (info, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/v2/login",
+        'http://localhost:5000/api/v2/login',
         info,
         { withCredentials: true }
       );
       toast.success(response.data.message);
+      console.log(response.data.user);
       return response.data.user;
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -46,11 +47,11 @@ export const login = createAsyncThunk(
 
 // MyProfile thunk
 export const MyProfile = createAsyncThunk(
-  "user/myprofile",
+  'user/myprofile',
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/v2/myprofile",
+        'http://localhost:5000/api/v2/myprofile',
         { withCredentials: true }
       );
       toast.success(response.data.message);
@@ -58,7 +59,7 @@ export const MyProfile = createAsyncThunk(
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -66,11 +67,11 @@ export const MyProfile = createAsyncThunk(
 
 // UpdateProfile thunk
 export const updateProfile = createAsyncThunk(
-  "user/updateProfile",
+  'user/updateProfile',
   async (info, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        "http://localhost:5000/api/v2/updateprofile",
+        'http://localhost:5000/api/v2/updateprofile',
         info,
         { withCredentials: true }
       );
@@ -79,7 +80,7 @@ export const updateProfile = createAsyncThunk(
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -87,11 +88,11 @@ export const updateProfile = createAsyncThunk(
 
 // Logout thunk
 export const logout = createAsyncThunk(
-  "user/logout",
+  'user/logout',
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/v2/logout",
+        'http://localhost:5000/api/v2/logout',
         {},
         {
           withCredentials: true,
@@ -101,14 +102,14 @@ export const logout = createAsyncThunk(
       return response.data;
     } catch (error) {
       toast.error(error.response?.data?.message);
-      return rejectWithValue(error.response?.data?.message || "Logout failed");
+      return rejectWithValue(error.response?.data?.message || 'Logout failed');
     }
   }
 );
 
 // Thunk to update user role
 export const updateUserRole = createAsyncThunk(
-  "user/updateUserRole",
+  'user/updateUserRole',
   async ({ userId, role }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
@@ -121,7 +122,7 @@ export const updateUserRole = createAsyncThunk(
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data || { message: "Something went wrong!" }
+        error.response?.data || { message: 'Something went wrong!' }
       );
     }
   }
@@ -129,11 +130,11 @@ export const updateUserRole = createAsyncThunk(
 
 // FetchAllUsers thunk
 export const fetchUsers = createAsyncThunk(
-  "user/fetchUsers",
+  'user/fetchUsers',
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/v2/allUsers",
+        'http://localhost:5000/api/v2/allUsers',
         { withCredentials: true }
       );
       toast.success(response.data.message);
@@ -141,7 +142,7 @@ export const fetchUsers = createAsyncThunk(
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -149,7 +150,7 @@ export const fetchUsers = createAsyncThunk(
 
 // Fetch single user by ID thunk
 export const fetchSingleUser = createAsyncThunk(
-  "user/fetchSingleUser",
+  'user/fetchSingleUser',
   async (userId, { rejectWithValue }) => {
     try {
       const response = await axios.get(
@@ -162,7 +163,7 @@ export const fetchSingleUser = createAsyncThunk(
       toast.error(error.response?.data?.message);
       return rejectWithValue(
         error.response?.data?.message ||
-          "User not found or an unknown error occurred"
+          'User not found or an unknown error occurred'
       );
     }
   }
@@ -170,20 +171,20 @@ export const fetchSingleUser = createAsyncThunk(
 
 // Update Password thunk
 export const updatePassword = createAsyncThunk(
-  "user/updatePassword",
+  'user/updatePassword',
   async (info, { rejectWithValue }) => {
     try {
       const response = await axios.put(
-        "http://localhost:5000/api/v2/updatePass",
+        'http://localhost:5000/api/v2/updatePass',
         info,
         { withCredentials: true }
       );
       toast.success(response.data.message);
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "An unknown error occurred");
+      toast.error(error.response?.data?.message || 'An unknown error occurred');
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -191,7 +192,7 @@ export const updatePassword = createAsyncThunk(
 
 // edit user profile by Admin thunk
 export const editUserProfile = createAsyncThunk(
-  "user/editProfile",
+  'user/editProfile',
   async (info, { rejectWithValue }) => {
     try {
       const response = await axios.post(
@@ -204,7 +205,7 @@ export const editUserProfile = createAsyncThunk(
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -212,11 +213,11 @@ export const editUserProfile = createAsyncThunk(
 
 // Delete own profile thunk
 export const deleteOwnProfile = createAsyncThunk(
-  "user/deleteProfile",
+  'user/deleteProfile',
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.delete(
-        "http://localhost:5000/api/v2/deleteProfile",
+        'http://localhost:5000/api/v2/deleteProfile',
         { withCredentials: true }
       );
       toast.success(response.data.message);
@@ -224,7 +225,7 @@ export const deleteOwnProfile = createAsyncThunk(
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -232,7 +233,7 @@ export const deleteOwnProfile = createAsyncThunk(
 
 // Delete user by Admin thunk
 export const deleteUser = createAsyncThunk(
-  "user/deleteUser",
+  'user/deleteUser',
   async (userId, { rejectWithValue }) => {
     try {
       const response = await axios.delete(
@@ -244,7 +245,7 @@ export const deleteUser = createAsyncThunk(
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -252,17 +253,17 @@ export const deleteUser = createAsyncThunk(
 
 // Thunk for Forgot Password
 export const forgotPassword = createAsyncThunk(
-  "user/forgotPassword",
+  'user/forgotPassword',
   async ({ email }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/v2/forgotPassword",
+        'http://localhost:5000/api/v2/forgotPassword',
         { email }
       );
       toast.success(response.data.message);
       return response.data;
     } catch (error) {
-      const message = error.response?.data?.message || "Failed to send email";
+      const message = error.response?.data?.message || 'Failed to send email';
       toast.error(message);
       return rejectWithValue(message);
     }
@@ -271,7 +272,7 @@ export const forgotPassword = createAsyncThunk(
 
 // Create AsyncThunk for reset password
 export const resetPassword = createAsyncThunk(
-  "user/resetPassword",
+  'user/resetPassword',
   async ({ token, newPassword, confirmPassword }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
@@ -285,7 +286,7 @@ export const resetPassword = createAsyncThunk(
       return response.data;
     } catch (error) {
       const message =
-        error.response?.data?.message || "Failed to reset password";
+        error.response?.data?.message || 'Failed to reset password';
       toast.error(message);
       return rejectWithValue(message);
     }
@@ -296,13 +297,13 @@ const initialState = {
   user: null,
   isLoggedIn: false,
   error: null,
-  message: "",
+  message: '',
   loading: false,
   users: [],
 };
 
 const userSlice = createSlice({
-  name: "user",
+  name: 'user',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
