@@ -8,6 +8,7 @@ import { FaRegBell } from 'react-icons/fa6';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/feature/userSlice';
+import { fetchCart } from '../../store/feature/CartSlice';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -23,9 +24,17 @@ const Navbar = () => {
     setIsOpen(!isOpen);
   };
   const { items } = useSelector((state) => state.cart);
+
+  useEffect(() => {
+    if (user._id) {
+      dispatch(fetchCart(user._id));
+    }
+  }, [dispatch, user._id]);
+
   const totalQuantity = items?.reduce((acc, curr) => {
-    return acc + curr.quantity; // Sum the quantities of each product
+    return acc + curr.quantity;
   }, 0);
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 30);
@@ -129,8 +138,8 @@ const Navbar = () => {
                 className='text-2xl'
                 onClick={() => navigate('/cart/add')}
               />
-              <span className='absolute top-[-5px] right-[-7px] inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full'>
-                ${totalQuantity}
+              <span className='absolute top-[-5px] right-[-15px] inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full'>
+                {totalQuantity}
               </span>
             </div>
             <Link to='/profile'>

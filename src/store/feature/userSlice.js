@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { fetchCart } from './CartSlice';
 
 // Signup thunk
 export const signup = createAsyncThunk(
@@ -26,7 +27,7 @@ export const signup = createAsyncThunk(
 // Login thunk
 export const login = createAsyncThunk(
   'user/login',
-  async (info, { rejectWithValue }) => {
+  async (info, { rejectWithValue, dispatch }) => {
     try {
       const response = await axios.post(
         'http://localhost:5000/api/v2/login',
@@ -34,7 +35,8 @@ export const login = createAsyncThunk(
         { withCredentials: true }
       );
       toast.success(response.data.message);
-      console.log(response.data.user);
+      dispatch(fetchCart(response.data.user._id));
+
       return response.data.user;
     } catch (error) {
       toast.error(error.response?.data?.message);
