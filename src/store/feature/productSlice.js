@@ -74,7 +74,6 @@ export const productReview = createAsyncThunk(
         { withCredentials: true }
       );
 
-      console.log(first);
       toast.success(response.data.message);
       return response.data;
     } catch (error) {
