@@ -1,14 +1,14 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
-import { toast } from "react-toastify";
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 // create product thunk
 export const createProduct = createAsyncThunk(
-  "product/createProduct",
+  'product/createProduct',
   async (info, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/v2/createProduct",
+        'http://localhost:5000/api/v2/createProduct',
         info,
         { withCredentials: true }
       );
@@ -17,7 +17,7 @@ export const createProduct = createAsyncThunk(
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -25,11 +25,11 @@ export const createProduct = createAsyncThunk(
 
 // get all products thunk
 export const getAllProducts = createAsyncThunk(
-  "product/getAllProducts",
+  'product/getAllProducts',
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/v2/getAllProducts",
+        'http://localhost:5000/api/v2/getAllProducts',
         { withCredentials: true }
       );
       toast.success(response.data.message);
@@ -37,7 +37,7 @@ export const getAllProducts = createAsyncThunk(
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -45,7 +45,7 @@ export const getAllProducts = createAsyncThunk(
 
 // single product thunk
 export const getSingleProduct = createAsyncThunk(
-  "product/getSingleProduct",
+  'product/getSingleProduct',
   async (productId, { rejectWithValue }) => {
     try {
       const response = await axios.get(
@@ -57,7 +57,7 @@ export const getSingleProduct = createAsyncThunk(
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -65,7 +65,7 @@ export const getSingleProduct = createAsyncThunk(
 
 // product review thunk
 export const productReview = createAsyncThunk(
-  "product/productReview",
+  'product/productReview',
   async ({ productId, review }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
@@ -73,12 +73,14 @@ export const productReview = createAsyncThunk(
         { review },
         { withCredentials: true }
       );
+
+      console.log(first);
       toast.success(response.data.message);
       return response.data;
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -86,7 +88,7 @@ export const productReview = createAsyncThunk(
 
 // delete product review by user thunk
 export const deleteProductReview = createAsyncThunk(
-  "product/deleteProductReview",
+  'product/deleteProductReview',
   async (reviewId, { rejectWithValue }) => {
     try {
       const response = await axios.delete(
@@ -98,7 +100,7 @@ export const deleteProductReview = createAsyncThunk(
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -106,7 +108,7 @@ export const deleteProductReview = createAsyncThunk(
 
 // delete product review thunk
 export const deleteReview = createAsyncThunk(
-  "product/deleteReview",
+  'product/deleteReview',
   async (reviewId, productId, { rejectWithValue }) => {
     try {
       const response = await axios.delete(
@@ -118,7 +120,7 @@ export const deleteReview = createAsyncThunk(
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred"
+        error.response?.data?.message || 'An unknown error occurred'
       );
     }
   }
@@ -133,7 +135,7 @@ const initialState = {
 };
 
 const productSlice = createSlice({
-  name: "product",
+  name: 'product',
   initialState,
   reducers: {
     // deleteProduct: (state, action) => {

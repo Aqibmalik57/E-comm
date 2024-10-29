@@ -48,7 +48,8 @@ export const increaseCartQuantity = createAsyncThunk(
         { userId, productId },
         { withCredentials: true }
       );
-      return response.data.cart; // Assuming the response contains the updated cart
+      console.log(response.data.cart.items);
+      return response.data.cart.items; // Assuming the response contains the updated cart
     } catch (error) {
       toast.error(error.response.data.message || 'Failed to increase quantity');
       return rejectWithValue(error.response.data);
@@ -80,7 +81,7 @@ export const removeFromCart = createAsyncThunk(
   'cart/removeFromCart',
   async ({ userId, productId }) => {
     const response = await axios.delete(
-      `/api/cart/remove/${userId}/${productId}`
+      `http://localhost:5000${API_URL}/remove/${userId}/${productId}`
     );
     return response.data; // Returns the updated cart
   }
@@ -132,7 +133,7 @@ const cartSlice = createSlice({
       })
       .addCase(increaseCartQuantity.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload.items; // Adjust this according to your response structure
+        state.items = action.payload; // Adjust this according to your response structure
       })
       .addCase(increaseCartQuantity.rejected, (state, action) => {
         state.loading = false;
