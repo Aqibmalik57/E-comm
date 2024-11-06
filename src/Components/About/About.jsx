@@ -74,8 +74,10 @@ const About = () => {
               </div>
             </div>
           </div>
-          <div className='h-full pe-11 shop-detail-sub2 
-          gap-4 flex items-center'>
+          <div
+            className='h-full pe-11 shop-detail-sub2 
+          gap-4 flex items-center'
+          >
             <div className='grid grid-rows-2 gap-4'>
               <img src={Veg3} alt='' className='rounded-2xl' />
               <img src={Veg4} alt='' className='rounded-2xl' />
