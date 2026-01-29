@@ -1,28 +1,56 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-// Define available coupons
-const availableCoupons = [
-  {
-    id: "coupon1",
-    name: "Winter Gift Voucher",
-    discountType: "percentage", // 'percentage' or 'fixed'
-    discountValue: 20, // 20% off
-    description: "Unlock 20% off your next purchase!",
-    expirationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-    isActive: true,
-    oneTimeUse: false, // Can be used multiple times? For now, false
-  },
-  {
-    id: "coupon2",
-    name: "Special Discount Code",
-    discountType: "percentage",
-    discountValue: 10, // 10% off
-    description: "Save 10% on all items storewide.",
-    expirationDate: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000), // 25 days
-    isActive: true,
-    oneTimeUse: true, // One-time use
-  },
-];
+// Define available coupons with persistent expiration dates
+const getAvailableCoupons = () => {
+  const storedCoupons = localStorage.getItem("availableCoupons");
+  if (storedCoupons) {
+    const parsedCoupons = JSON.parse(storedCoupons);
+    // Convert expirationDate strings back to Date objects
+    return parsedCoupons.map((coupon) => ({
+      ...coupon,
+      expirationDate: new Date(coupon.expirationDate),
+    }));
+  } else {
+    // Default coupons with fixed expiration dates
+    const defaultCoupons = [
+      {
+        id: "coupon1",
+        name: "Winter Gift Voucher",
+        discountType: "percentage", // 'percentage' or 'fixed'
+        discountValue: 20, // 20% off
+        description: "Unlock 20% off your next purchase!",
+        expirationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        isActive: true,
+        oneTimeUse: false, // Can be used multiple times? For now, false
+      },
+      {
+        id: "coupon2",
+        name: "Special Discount Code",
+        discountType: "percentage",
+        discountValue: 10, // 10% off
+        description: "Save 10% on all items storewide.",
+        expirationDate: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000), // 25 days
+        isActive: true,
+        oneTimeUse: true, // One-time use
+      },
+      {
+        id: "coupon3",
+        name: "Summer Discount Code",
+        discountType: "percentage",
+        discountValue: 55, // 10% off
+        description: "Save 55% on all items storewide.",
+        expirationDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days
+        isActive: true,
+        oneTimeUse: true, // One-time use
+      },
+    ];
+    // Store in localStorage
+    localStorage.setItem("availableCoupons", JSON.stringify(defaultCoupons));
+    return defaultCoupons;
+  }
+};
+
+const availableCoupons = getAvailableCoupons();
 
 const initialState = {
   availableCoupons,

@@ -1,33 +1,163 @@
-.coupon {
-    position: relative;
-    background: linear-gradient(to right, #10b981, #16a34a);
-    color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background-color 0.3s ease;
+/* Modern Dark-Premium Palette */
+.coupon-ticket-wrapper {
+  display: flex;
+  min-height: 110px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%);
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(67, 56, 202, 0.2);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.coupon-ticket-wrapper:hover {
+  transform: scale(1.01);
+  box-shadow: 0 6px 15px rgba(99, 102, 241, 0.3);
+}
+
+.coupon-ticket-main {
+  flex: 1.6;
+  padding: 12px 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.coupon-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.coupon-category {
+  color: #818cf8;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+}
+
+.coupon-status {
+  font-size: 9px;
+  font-weight: 700;
+  color: #4ade80;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.coupon-ticket-title {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.coupon-ticket-desc {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  margin-top: 2px;
+  font-weight: 400;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Corrected Full-Height Scalloped Divider */
+.coupon-ticket-divider {
+  width: 24px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.divider-line-full {
+  height: 100%;
+  border-left: 2px dashed rgba(255, 255, 255, 0.3);
+  position: absolute;
+}
+
+.scallop {
+  width: 20px;
+  height: 10px;
+  background-color: white; /* Matches inner container background */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+.scallop.top {
+  top: -1px;
+  border-radius: 0 0 20px 20px;
+}
+
+.scallop.bottom {
+  bottom: -1px;
+  border-radius: 20px 20px 0 0;
+}
+
+/* Right Side */
+.coupon-ticket-action {
+  flex: 0.8;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 0 10px 10px 0;
+  z-index: 1;
+}
+
+.countdown-minimal {
+  color: #fbbf24;
+  font-family: "Courier New", Courier, monospace;
+  font-weight: 900;
+  font-size: 13px;
+  margin-bottom: 8px;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.3);
+}
+
+.claim-ticket-btn {
+  background: white;
+  color: #1e1b4b;
+  border: none;
+  width: 100%;
+  padding: 6px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+.claim-ticket-btn:hover {
+  background: #4ade80;
+  color: #064e3b;
+  transform: translateY(-1px);
+}
+
+.pulse-dot {
+  width: 5px;
+  height: 5px;
+  background-color: #4ade80;
+  border-radius: 50%;
+  animation: pulse-simple 1.5s infinite;
+}
+
+@keyframes pulse-simple {
+  0% {
+    opacity: 1;
   }
-  
-  /* Claimed coupon style */
-  .coupon.claimed {
-    background: linear-gradient(to right, #9ca3af, #6b7280); /* Muted grey background */
-    opacity: 0.7; /* Slight fade effect */
-    pointer-events: none; /* Disable interactivity */
+  50% {
+    opacity: 0.3;
   }
-  
-  /* Claimed label */
-  .coupon .claimed-label {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background: #dc2626;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 0 10px 0 10px;
-    font-weight: bold;
-    font-size: 14px;
+  100% {
+    opacity: 1;
   }
-  
+}
