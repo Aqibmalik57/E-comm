@@ -92,10 +92,6 @@ const Cart = () => {
         <h2 className="text-3xl font-bold text-teal-600 mb-8 text-center border-b pb-4">
           Shopping Cart
         </h2>
-
-        {loading && (
-          <p className="text-center text-lg text-teal-600">Loading...</p>
-        )}
         {error && (
           <p className="text-center text-red-500">
             Error: {typeof error === "string" ? error : error.message}
@@ -179,7 +175,7 @@ const Cart = () => {
             </div>
 
             {/* Coupon and Summary Section - Right Side */}
-            <div className="lg:w-96">
+            <div className="lg:w-96 ">
               {/* Coupon Rewards Section */}
               {claimedCoupons.length > 0 && (
                 <div className="bg-gradient-to-br from-green-50 to-teal-50 p-6 rounded-lg shadow-lg mb-6 border-2 border-green-200">
@@ -212,7 +208,7 @@ const Cart = () => {
               )}
 
               {/* Order Summary */}
-              <div className="bg-teal-50 p-6 rounded-lg shadow-lg border border-teal-200">
+              <div className="bg-teal-50 p-6 rounded-lg lg:sticky lg:top-8 lg:self-start shadow-lg border border-teal-200">
                 <h3 className="text-2xl font-bold text-teal-600 mb-4">
                   Order Summary
                 </h3>

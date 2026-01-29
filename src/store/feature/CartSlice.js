@@ -41,7 +41,7 @@ export const addToCart = createAsyncThunk(
 // Async thunk for increasing item quantity in the cart
 export const increaseCartQuantity = createAsyncThunk(
   "cart/increaseCartQuantity",
-  async ({ userId, productId }, { rejectWithValue }) => {
+  async ({ userId, productId }, { rejectWithValue, dispatch }) => {
     try {
       const response = await axios.put(
         `http://localhost:5000${API_URL}/increase-quantity`,
@@ -49,6 +49,7 @@ export const increaseCartQuantity = createAsyncThunk(
         { withCredentials: true },
       );
       console.log(response.data.cart.items);
+      dispatch(fetchCart(userId)); // Re-fetch the cart to ensure full product data
       return response.data.cart.items; // Assuming the response contains the updated cart
     } catch (error) {
       toast.error(error.response.data.message || "Failed to increase quantity");
@@ -61,13 +62,14 @@ export const increaseCartQuantity = createAsyncThunk(
 
 export const decreaseCartQuantity = createAsyncThunk(
   "cart/decreaseCartQuantity",
-  async ({ userId, productId }, { rejectWithValue }) => {
+  async ({ userId, productId }, { rejectWithValue, dispatch }) => {
     try {
       const response = await axios.put(
         `http://localhost:5000${API_URL}/decrease-quantity`,
         { userId, productId },
         { withCredentials: true },
       );
+      dispatch(fetchCart(userId)); // Re-fetch the cart to ensure full product data
       return response.data.cart; // Assuming the response contains the updated cart
     } catch (error) {
       toast.error(error.response.data.message || "Failed to decrease quantity");
@@ -93,6 +95,7 @@ const cartSlice = createSlice({
   initialState: {
     items: [],
     loading: false,
+    initialLoading: false,
     error: null,
   },
   reducers: {},
@@ -102,15 +105,18 @@ const cartSlice = createSlice({
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.items = action.payload?.items || []; // Adjust this according to your response structure
         state.loading = false;
+        state.initialLoading = false;
         state.error = null;
       })
       .addCase(fetchCart.pending, (state) => {
         state.loading = true;
+        state.initialLoading = true;
         state.error = null;
       })
       .addCase(fetchCart.rejected, (state, action) => {
         state.error = action.payload;
         state.loading = false;
+        state.initialLoading = false;
       })
       // Handle add to cart success
       .addCase(addToCart.pending, (state) => {
@@ -133,9 +139,7 @@ const cartSlice = createSlice({
       })
       .addCase(increaseCartQuantity.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload) {
-          state.items = action.payload;
-        }
+        // Cart will be updated by fetchCart dispatch
       })
       .addCase(increaseCartQuantity.rejected, (state, action) => {
         state.loading = false;
@@ -148,7 +152,7 @@ const cartSlice = createSlice({
       })
       .addCase(decreaseCartQuantity.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload?.items || []; // Adjust this according to your response structure
+        // Cart will be updated by fetchCart dispatch
       })
       .addCase(decreaseCartQuantity.rejected, (state, action) => {
         state.loading = false;
