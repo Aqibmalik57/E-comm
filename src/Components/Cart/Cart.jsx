@@ -6,6 +6,7 @@ import {
   increaseCartQuantity,
   removeFromCart,
 } from "../../store/feature/CartSlice";
+import { selectCoupon, deselectCoupon } from "../../store/feature/offerSlice";
 import { FaArrowLeft, FaMinus, FaPlus, FaTrash } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 
@@ -13,7 +14,9 @@ const Cart = () => {
   const dispatch = useDispatch();
   const { items, loading, error } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.user);
-  const { claimedCoupons } = useSelector((state) => state.offer);
+  const { claimedCoupons, selectedCoupons } = useSelector(
+    (state) => state.offer,
+  );
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,12 +32,15 @@ const Cart = () => {
     return acc + (price ? price * quantity : 0);
   }, 0);
 
-  // Calculate discount based on claimed coupons
-  const discount = claimedCoupons.reduce((acc, coupon) => {
-    if (coupon.discountType === "percentage") {
-      return acc + subtotal * (coupon.discountValue / 100);
-    } else if (coupon.discountType === "fixed") {
-      return acc + coupon.discountValue;
+  // Calculate discount based on selected coupons
+  const discount = selectedCoupons.reduce((acc, couponId) => {
+    const coupon = claimedCoupons.find((c) => c.id === couponId);
+    if (coupon) {
+      if (coupon.discountType === "percentage") {
+        return acc + subtotal * (coupon.discountValue / 100);
+      } else if (coupon.discountType === "fixed") {
+        return acc + coupon.discountValue;
+      }
     }
     return acc;
   }, 0);
@@ -182,27 +188,57 @@ const Cart = () => {
                   <h3 className="text-2xl font-bold text-green-800 mb-4 flex items-center">
                     🎉 Coupon Rewards
                   </h3>
+                  <p className="text-sm text-green-700 mb-4">
+                    Select coupons to apply to this purchase or save for later.
+                  </p>
                   <div className="space-y-3">
-                    {claimedCoupons.map((coupon, index) => (
-                      <div
-                        key={index}
-                        className="bg-white p-4 rounded-lg shadow-md border border-green-200 hover:shadow-lg transition-shadow"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-bold text-green-700 text-lg">
-                            {coupon.name}
-                          </h4>
-                          <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                            {coupon.discountType === "percentage"
-                              ? `${coupon.discountValue}% OFF`
-                              : `$${coupon.discountValue} OFF`}
-                          </span>
+                    {claimedCoupons.map((coupon, index) => {
+                      const isSelected = selectedCoupons.includes(coupon.id);
+                      return (
+                        <div
+                          key={index}
+                          className={`bg-white p-4 rounded-lg shadow-md border hover:shadow-lg transition-shadow ${
+                            isSelected
+                              ? "border-green-500 bg-green-50"
+                              : "border-green-200"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center space-x-3">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => {
+                                  if (isSelected) {
+                                    dispatch(deselectCoupon(coupon.id));
+                                  } else {
+                                    dispatch(selectCoupon(coupon.id));
+                                  }
+                                }}
+                                className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
+                              />
+                              <h4 className="font-bold text-green-700 text-lg">
+                                {coupon.name}
+                              </h4>
+                            </div>
+                            <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                              {coupon.discountType === "percentage"
+                                ? `${coupon.discountValue}% OFF`
+                                : `$${coupon.discountValue} OFF`}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 ml-7">
+                            {coupon.description}
+                          </p>
+                          <p className="text-xs text-gray-500 ml-7 mt-1">
+                            Expires:{" "}
+                            {new Date(
+                              coupon.expirationDate,
+                            ).toLocaleDateString()}
+                          </p>
                         </div>
-                        <p className="text-sm text-gray-600">
-                          {coupon.description}
-                        </p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

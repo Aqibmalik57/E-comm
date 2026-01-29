@@ -27,6 +27,7 @@ const availableCoupons = [
 const initialState = {
   availableCoupons,
   claimedCoupons: JSON.parse(localStorage.getItem("claimedCoupons")) || [],
+  selectedCoupons: JSON.parse(localStorage.getItem("selectedCoupons")) || [],
 };
 
 const offerSlice = createSlice({
@@ -37,7 +38,14 @@ const offerSlice = createSlice({
       const couponId = action.payload;
       const coupon = state.availableCoupons.find((c) => c.id === couponId);
       if (coupon && !state.claimedCoupons.some((c) => c.id === couponId)) {
-        state.claimedCoupons.push(coupon);
+        const claimedCoupon = {
+          ...coupon,
+          claimDate: new Date().toISOString(),
+          expirationDate: new Date(
+            Date.now() + 3 * 24 * 60 * 60 * 1000,
+          ).toISOString(), // 3 days from claim
+        };
+        state.claimedCoupons.push(claimedCoupon);
         localStorage.setItem(
           "claimedCoupons",
           JSON.stringify(state.claimedCoupons),
@@ -61,18 +69,51 @@ const offerSlice = createSlice({
           coupon.isActive = false;
         }
       });
-      // Remove expired claimed coupons
+      // Remove expired claimed coupons based on claim expiration
       state.claimedCoupons = state.claimedCoupons.filter(
-        (coupon) => coupon.isActive,
+        (coupon) => new Date(coupon.expirationDate) > now,
+      );
+      // Remove expired selected coupons
+      state.selectedCoupons = state.selectedCoupons.filter((couponId) =>
+        state.claimedCoupons.some((c) => c.id === couponId),
       );
       localStorage.setItem(
         "claimedCoupons",
         JSON.stringify(state.claimedCoupons),
       );
+      localStorage.setItem(
+        "selectedCoupons",
+        JSON.stringify(state.selectedCoupons),
+      );
+    },
+    selectCoupon: (state, action) => {
+      const couponId = action.payload;
+      if (!state.selectedCoupons.includes(couponId)) {
+        state.selectedCoupons.push(couponId);
+        localStorage.setItem(
+          "selectedCoupons",
+          JSON.stringify(state.selectedCoupons),
+        );
+      }
+    },
+    deselectCoupon: (state, action) => {
+      const couponId = action.payload;
+      state.selectedCoupons = state.selectedCoupons.filter(
+        (id) => id !== couponId,
+      );
+      localStorage.setItem(
+        "selectedCoupons",
+        JSON.stringify(state.selectedCoupons),
+      );
     },
   },
 });
 
-export const { claimCoupon, unclaimCoupon, updateCouponStatus } =
-  offerSlice.actions;
+export const {
+  claimCoupon,
+  unclaimCoupon,
+  updateCouponStatus,
+  selectCoupon,
+  deselectCoupon,
+} = offerSlice.actions;
 export default offerSlice.reducer;

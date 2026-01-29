@@ -9,182 +9,134 @@ const HomeOffer = () => {
     (state) => state.offer,
   );
 
-  // State for countdown timers
+  // State to store time calculations for all coupons
   const [timeLeft, setTimeLeft] = useState({});
-
-  // Get coupons from Redux
-  const coupon1 = availableCoupons.find((c) => c.id === "coupon1");
-  const coupon2 = availableCoupons.find((c) => c.id === "coupon2");
-  const isCoupon1Claimed = claimedCoupons.some((c) => c.id === "coupon1");
-  const isCoupon2Claimed = claimedCoupons.some((c) => c.id === "coupon2");
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const now = new Date();
+      const now = new Date().getTime();
       const newTimeLeft = {};
 
-      if (coupon1) {
-        const distance1 = new Date(coupon1.expirationDate) - now;
-        if (distance1 > 0) {
-          newTimeLeft.coupon1 = {
-            days: Math.floor(distance1 / (1000 * 60 * 60 * 24)),
-            hours: Math.floor(
-              (distance1 % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
-            ),
-            minutes: Math.floor((distance1 % (1000 * 60 * 60)) / (1000 * 60)),
-            seconds: Math.floor((distance1 % (1000 * 60)) / 1000),
-          };
-        } else {
-          newTimeLeft.coupon1 = { days: 0, hours: 0, minutes: 0, seconds: 0 };
-        }
-      }
+      availableCoupons.forEach((coupon) => {
+        const expiration = new Date(coupon.expirationDate).getTime();
+        const distance = expiration - now;
 
-      if (coupon2) {
-        const distance2 = new Date(coupon2.expirationDate) - now;
-        if (distance2 > 0) {
-          newTimeLeft.coupon2 = {
-            days: Math.floor(distance2 / (1000 * 60 * 60 * 24)),
+        if (distance > 0) {
+          newTimeLeft[coupon.id] = {
+            days: Math.floor(distance / (1000 * 60 * 60 * 24)),
             hours: Math.floor(
-              (distance2 % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+              (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
             ),
-            minutes: Math.floor((distance2 % (1000 * 60 * 60)) / (1000 * 60)),
-            seconds: Math.floor((distance2 % (1000 * 60)) / 1000),
+            minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+            seconds: Math.floor((distance % (1000 * 60)) / 1000),
+            isExpired: false,
           };
         } else {
-          newTimeLeft.coupon2 = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+          // Marking as expired so the UI can hide it
+          newTimeLeft[coupon.id] = {
+            days: 0,
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+            isExpired: true,
+          };
         }
-      }
+      });
 
       setTimeLeft(newTimeLeft);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [coupon1, coupon2]);
+  }, [availableCoupons]);
 
   const handleClaimCoupon = (couponId) => {
     dispatch(claimCoupon(couponId));
   };
 
-  // New console logs to check if everything is working as expected
-  // useEffect(() => {
-  //   console.log('Current Date:', new Date());
-  //   console.log('Coupon 1 Expiration Date:', coupon1.expirationDate);
-  //   console.log('Coupon 2 Expiration Date:', coupon2.expirationDate);
-  //   console.log('Coupon 1 Active:', coupon1.isActive);
-  //   console.log('Coupon 2 Active:', coupon2.isActive);
-  //   console.log('Coupon 1 Activation Delay:', coupon1.activationDelay);
-  //   console.log('Coupon 2 Activation Delay:', coupon2.activationDelay);
-  // }, [coupon1, coupon2]);
-
   return (
-    <div className="Homeoffer border-2 my-5 w-[38.5%] rounded-md border-[#f97316] hover:border-[#10b981] m-h-auto relative">
-      <div className="offer-title text-center p-3 bg-[#ffedd5] rounded-t-md font-medium text-md">
+    <div className="Homeoffer border-2 my-5 w-full md:w-[38.5%] rounded-md border-[#f97316] hover:border-[#10b981] mx-auto relative overflow-hidden">
+      <div className="offer-title text-center p-3 bg-[#ffedd5] rounded-t-md font-bold text-[#c2410c] text-md uppercase tracking-wide">
         Latest Super Discount Active Coupon Codes
       </div>
-      <div className="bg-[#ffffff] text-[#333] rounded-xl shadow-xl p-4 mx-auto transition-transform duration-500 ease-in-out w-full">
-        {/* First Coupon */}
-        {coupon1 && coupon1.isActive && !isCoupon1Claimed && (
-          <div className="bg-gradient-to-r from-[#10b981] to-[#16a34a] text-white rounded-lg py-4 px-4 shadow-lg flex flex-col md:flex-row justify-between items-center w-full relative">
-            <div className="flex flex-col items-center mb-4 md:mb-0 w-[43.5%]">
-              <h3 className="text-lg font-bold mb-1 tracking-tight text-start">
-                {coupon1.name}
-              </h3>
-              <p className="mb-1 text-sm font-medium text-white">
-                {coupon1.description}
-              </p>
-              <p className="text-xs text-center mt-2 text-[#ffedd5]">
-                Limited time offer!
-              </p>
-              <span className="bg-green-500 text-white rounded-full px-2 py-1 mt-2 text-xs font-bold">
-                {coupon1.isActive ? "Active" : "Inactive"}
-              </span>
-            </div>
 
-            <div className="hidden md:block border-l-2 border-dotted border-[#ffedd5] mx-4 h-[145px]"></div>
+      <div className="bg-[#ffffff] text-[#333] p-4 mx-auto w-full flex flex-col gap-4">
+        {availableCoupons.map((coupon) => {
+          const isClaimed = claimedCoupons.some((c) => c.id === coupon.id);
+          const timer = timeLeft[coupon.id];
 
-            <div className="flex flex-col items-center w-[50%]">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-[#ffedd5]">
-                Expires In:
-              </h4>
-              <div className="flex justify-center mt-1 space-x-1 text-lg">
-                <span className="bg-white text-[#10b981] rounded-full px-2 py-1 font-bold shadow-md">
-                  {timeLeft.coupon1?.days ?? 0}d
-                </span>
-                <span className="bg-white text-[#10b981] rounded-full px-2 py-1 font-bold shadow-md">
-                  {timeLeft.coupon1?.hours ?? 0}h
-                </span>
-                <span className="bg-white text-[#10b981] rounded-full px-2 py-1 font-bold shadow-md">
-                  {timeLeft.coupon1?.minutes ?? 0}m
-                </span>
-                <span className="bg-white text-[#10b981] rounded-full px-2 py-1 font-bold shadow-md">
-                  {timeLeft.coupon1?.seconds ?? 0}s
-                </span>
+          // Logic: Only render if the coupon is active, not claimed, and hasn't expired yet
+          if (!coupon.isActive || isClaimed || (timer && timer.isExpired)) {
+            return null;
+          }
+
+          return (
+            <div
+              key={coupon.id}
+              className="bg-gradient-to-r from-[#10b981] to-[#16a34a] text-white rounded-lg py-4 px-4 shadow-lg flex flex-col md:flex-row justify-between items-center w-full relative transition-all duration-300"
+            >
+              {/* Left Side: Coupon Info */}
+              <div className="flex flex-col items-center md:items-start mb-4 md:mb-0 w-full md:w-[45%] text-center md:text-left">
+                <h3 className="text-lg font-bold mb-1 tracking-tight">
+                  {coupon.name}
+                </h3>
+                <p className="mb-1 text-sm font-medium text-white/90">
+                  {coupon.description}
+                </p>
+                <div className="flex gap-2 items-center mt-2">
+                  <span className="bg-white/20 border border-white/30 text-white rounded-full px-2 py-0.5 text-[10px] font-bold uppercase">
+                    {coupon.isActive ? "Active" : "Inactive"}
+                  </span>
+                  <p className="text-[10px] text-[#ffedd5] font-semibold italic">
+                    Limited time offer!
+                  </p>
+                </div>
               </div>
 
-              <p className="text-xs text-center mt-2 text-[#ffedd5]">
-                Hurry up!
-              </p>
+              {/* Dotted Divider Line */}
+              <div className="hidden md:block border-l-2 border-dotted border-[#ffedd5]/50 mx-2 h-24"></div>
 
-              <button
-                className="mt-3 bg-[#16a34a] text-white rounded-full px-4 py-2 text-xs font-semibold shadow-lg hover:bg-[#10b981]"
-                onClick={() => handleClaimCoupon("coupon1")}
-              >
-                Claim This Coupon!
-              </button>
-            </div>
-          </div>
-        )}
+              {/* Right Side: Countdown and Action */}
+              <div className="flex flex-col items-center w-full md:w-[50%]">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#ffedd5] mb-2">
+                  Expires In:
+                </h4>
 
-        {/* Second Coupon */}
-        {coupon2 && coupon2.isActive && !isCoupon2Claimed && (
-          <div className="bg-gradient-to-r from-[#10b981] to-[#16a34a] text-white rounded-lg py-4 px-4 shadow-lg flex flex-col md:flex-row justify-between items-center w-full relative mt-6">
-            <div className="flex flex-col items-center mb-4 md:mb-0 w-[43.5%]">
-              <h3 className="text-lg font-bold mb-1 tracking-tight text-start">
-                {coupon2.name}
-              </h3>
-              <p className="mb-1 text-sm font-medium text-white">
-                {coupon2.description}
-              </p>
-              <p className="text-xs text-center mt-2 text-[#ffedd5]">
-                Limited to one-time use!
-              </p>
-              <span className="bg-green-500 text-white rounded-full px-2 py-1 mt-2 text-xs font-bold">
-                {coupon2.isActive ? "Active" : "Inactive"}
-              </span>
-            </div>
+                <div className="flex justify-center space-x-1 mb-3">
+                  {[
+                    { val: timer?.days, label: "d" },
+                    { val: timer?.hours, label: "h" },
+                    { val: timer?.minutes, label: "m" },
+                    { val: timer?.seconds, label: "s" },
+                  ].map((unit, idx) => (
+                    <div key={idx} className="flex flex-col items-center">
+                      <span className="bg-white text-[#10b981] rounded-md px-2 py-1 font-bold shadow-md text-sm min-w-[35px] text-center">
+                        {unit.val ?? 0}
+                        {unit.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
 
-            <div className="hidden md:block border-l-2 border-dotted border-[#ffedd5] mx-4 h-[145px]"></div>
-
-            <div className="flex flex-col items-center w-[50%]">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-[#ffedd5]">
-                Expires In:
-              </h4>
-              <div className="flex justify-center mt-1 space-x-1 text-lg">
-                <span className="bg-white text-[#10b981] rounded-full px-2 py-1 font-bold shadow-md">
-                  {timeLeft.coupon2?.days ?? 0}d
-                </span>
-                <span className="bg-white text-[#10b981] rounded-full px-2 py-1 font-bold shadow-md">
-                  {timeLeft.coupon2?.hours ?? 0}h
-                </span>
-                <span className="bg-white text-[#10b981] rounded-full px-2 py-1 font-bold shadow-md">
-                  {timeLeft.coupon2?.minutes ?? 0}m
-                </span>
-                <span className="bg-white text-[#10b981] rounded-full px-2 py-1 font-bold shadow-md">
-                  {timeLeft.coupon2?.seconds ?? 0}s
-                </span>
+                <button
+                  className="bg-[#16a34a] hover:bg-[#059669] text-white border border-white/20 rounded-full px-6 py-2 text-xs font-bold shadow-md transition-all active:scale-95"
+                  onClick={() => handleClaimCoupon(coupon.id)}
+                >
+                  Claim This Coupon!
+                </button>
               </div>
-
-              <p className="text-xs text-center mt-2 text-[#ffedd5]">
-                Hurry up!
-              </p>
-
-              <button
-                className="mt-3 bg-[#16a34a] text-white rounded-full px-4 py-2 text-xs font-semibold shadow-lg hover:bg-[#10b981]"
-                onClick={() => handleClaimCoupon("coupon2")}
-              >
-                Claim This Coupon!
-              </button>
             </div>
+          );
+        })}
+
+        {/* Fallback if no coupons are available */}
+        {availableCoupons.every(
+          (c) =>
+            !c.isActive ||
+            claimedCoupons.some((cc) => cc.id === c.id) ||
+            timeLeft[c.id]?.isExpired,
+        ) && (
+          <div className="text-center py-6 text-gray-400 text-sm italic">
+            No active coupons available at the moment. Check back later!
           </div>
         )}
       </div>
