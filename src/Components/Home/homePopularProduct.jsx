@@ -4,9 +4,11 @@ import { getAllProducts } from "../../store/feature/productSlice";
 import { addToCart } from "../../store/feature/CartSlice";
 import { FaCartPlus, FaStar, FaEye } from "react-icons/fa6";
 import QuickViewModal from "./QuickViewModal";
+import { useNavigate } from "react-router-dom";
 
 const HomePopularProduct = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { loading, error, products } = useSelector((state) => state.product);
   const { user } = useSelector((state) => state.user);
 
@@ -71,6 +73,7 @@ const HomePopularProduct = () => {
           products?.slice(0, 18)?.map((item) => (
             <div
               key={item._id}
+              onClick={() => navigate(`/product/${item._id}`)}
               className="items-card w-[240px] bg-white p-4 rounded-xl relative group hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-gray-100 overflow-hidden"
             >
               {/* Stock Badge
@@ -102,7 +105,10 @@ const HomePopularProduct = () => {
                 {/* Quick View Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
                   <button
-                    onClick={() => handleQuickView(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleQuickView(item);
+                    }}
                     className="bg-white text-gray-800 px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors shadow-lg flex items-center space-x-2"
                   >
                     <FaEye size={16} />

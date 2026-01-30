@@ -1,6 +1,6 @@
 import React from "react";
 
-const CategCard = () => {
+const CategCard = ({ onCategorySelect }) => {
   return (
     <>
       <div className="mx-11 grid grid-cols-3 gap-3 mt-10">
@@ -9,6 +9,7 @@ const CategCard = () => {
           style={{
             background: `url(${require("../../Assets/Images/cta-bg-1.webp")}) no-repeat center center / cover `,
           }}
+          onClick={() => onCategorySelect("Fruits & Vegetables")}
         >
           <h2 className="text-lg font-bold text-center text-gray-100">
             Taste of <br />
@@ -20,10 +21,11 @@ const CategCard = () => {
           </button>
         </div>
         <div
-          className="text-white h-[180px] flex flex-col justify-center items-center rounded-t-xl rounded-b"
+          className="text-white h-[180px] flex flex-col justify-center items-center rounded-t-xl rounded-b cursor-pointer"
           style={{
             background: `url(${require("../../Assets/Images/cta-bg-2.webp")}) no-repeat center center / cover `,
           }}
+          onClick={() => onCategorySelect("Fish & Meat")}
         >
           <h2 className="text-lg font-bold text-center text-gray-100">
             Taste of <br />
@@ -35,10 +37,11 @@ const CategCard = () => {
           </button>
         </div>
         <div
-          className="text-white h-[180px] flex flex-col justify-center items-center rounded-t-xl rounded-b"
+          className="text-white h-[180px] flex flex-col justify-center items-center rounded-t-xl rounded-b cursor-pointer"
           style={{
             background: `url(${require("../../Assets/Images/cta-bg-3.webp")}) no-repeat center center / cover `,
           }}
+          onClick={() => onCategorySelect("Biscuits & Cakes")}
         >
           <h2 className="text-lg font-bold text-center text-gray-100">
             Taste of <br />

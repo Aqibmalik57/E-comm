@@ -21,7 +21,7 @@ import { toast } from "react-toastify";
 import Category from "./Components/Categories/Categ.jsx";
 import Add from "./Components/Add.jsx";
 import AddCart from "./Components/Cart/Cart.jsx";
-import SingleProduct from "./Components/SingleProduct";
+import SingleProduct from "./Components/SingleProduct.jsx";
 // import Navbar from './Components/Navbar/Navbar.jsx';
 
 function App() {
@@ -64,6 +64,7 @@ function App() {
           <Route path="/forgetpassword" element={<ForgotPassword />} />
           <Route path="/reset/:token" element={<ResetPassword />} />
           {user && <Route path="/add" element={<Add />} />}
+          {user && <Route path="/product/:id" element={<SingleProduct />} />}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

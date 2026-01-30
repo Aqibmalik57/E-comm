@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getAllProducts } from "../../store/feature/productSlice";
+import { addToCart } from "../../store/feature/CartSlice";
 import Navbar from "../Navbar/Navbar";
 import CategCard from "./CategCard";
-import { FaCartPlus } from "react-icons/fa";
+import { FaCartPlus, FaStar, FaEye } from "react-icons/fa6";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
@@ -13,19 +14,23 @@ import "./Category.css";
 import ProductContext from "../Context/ProductContext";
 import Product404 from "../../Assets/Images/404 error with person looking for-amico.png";
 import Footer from "../Footer/Footer";
+import QuickViewModal from "../Home/QuickViewModal";
 
 const Categ = () => {
   const { category } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { loading, error, products } = useSelector((state) => state.product);
+  const { user } = useSelector((state) => state.user);
   const ref = useRef(null);
   const { images } = useContext(ProductContext);
 
   const [selectedCategory, setSelectedCategory] = useState(category || "");
-  const [productCount, setProductCount] = useState(0);
   const [sortOption, setSortOption] = useState("default");
   const [hasUserSorted, setHasUserSorted] = useState(false);
   const [visibleProducts, setVisibleProducts] = useState(6);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (ref.current) {
@@ -51,12 +56,8 @@ const Categ = () => {
   };
 
   const filteredProducts = products?.filter((product) =>
-    matchCategorySubstring(selectedCategory, product.category)
+    matchCategorySubstring(selectedCategory, product.category),
   );
-
-  useEffect(() => {
-    setProductCount(filteredProducts?.length);
-  }, [filteredProducts]);
 
   const sortedProducts = hasUserSorted
     ? filteredProducts?.sort((a, b) => {
@@ -82,11 +83,46 @@ const Categ = () => {
     setVisibleProducts((prevCount) => prevCount + 8); // Increment visible products by 8
   };
 
+  // Function to get discount based on category
+  const getDiscount = (category) => {
+    if (!category) return 0;
+    const discountMap = {
+      vegetable: 10,
+      fruit: 5,
+      cooking: 15,
+      fish: 20,
+      cake: 10,
+      men: 10,
+    };
+    return discountMap[category.toLowerCase()] || 0;
+  };
+
+  const handleAddToCart = (productId, quantity = 1) => {
+    const userId = user._id;
+    dispatch(addToCart({ userId, productId, quantity }));
+  };
+
+  const handleQuickView = (product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
+  };
+
+  const calculateRating = (reviews) => {
+    if (!reviews || reviews.length === 0) return 0;
+    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+    return (total / reviews.length).toFixed(1);
+  };
+
   return (
     <>
       <div ref={ref} className="bg-[#f9fafb]">
         <Navbar />
-        <CategCard />
+        <CategCard onCategorySelect={handleCategoryClick} />
         <div className="Categ-Carousal w-full flex items-center h-20 mt-9 mb-9">
           <div className="my-swiper-containe w-[93%] mx-11">
             <Swiper
@@ -106,26 +142,26 @@ const Categ = () => {
                       index === 0
                         ? "Men"
                         : index === 1
-                        ? "Fish & Meat"
-                        : index === 2
-                        ? "Fruits & Vegetables"
-                        : index === 3
-                        ? "Cooking"
-                        : index === 4
-                        ? "Biscuits & Cakes"
-                        : index === 5
-                        ? "Household Tools"
-                        : index === 6
-                        ? "Pets Care"
-                        : index === 7
-                        ? "Beauty & Healths"
-                        : index === 8
-                        ? "Jam & Jelly"
-                        : index === 9
-                        ? "Milk & Dairy"
-                        : index === 10
-                        ? "Drinks"
-                        : "Breakfast"
+                          ? "Fish & Meat"
+                          : index === 2
+                            ? "Fruits & Vegetables"
+                            : index === 3
+                              ? "Cooking"
+                              : index === 4
+                                ? "Biscuits & Cakes"
+                                : index === 5
+                                  ? "Household Tools"
+                                  : index === 6
+                                    ? "Pets Care"
+                                    : index === 7
+                                      ? "Beauty & Healths"
+                                      : index === 8
+                                        ? "Jam & Jelly"
+                                        : index === 9
+                                          ? "Milk & Dairy"
+                                          : index === 10
+                                            ? "Drinks"
+                                            : "Breakfast",
                     )
                   }
                 >
@@ -135,26 +171,26 @@ const Categ = () => {
                       {index === 0
                         ? "Men"
                         : index === 1
-                        ? "Fish & Meat"
-                        : index === 2
-                        ? "Fruits & Vegetables"
-                        : index === 3
-                        ? "Cooking"
-                        : index === 4
-                        ? "Biscuits & Cakes"
-                        : index === 5
-                        ? "Household Tools"
-                        : index === 6
-                        ? "Pets Care"
-                        : index === 7
-                        ? "Beauty & Healths"
-                        : index === 8
-                        ? "Jam & Jelly"
-                        : index === 9
-                        ? "Milk & Dairy"
-                        : index === 10
-                        ? "Drinks"
-                        : "Breakfast"}
+                          ? "Fish & Meat"
+                          : index === 2
+                            ? "Fruits & Vegetables"
+                            : index === 3
+                              ? "Cooking"
+                              : index === 4
+                                ? "Biscuits & Cakes"
+                                : index === 5
+                                  ? "Household Tools"
+                                  : index === 6
+                                    ? "Pets Care"
+                                    : index === 7
+                                      ? "Beauty & Healths"
+                                      : index === 8
+                                        ? "Jam & Jelly"
+                                        : index === 9
+                                          ? "Milk & Dairy"
+                                          : index === 10
+                                            ? "Drinks"
+                                            : "Breakfast"}
                     </h1>
                   </div>
                 </SwiperSlide>
@@ -195,56 +231,133 @@ const Categ = () => {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-5 mx-11 pb-10">
-          {loading && <h2>Loading...</h2>}
-          {error && <h2 className="text-red-500">Error: {error.message}</h2>}
+        <div className="grid grid-cols-5 gap-5 mx-8 pb-10">
+          {loading && <p className="text-blue-500">Loading products...</p>}
+          {error && <p className="text-red-500">Error: {error}</p>}
           {!loading && !error && sortedProducts && sortedProducts.length > 0
             ? sortedProducts.slice(0, visibleProducts).map((items) => (
                 <div
                   key={items._id}
-                  className="items-card w-[219px] bg-white p-4 rounded-md relative"
+                  onClick={() => navigate(`/product/${items._id}`)}
+                  className="items-card w-[240px] bg-white p-4 rounded-xl relative group hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-gray-100 overflow-hidden"
                 >
-                  <span
-                    className={`absolute top-0 left-0 px-2 py-1 text-xs font-bold text-white rounded-full z-10 ${
-                      items.stock > 0 ? "bg-neutral-200" : "bg-red-500"
+                  {/* Stock Badge
+                  <div
+                    className={`absolute top-3 left-3 px-3 py-1 text-xs font-semibold text-white rounded-full z-10 shadow-md ${
+                      items.stock > 0
+                        ? "bg-gradient-to-r from-green-500 to-green-600"
+                        : "bg-gradient-to-r from-red-500 to-red-600"
                     }`}
                   >
-                    <span className="text-green-500">Stock :</span>
-                    <span
-                      className={`font-bold ${
-                        items.stock > 0 ? "text-[#c24f3f]" : "text-red-200"
-                      }`}
-                    >
-                      {items.stock > 0 ? items.stock : "Out of stock"}
-                    </span>
-                  </span>
+                    {items.stock > 0 ? `Stock: ${items.stock}` : "Out of Stock"}
+                  </div> */}
 
-                  <img
-                    src={items.imageUrl}
-                    alt={items.title}
-                    className="h-36 w-48 mx-auto hover:transform hover:scale-110 duration-300"
-                  />
-                  <h1 className="mt-2 mb-2 text-start text-sm text-neutral-600">
-                    {items.title}
-                  </h1>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-start font-bold">${items.price}</h3>
-                    <button className="border border-neutral-200 text-[#10b981] p-2 rounded-md">
-                      <FaCartPlus />
-                    </button>
+                  {/* Image Container */}
+                  <div className="relative mb-4 overflow-hidden rounded-lg">
+                    <img
+                      src={items.imageUrl}
+                      alt={items.title}
+                      className="h-40 w-full object-contain hover:scale-105 transition-transform duration-500"
+                    />
+
+                    {/* Discount Badge */}
+                    {getDiscount(items.category) > 0 && (
+                      <div className="absolute top-0 right-0 bg-[#ffedea] text-[#f74b81] px-2 py-1 text-[10px] font-bold rounded-md z-20 border border-[#fbd9d3] w-fit shadow-sm">
+                        {getDiscount(items.category)}% Off
+                      </div>
+                    )}
+
+                    {/* Quick View Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleQuickView(items);
+                        }}
+                        className="bg-white text-gray-800 px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors shadow-lg flex items-center space-x-2"
+                      >
+                        <FaEye size={16} />
+                        <span>Quick View</span>
+                      </button>
+                    </div>
+                  </div>
+                  {/* Product Info */}
+                  <div className="space-y-2">
+                    <h1 className="text-sm font-semibold text-gray-800 line-clamp-2 leading-tight">
+                      {items.title}
+                    </h1>
+
+                    {/* Rating Display */}
+                    <div className="flex items-center space-x-2">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <FaStar
+                            key={i}
+                            className={
+                              i < Math.floor(calculateRating(items.reviews))
+                                ? "text-yellow-400"
+                                : "text-gray-300"
+                            }
+                            size={14}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {calculateRating(items.reviews)} (
+                        {items.reviews?.length || 0} reviews)
+                      </span>
+                    </div>
+
+                    {/* Price */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {getDiscount(items.category) > 0 ? (
+                          <>
+                            <span className="text-lg font-bold text-green-600">
+                              $
+                              {(
+                                items.price *
+                                (1 - getDiscount(items.category) / 100)
+                              ).toFixed(2)}
+                            </span>
+                            <span className="text-sm text-gray-500 line-through">
+                              ${items.price}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-lg font-bold text-green-600">
+                            ${items.price}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Add to Cart Button */}
+                      <button
+                        className="bg-gradient-to-r from-green-500 to-green-600 text-white p-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => handleAddToCart(items._id, 1)}
+                        disabled={items.stock <= 0}
+                        aria-label={`Add ${items.title} to cart`}
+                      >
+                        <FaCartPlus size={16} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))
             : !loading &&
               !error && (
-                <div className="mx-auto text-center">
+                <div className="col-span-full flex flex-col items-center justify-center py-20 w-full text-center">
                   <img
                     src={Product404}
                     alt="No Products Found"
-                    className="w-80 mx-auto"
+                    className="w-80 h-auto mb-6"
                   />
-                  <p className="text-xl font-semibold text-gray-800">
-                    No Products Found in this Category
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                    No Products Found
+                  </h3>
+                  <p className="text-gray-500 max-w-sm mx-auto">
+                    We couldn't find any products in this category. Please try
+                    checking another one!
                   </p>
                 </div>
               )}
@@ -260,6 +373,14 @@ const Categ = () => {
             </button>
           </div>
         )}
+
+        {/* Quick View Modal */}
+        <QuickViewModal
+          product={selectedProduct}
+          isOpen={isModalOpen}
+          onClose={closeModal}
+        />
+
         <Footer />
       </div>
     </>

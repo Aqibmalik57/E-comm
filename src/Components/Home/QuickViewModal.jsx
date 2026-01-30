@@ -55,7 +55,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
           <img
             src={product.imageUrl}
             alt={product.title}
-            className="w-full h-auto object-contain rounded-lg"
+            className="w-full h-[400px] object-contain rounded-lg"
           />
         </div>
 
