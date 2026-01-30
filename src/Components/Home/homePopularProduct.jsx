@@ -13,6 +13,20 @@ const HomePopularProduct = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Function to get discount based on category
+  const getDiscount = (category) => {
+    if (!category) return 0;
+    const discountMap = {
+      vegetable: 10,
+      fruit: 5,
+      cooking: 15,
+      fish: 20,
+      cake: 10,
+      men: 10,
+    };
+    return discountMap[category.toLowerCase()] || 0;
+  };
+
   useEffect(() => {
     dispatch(getAllProducts());
   }, [dispatch]);
@@ -51,7 +65,7 @@ const HomePopularProduct = () => {
       {loading && <p className="text-blue-500">Loading products...</p>}
       {error && <p className="text-red-500">Error: {error}</p>}
 
-      <div className="grid grid-cols-5 gap-5 mx-11 pb-10">
+      <div className="grid grid-cols-5 gap-5 mx-8 pb-10">
         {!loading &&
           !error &&
           products?.slice(0, 18)?.map((item) => (
@@ -59,7 +73,7 @@ const HomePopularProduct = () => {
               key={item._id}
               className="items-card w-[240px] bg-white p-4 rounded-xl relative group hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-gray-100 overflow-hidden"
             >
-              {/* Stock Badge */}
+              {/* Stock Badge
               <div
                 className={`absolute top-3 left-3 px-3 py-1 text-xs font-semibold text-white rounded-full z-10 shadow-md ${
                   item.stock > 0
@@ -68,7 +82,7 @@ const HomePopularProduct = () => {
                 }`}
               >
                 {item.stock > 0 ? `Stock: ${item.stock}` : "Out of Stock"}
-              </div>
+              </div> */}
 
               {/* Image Container */}
               <div className="relative mb-4 overflow-hidden rounded-lg">
@@ -77,6 +91,13 @@ const HomePopularProduct = () => {
                   alt={item.title}
                   className="h-40 w-full object-contain hover:scale-105 transition-transform duration-500"
                 />
+
+                {/* Discount Badge */}
+                {getDiscount(item.category) > 0 && (
+                  <div className="absolute top-0 right-0 bg-[#ffedea] text-[#f74b81] px-2 py-1 text-[10px] font-bold rounded-md z-20 border border-[#fbd9d3] w-fit shadow-sm">
+                    {getDiscount(item.category)}% Off
+                  </div>
+                )}
 
                 {/* Quick View Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
@@ -89,7 +110,6 @@ const HomePopularProduct = () => {
                   </button>
                 </div>
               </div>
-
               {/* Product Info */}
               <div className="space-y-2">
                 <h1 className="text-sm font-semibold text-gray-800 line-clamp-2 leading-tight">
@@ -119,9 +139,26 @@ const HomePopularProduct = () => {
 
                 {/* Price */}
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-green-600">
-                    ${item.price}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {getDiscount(item.category) > 0 ? (
+                      <>
+                        <span className="text-lg font-bold text-green-600">
+                          $
+                          {(
+                            item.price *
+                            (1 - getDiscount(item.category) / 100)
+                          ).toFixed(2)}
+                        </span>
+                        <span className="text-sm text-gray-500 line-through">
+                          ${item.price}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-lg font-bold text-green-600">
+                        ${item.price}
+                      </span>
+                    )}
+                  </div>
 
                   {/* Add to Cart Button */}
                   <button

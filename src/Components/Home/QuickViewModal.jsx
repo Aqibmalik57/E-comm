@@ -20,6 +20,12 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
 
   if (!isOpen || !product) return null;
 
+  const calculateRating = (reviews) => {
+    if (!reviews || reviews.length === 0) return 0;
+    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+    return (total / reviews.length).toFixed(1);
+  };
+
   const handleAddToCart = () => {
     if (user) {
       dispatch(
@@ -35,7 +41,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full relative overflow-hidden flex flex-col md:flex-row p-8 gap-8">
+      <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full relative overflow-hidden flex flex-col md:flex-row p-8 gap-8">
         {/* Close Button - Exact Red Square from Image */}
         <button
           onClick={onClose}
@@ -54,7 +60,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
         </div>
 
         {/* Right Side: Product Details */}
-        <div className="w-full md:w-1/2 flex flex-col">
+        <div className="w-full md:w-1/2 flex flex-col items-start">
           {/* Stock Info */}
           <div className="text-[#10b981] text-sm mb-1">
             In stock: <span className="font-semibold">{product.stock}</span>
@@ -71,22 +77,23 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                 <FaStar
                   key={i}
                   size={14}
-                  className={i < 3 ? "fill-current" : "text-gray-200"}
+                  className={
+                    i < Math.floor(calculateRating(product.reviews))
+                      ? "fill-current"
+                      : "text-gray-200"
+                  }
                 />
               ))}
             </div>
             <span className="text-gray-400 text-sm ml-1">
-              3.2 ( 10 reviews )
+              {calculateRating(product.reviews)} ({product.reviews?.length || 0}{" "}
+              reviews)
             </span>
           </div>
 
-          {/* Botanical Description */}
+          {/* Description */}
           <p className="text-gray-500 text-[13px] leading-relaxed mb-4">
-            In a botanical sense, a fruit is the fleshy or dry ripened ovary of
-            a flowering plant, enclosing the seed or seeds. Apricots, bananas,
-            and grapes, as well as bean pods, corn grains, tomatoes, cucumbers,
-            and (in their shells) acorns and almonds, are all technically
-            fruits.
+            {product.description}
           </p>
 
           {/* Price */}
@@ -137,11 +144,11 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
             <div className="text-sm font-semibold text-gray-800">
               Category:{" "}
               <span className="font-normal text-gray-500 ml-1">
-                fresh-fruits
+                {product.category}
               </span>
             </div>
             <div className="flex gap-2">
-              {["fresh fruits", "fruits", "vegetable"].map((tag) => (
+              {[product.category].map((tag) => (
                 <span
                   key={tag}
                   className="px-3 py-1 bg-[#f9fafb] text-gray-400 text-xs rounded border border-gray-100"
