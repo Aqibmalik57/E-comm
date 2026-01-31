@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllProducts } from "../../store/feature/productSlice";
 import { addToCart } from "../../store/feature/CartSlice";
-import { FaCartPlus, FaStar, FaEye } from "react-icons/fa6";
+import { FaCartPlus, FaStar } from "react-icons/fa6";
+import { IoExpand } from "react-icons/io5";
 import QuickViewModal from "./QuickViewModal";
 import { useNavigate } from "react-router-dom";
 
@@ -111,7 +112,7 @@ const HomePopularProduct = () => {
                     }}
                     className="bg-white text-gray-800 px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors shadow-lg flex items-center space-x-2"
                   >
-                    <FaEye size={16} />
+                    <IoExpand size={16} />
                     <span>Quick View</span>
                   </button>
                 </div>

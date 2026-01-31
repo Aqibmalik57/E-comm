@@ -5,7 +5,8 @@ import { getAllProducts } from "../../store/feature/productSlice";
 import { addToCart } from "../../store/feature/CartSlice";
 import Navbar from "../Navbar/Navbar";
 import CategCard from "./CategCard";
-import { FaCartPlus, FaStar, FaEye } from "react-icons/fa6";
+import { FaCartPlus, FaStar } from "react-icons/fa6";
+import { IoExpand } from "react-icons/io5";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
@@ -39,20 +40,21 @@ const Categ = () => {
   }, []);
 
   useEffect(() => {
+    if (category) {
+      setSelectedCategory(category);
+      setVisibleProducts(6);
+    }
+  }, [category]);
+
+  useEffect(() => {
     dispatch(getAllProducts());
   }, [dispatch]);
 
-  const matchCategorySubstring = (urlCategory, productCategory) => {
-    const lowerUrlCategory = urlCategory.toLowerCase();
-    const lowerProductCategory = productCategory.toLowerCase();
-
-    for (let i = 0; i <= lowerUrlCategory.length - 3; i++) {
-      const substring = lowerUrlCategory.substring(i, i + 3);
-      if (lowerProductCategory.includes(substring)) {
-        return true;
-      }
-    }
-    return false;
+  const matchCategorySubstring = (urlCat, prodCat) => {
+    if (!urlCat || !prodCat) return false;
+    const u = urlCat.toLowerCase();
+    const p = prodCat.toLowerCase();
+    return p.includes(u) || u.includes(p);
   };
 
   const filteredProducts = products?.filter((product) =>
@@ -80,7 +82,7 @@ const Categ = () => {
   };
 
   const handleLoadMore = () => {
-    setVisibleProducts((prevCount) => prevCount + 8); // Increment visible products by 8
+    setVisibleProducts((prevCount) => prevCount + 8);
   };
 
   // Function to get discount based on category
@@ -276,7 +278,7 @@ const Categ = () => {
                         }}
                         className="bg-white text-gray-800 px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors shadow-lg flex items-center space-x-2"
                       >
-                        <FaEye size={16} />
+                        <IoExpand size={16} />
                         <span>Quick View</span>
                       </button>
                     </div>

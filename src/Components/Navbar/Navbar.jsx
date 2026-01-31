@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "./Navbar.css";
 import { FiPhoneCall, FiShoppingCart } from "react-icons/fi";
 import { RxPerson } from "react-icons/rx";
@@ -20,6 +20,7 @@ const Navbar = () => {
   const { user } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
   const categories = [
     { name: "men", path: "/category/men", subcategories: [] },
@@ -123,6 +124,19 @@ const Navbar = () => {
     }
   }, [navigate, isLogout]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const handleLogout = async () => {
     dispatch(logout());
     setIsLogout(true);
@@ -219,6 +233,7 @@ const Navbar = () => {
               </button>
               {isOpen && (
                 <ul
+                  ref={dropdownRef}
                   className="dropdown-list absolute top-[115px] mt-2 rounded-md w-64 bg-white border border-gray-200 shadow-lg z-50 max-h-96 overflow-y-auto"
                   style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                 >
@@ -229,6 +244,7 @@ const Navbar = () => {
                     >
                       <Link
                         to={category.path}
+                        onClick={() => setIsOpen(false)} // Close dropdown on click
                         className="block capitalize font-medium text-gray-800"
                       >
                         {category.name}
@@ -240,8 +256,14 @@ const Navbar = () => {
                               key={subIndex}
                               className="flex items-center text-sm text-gray-600 hover:text-blue-600 py-1"
                             >
-                              <IoIosArrowForward className="mr-1 text-xs" />
-                              <span>{sub}</span>
+                              <Link
+                                to={`/category/${sub.toLowerCase()}`} // Subcategory navigation
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center"
+                              >
+                                <IoIosArrowForward className="mr-1 text-xs" />
+                                <span>{sub}</span>
+                              </Link>
                             </li>
                           ))}
                         </ul>
