@@ -4,3 +4,4 @@
 4: make the coupons to alocate the new uploaded coupon to only users who dont have any coupon in its present record like its all coupons gots expired after he claimed
 5: setted the home sub-category routing to Categ file but still some categories are showing the different products then the category products on next route this can be again tested and fixed after applying the backend of this project
 6: setting the products add to cart buttons to not enable user to add to cart products count exceeds the stock of product
+7: making the bell notifiction icon to work to show the notifictions to user when admin make the new offers

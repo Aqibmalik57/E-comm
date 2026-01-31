@@ -9,6 +9,8 @@ import {
 import { selectCoupon, deselectCoupon } from "../../store/feature/offerSlice";
 import { FaArrowLeft, FaMinus, FaPlus, FaTrash } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
+import { HiTicket } from "react-icons/hi2";
+import { IoMdCheckmarkCircle } from "react-icons/io";
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -181,64 +183,106 @@ const Cart = () => {
             </div>
 
             {/* Coupon and Summary Section - Right Side */}
-            <div className="lg:w-96 ">
-              {/* Coupon Rewards Section */}
-              {claimedCoupons.length > 0 && (
-                <div className="bg-gradient-to-br from-green-50 to-teal-50 p-6 rounded-lg shadow-lg mb-6 border-2 border-green-200">
-                  <h3 className="text-2xl font-bold text-green-800 mb-4 flex items-center">
-                    🎉 Coupon Rewards
-                  </h3>
-                  <p className="text-sm text-green-700 mb-4">
-                    Select coupons to apply to this purchase or save for later.
-                  </p>
-                  <div className="space-y-3">
-                    {claimedCoupons.map((coupon, index) => {
-                      const isSelected = selectedCoupons.includes(coupon.id);
-                      return (
-                        <div
-                          key={index}
-                          className={`bg-white p-4 rounded-lg shadow-md border hover:shadow-lg transition-shadow ${
-                            isSelected
-                              ? "border-green-500 bg-green-50"
-                              : "border-green-200"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center space-x-3">
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={() => {
-                                  if (isSelected) {
-                                    dispatch(deselectCoupon(coupon.id));
-                                  } else {
-                                    dispatch(selectCoupon(coupon.id));
-                                  }
-                                }}
-                                className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
-                              />
-                              <h4 className="font-bold text-green-700 text-lg">
-                                {coupon.name}
-                              </h4>
+            <div className="lg:w-96">
+              {/* Coupon Rewards Section - UI UNCHANGED AS REQUESTED */}
+              {claimedCoupons.filter((c) => {
+                const now = new Date().getTime();
+                // Only show coupons that are currently LIVE
+                return (
+                  now >= new Date(c.startDate).getTime() &&
+                  now <= new Date(c.expirationDate).getTime()
+                );
+              }).length > 0 && (
+                <div className="bg-white border border-gray-200 rounded-xl p-5 mb-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-black text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                      <HiTicket className="text-teal-600 text-lg" /> Available
+                      Vouchers
+                    </h3>
+                    <span className="text-[10px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold">
+                      {/* Updated count to show only valid ones */}
+                      {
+                        claimedCoupons.filter((c) => {
+                          const now = new Date().getTime();
+                          return (
+                            now >= new Date(c.startDate).getTime() &&
+                            now <= new Date(c.expirationDate).getTime()
+                          );
+                        }).length
+                      }{" "}
+                      SAVED
+                    </span>
+                  </div>
+
+                  {/* Horizontal Scroll for Compactness */}
+                  <div className="flex overflow-x-auto gap-3 scrollbar-hide p-1.5">
+                    {claimedCoupons
+                      .filter((c) => {
+                        const now = new Date().getTime();
+                        // Filter out old/expired history items
+                        return (
+                          now >= new Date(c.startDate).getTime() &&
+                          now <= new Date(c.expirationDate).getTime()
+                        );
+                      })
+                      .map((coupon) => {
+                        const isSelected = selectedCoupons.includes(coupon.id);
+                        return (
+                          <div
+                            key={coupon.id}
+                            onClick={() => {
+                              if (isSelected) {
+                                dispatch(deselectCoupon(coupon.id));
+                              } else {
+                                dispatch(selectCoupon(coupon.id));
+                              }
+                            }}
+                            className={`flex-shrink-0 w-64 cursor-pointer relative border-2 rounded-lg p-3 transition-all ${
+                              isSelected
+                                ? "border-teal-500 bg-teal-50/50 shadow-md"
+                                : "border-gray-100 bg-gray-50 hover:border-gray-300"
+                            }`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4
+                                  className={`text-xs font-bold ${isSelected ? "text-teal-700" : "text-gray-700"}`}
+                                >
+                                  {coupon.name}
+                                </h4>
+                                <p className="text-[10px] text-gray-500 mt-1 line-clamp-1">
+                                  {coupon.description}
+                                </p>
+                              </div>
+                              <div
+                                className={`text-xs font-black ${isSelected ? "text-teal-600" : "text-gray-400"}`}
+                              >
+                                {coupon.discountType === "percentage"
+                                  ? `${coupon.discountValue}%`
+                                  : `$${coupon.discountValue}`}
+                              </div>
                             </div>
-                            <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                              {coupon.discountType === "percentage"
-                                ? `${coupon.discountValue}% OFF`
-                                : `$${coupon.discountValue} OFF`}
-                            </span>
+
+                            {isSelected && (
+                              <div className="absolute -top-2 -right-2 bg-teal-500 text-white rounded-full p-0.5 shadow-sm">
+                                <IoMdCheckmarkCircle className="text-sm" />
+                              </div>
+                            )}
+
+                            <div className="mt-2 pt-2 border-t border-dashed border-gray-200 flex justify-between items-center">
+                              <span className="text-[9px] text-gray-400 font-medium">
+                                Exp:{" "}
+                                {new Date(
+                                  coupon.expirationDate,
+                                ).toLocaleDateString()}
+                              </span>
+                              <span className="text-[9px] font-bold text-teal-600">
+                                {isSelected ? "APPLIED" : "TAP TO APPLY"}
+                              </span>
+                            </div>
                           </div>
-                          <p className="text-sm text-gray-600 ml-7">
-                            {coupon.description}
-                          </p>
-                          <p className="text-xs text-gray-500 ml-7 mt-1">
-                            Expires:{" "}
-                            {new Date(
-                              coupon.expirationDate,
-                            ).toLocaleDateString()}
-                          </p>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                   </div>
                 </div>
               )}
