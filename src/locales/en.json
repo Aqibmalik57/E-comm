@@ -1,0 +1,31 @@
+{
+  "navbar": {
+    "available": "We are available 24/7, Need help?",
+    "phone": "+099949343",
+    "aboutUs": "About Us",
+    "contactUs": "Contact Us",
+    "myAccount": "My Account",
+    "login": "Login",
+    "logout": "Logout",
+    "searchPlaceholder": "Search for products (e.g. fish, apple, oil)",
+    "categories": "Categories",
+    "pages": "Pages",
+    "offers": "Offers",
+    "faqs": "FAQS",
+    "privacyPolicy": "Privacy Policy",
+    "termsConditions": "Term & Conditions",
+    "languages": "Languages",
+    "english": "English",
+    "bangla": "Bangla",
+    "arabic": "Arabic"
+  },
+  "home": {
+    "welcome": "Welcome to our store",
+    "shopNow": "Shop Now"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  }
+}

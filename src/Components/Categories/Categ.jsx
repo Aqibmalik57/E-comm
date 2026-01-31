@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { getAllProducts } from "../../store/feature/productSlice";
 import { addToCart } from "../../store/feature/CartSlice";
-import Navbar from "../Navbar/Navbar";
 import CategCard from "./CategCard";
 import { FaCartPlus, FaStar } from "react-icons/fa6";
 import { IoExpand } from "react-icons/io5";
@@ -14,7 +13,6 @@ import "swiper/css/navigation";
 import "./Category.css";
 import ProductContext from "../Context/ProductContext";
 import Product404 from "../../Assets/Images/404 error with person looking for-amico.png";
-import Footer from "../Footer/Footer";
 import QuickViewModal from "../Home/QuickViewModal";
 
 const Categ = () => {
@@ -123,7 +121,6 @@ const Categ = () => {
   return (
     <>
       <div ref={ref} className="bg-[#f9fafb]">
-        <Navbar />
         <CategCard onCategorySelect={handleCategoryClick} />
         <div className="Categ-Carousal w-full flex items-center h-20 mt-9 mb-9">
           <div className="my-swiper-containe w-[93%] mx-11">
@@ -385,8 +382,6 @@ const Categ = () => {
           isOpen={isModalOpen}
           onClose={closeModal}
         />
-
-        <Footer />
       </div>
     </>
   );

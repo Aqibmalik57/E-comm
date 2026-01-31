@@ -1,0 +1,31 @@
+{
+  "navbar": {
+    "available": "نحن متاحون 24/7، هل تحتاج مساعدة؟",
+    "phone": "+099949343",
+    "aboutUs": "معلومات عنا",
+    "contactUs": "اتصل بنا",
+    "myAccount": "حسابي",
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "searchPlaceholder": "البحث عن المنتجات (مثل السمك، التفاح، الزيت)",
+    "categories": "الفئات",
+    "pages": "الصفحات",
+    "offers": "العروض",
+    "faqs": "الأسئلة الشائعة",
+    "privacyPolicy": "سياسة الخصوصية",
+    "termsConditions": "الشروط والأحكام",
+    "languages": "اللغات",
+    "english": "الإنجليزية",
+    "bangla": "البنغالية",
+    "arabic": "العربية"
+  },
+  "home": {
+    "welcome": "مرحبا بك في متجرنا",
+    "shopNow": "تسوق الآن"
+  },
+  "common": {
+    "loading": "جارٍ التحميل...",
+    "error": "خطأ",
+    "success": "نجح"
+  }
+}

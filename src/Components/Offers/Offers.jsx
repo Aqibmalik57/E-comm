@@ -66,7 +66,6 @@ const Offers = () => {
 
   return (
     <div ref={ref}>
-      <Navbar />
       <div className="About-us flex justify-between items-center h-44">
         <img src={Veg1} alt="" />
         <h1 className="text-5xl font-medium">Mega Offer</h1>
@@ -176,7 +175,6 @@ const Offers = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

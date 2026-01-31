@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  deleteUser,
-  fetchUsers,
-  logout,
-} from "../../store/feature/userSlice";
+import { deleteUser, fetchUsers, logout } from "../../store/feature/userSlice";
 import logo from "../../Assets/Images/logo-color_el4zmy.svg";
 import { FaHeart } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
@@ -52,7 +48,7 @@ const AdminDashboard = () => {
               </a>
             </li>
             <li>
-              <Link to="/home" className="text-gray-700 hover:text-[#10b981]">
+              <Link to="/" className="text-gray-700 hover:text-[#10b981]">
                 Home
               </Link>
             </li>

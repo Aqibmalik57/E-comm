@@ -1,4 +1,19 @@
-# TODO for Offers Component Update
+# Multilingual Implementation Plan
 
-- [ ] Add additional inactive offers to src/store/feature/offerSlice.js
-- [ ] Update src/Components/Offers/Offers.jsx to display all offers (active and inactive) with HomeOffer-like styling
+## Phase 1: Core Setup
+
+- [ ] Create locales directory and translation files (en.json, bn.json, ar.json)
+- [ ] Initialize i18n in index.js
+- [ ] Make navbar language selector functional
+
+## Phase 2: Component Updates
+
+- [ ] Update Navbar component to use translations
+- [ ] Update Home component
+- [ ] Update other key components (About, Contact, etc.)
+
+## Phase 3: Testing and Refinement
+
+- [ ] Test language switching
+- [ ] Handle RTL for Arabic
+- [ ] Update remaining components

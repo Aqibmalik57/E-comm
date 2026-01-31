@@ -72,7 +72,7 @@ const Profile = () => {
     <div className="min-h-screen flex items-center justify-center bg-white">
       <FaArrowLeft
         className="absolute top-5 left-5 text-2xl text-[#10b981] cursor-pointer"
-        onClick={() => navigate("/home")}
+        onClick={() => navigate("/")}
       />
       <div className="bg-gray-50 p-10 rounded-lg shadow-xl w-full max-w-lg">
         <h2 className="text-3xl font-bold mb-8 text-center text-[#10b981]">

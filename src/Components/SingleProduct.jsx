@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   getSingleProduct,
   getAllProducts,
 } from "../store/feature/productSlice";
 import { addToCart } from "../store/feature/CartSlice";
-import Navbar from "./Navbar/Navbar";
-import Footer from "./Footer/Footer";
 import {
   FaStar,
   FaMinus,
@@ -64,8 +62,6 @@ const SingleProduct = () => {
 
   return (
     <div className="bg-[#fcfcfd] min-h-screen font-sans antialiased text-gray-900">
-      <Navbar />
-
       <main className="max-w-[1400px] mx-auto px-4 md:px-12 py-6">
         {/* Breadcrumb - Minimalist */}
         <nav className="flex items-center gap-2 text-[11px] uppercase tracking-[2px] text-gray-400 mb-6">
@@ -337,8 +333,6 @@ const SingleProduct = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };
