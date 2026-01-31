@@ -22,6 +22,7 @@ import Category from "./Components/Categories/Categ.jsx";
 import Add from "./Components/Add.jsx";
 import AddCart from "./Components/Cart/Cart.jsx";
 import SingleProduct from "./Components/SingleProduct.jsx";
+import Offers from "./Components/Offers/Offers.jsx";
 // import Navbar from './Components/Navbar/Navbar.jsx';
 
 function App() {
@@ -65,6 +66,7 @@ function App() {
           <Route path="/reset/:token" element={<ResetPassword />} />
           {user && <Route path="/add" element={<Add />} />}
           {user && <Route path="/product/:id" element={<SingleProduct />} />}
+          {user && <Route path="/offers" element={<Offers />} />}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

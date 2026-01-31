@@ -1,4 +1,4 @@
-- [x] Make subcategories clickable in CategoryProduct.jsx by wrapping each subcategory <p> with Link to /category/{subcategory}
-- [x] Make subcategories clickable in Navbar.jsx dropdown by wrapping <span>{sub}</span> with Link to /category/{sub}
-- [x] Fix layout and design of CategoryProduct.jsx to match original
-- [x] Make navbar dropdown close when clicking outside
+# TODO for Offers Component Update
+
+- [ ] Add additional inactive offers to src/store/feature/offerSlice.js
+- [ ] Update src/Components/Offers/Offers.jsx to display all offers (active and inactive) with HomeOffer-like styling

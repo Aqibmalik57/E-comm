@@ -1,0 +1,139 @@
+.premium-ticket {
+  display: flex;
+  background: white;
+  height: 110px;
+  border-radius: 16px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #f1f5f9;
+}
+
+.premium-ticket:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(79, 70, 229, 0.12);
+  border-color: #e0e7ff;
+}
+
+/* Left Section */
+.ticket-value {
+  width: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px 0 0 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.value-glare {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    transparent 50%
+  );
+}
+
+/* Info Section */
+.ticket-info {
+  flex: 1;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.status-pill-lite {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.status-pill-lite.live {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+.status-pill-lite.upcoming {
+  background: #fef3c7;
+  color: #b45309;
+}
+.status-pill-lite.expired {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Tear Effect */
+.ticket-tear {
+  width: 20px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ticket-tear::after {
+  content: "";
+  height: 60%;
+  border-left: 2px dashed #f1f5f9;
+}
+
+.notch {
+  width: 20px;
+  height: 20px;
+  background: #f8fafc; /* Change this to match your site's section background */
+  border: 1px solid #f1f5f9;
+  position: absolute;
+  left: 0;
+  border-radius: 50%;
+}
+.notch.top {
+  top: -11px;
+  box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.02);
+}
+.notch.bottom {
+  bottom: -11px;
+  box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.02);
+}
+
+/* Right Section */
+.ticket-action {
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.claim-btn-premium {
+  background: #4f46e5;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 10px 14px;
+  border-radius: 10px;
+  width: 100%;
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+}
+
+.claim-btn-premium:hover {
+  background: #4338ca;
+  transform: scale(1.05);
+}
+
+.ticket-disabled {
+  opacity: 0.7;
+}
+
+.status-badge {
+  text-align: center;
+}

@@ -336,7 +336,10 @@ const Categ = () => {
                       {/* Add to Cart Button */}
                       <button
                         className="bg-gradient-to-r from-green-500 to-green-600 text-white p-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => handleAddToCart(items._id, 1)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(items._id, 1);
+                        }}
                         disabled={items.stock <= 0}
                         aria-label={`Add ${items.title} to cart`}
                       >

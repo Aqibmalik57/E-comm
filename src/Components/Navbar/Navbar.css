@@ -1,100 +1,132 @@
 body {
-    scroll-behavior: smooth;
+  scroll-behavior: smooth;
 }
 
 .starter-nav {
-    background-color: #f3f4f6;
+  background-color: #f3f4f6;
 }
 
 .starter-nav ul li:hover {
-    color: #0da371;
+  color: #0da371;
 }
 
 .Search-nav {
-    background-color: #10b981;
+  background-color: #10b981;
 }
 
 .Iosearch {
-    color: #a3adbf;
+  color: #a3adbf;
 }
 
 .footer-nav #Languages {
-    outline: none;
+  outline: none;
 }
 
 .footer-nav li:hover {
-    color: #0da371;
+  color: #0da371;
 }
 
 .footer-nav select {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    width: 115px;
-    padding: 10px;
-    text-transform: uppercase;
-    font-size: 14px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 115px;
+  padding: 10px;
+  text-transform: uppercase;
+  font-size: 14px;
 }
 
 .footer-nav select option {
-    background-color: #f3f4f6;
+  background-color: #f3f4f6;
 }
 
 @keyframes spinner-grow {
-    0% {
-        transform: scale(0.1);
-        opacity: 0.7;
-        border-width: 0.1rem;
-    }
+  0% {
+    transform: scale(0.1);
+    opacity: 0.7;
+    border-width: 0.1rem;
+  }
 
-    30%{
-        transform: scale(1);
-        opacity: 0.8;
-        border-width: 0.2rem;
-    }
+  30% {
+    transform: scale(1);
+    opacity: 0.8;
+    border-width: 0.2rem;
+  }
 
-    50% {
-        transform: scale(1);
-        opacity: 1;
-        border-width: 0.3rem;
-    }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+    border-width: 0.3rem;
+  }
 
-    80% {
-        transform: scale(0.1);
-        opacity: 0;
-        border-width: 0.1rem;
-    }
+  80% {
+    transform: scale(0.1);
+    opacity: 0;
+    border-width: 0.1rem;
+  }
 
-    100% {
-        transform: scale(0.1);
-        opacity: 0;
-        border-width: 0.1rem;
-    }
+  100% {
+    transform: scale(0.1);
+    opacity: 0;
+    border-width: 0.1rem;
+  }
 }
 
 .heartbeat {
-    display: inline-block;
-    width: 0.800rem;
-    height: 0.800rem;
-    border-radius: 50%;
-    background-color: transparent;
-    border: 0px solid rgba(220, 53, 69, 0.2);
-    animation: spinner-grow 2s ease-in-out infinite;
+  display: inline-block;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background-color: transparent;
+  border: 0px solid rgba(220, 53, 69, 0.2);
+  animation: spinner-grow 2s ease-in-out infinite;
 }
 
 .Second-nav {
-    transition: all 0.3s ease-in-out;
-    background-color: #fff; /* To avoid a transparent background during scroll */
+  transition: all 0.3s ease-in-out;
+  background-color: #fff; /* To avoid a transparent background during scroll */
 }
 
 .fixed-placeholder {
-    height: 0;
-    visibility: hidden;
+  height: 0;
+  visibility: hidden;
 }
 
 .Second-nav.fixed + .fixed-placeholder {
-    height: 80px; /* Height of your navbar when fixed */
-    visibility: visible;
+  height: 80px; /* Height of your navbar when fixed */
+  visibility: visible;
 }
 
 /* No other changes to your CSS are necessary unless you want smoother effects elsewhere */
+
+/* Red Ping Effect for Nav */
+.ping-node-red {
+  height: 8px;
+  width: 8px;
+  background-color: #dc2626;
+  border-radius: 50%;
+  position: relative;
+  display: block;
+}
+
+.ping-node-red::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #dc2626;
+  border-radius: 50%;
+  z-index: 1;
+  /* The flashy radar animation */
+  animation: ping-red 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes ping-red {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}

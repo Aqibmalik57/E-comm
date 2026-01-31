@@ -145,12 +145,12 @@ const Navbar = () => {
   return (
     <div className="Navbar">
       <div className="starter-nav h-8 flex justify-between items-center">
-        <p className="flex items-center text-xs ms-11 text-neutral-700">
+        <p className="flex items-center text-xs ms-11 font-semibold text-neutral-700">
           <FiPhoneCall className="h-8" />
           &nbsp;&nbsp; We are available 24/7, Need help?&nbsp;
           <p className="text-green-500 font-bold">+099949343</p>
         </p>
-        <ul className="flex justify-evenly text-xs text-neutral-700 me-11">
+        <ul className="flex justify-evenly text-xs font-semibold text-neutral-700 me-11">
           <li className="border-r-2 w-20 border-neutral-500 text-center">
             <Link to="/about">About Us</Link>
           </li>
@@ -324,11 +324,12 @@ const Navbar = () => {
                 </ul>
               )}
             </li>
-            <li className="relative text-red-600 bg-red-100 mt-1 font-medium px-2 rounded-md">
+            <li className="relative text-red-600 bg-red-100 mt-1 font-medium px-3 py-0.5 rounded-md transition-all">
               <Link to="/offers">Offers</Link>
-              <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4">
-                <span className="absolute inline-flex items-center justify-center w-2 h-2 text-xxs font-bold text-white bg-red-600 rounded-full transform translate-x-[7px] -translate-y-[7px]"></span>
-                <span className="absolute top-[-5.6px] right-[-5.5px] w-7 h-7 border-2 border-red-600 rounded-full heartbeat"></span>
+
+              {/* The Ping Effect */}
+              <span className="absolute -top-0.5 -right-1.5 flex h-3 w-3">
+                <span className="ping-node-red"></span>
               </span>
             </li>
           </ul>
