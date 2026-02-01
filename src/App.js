@@ -36,8 +36,19 @@ import { useEffect } from "react";
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children }) => {
-  const { isLoggedIn } = useSelector((state) => state.user);
-  return isLoggedIn ? children : <Navigate to="/login" />;
+  const { isLoggedIn, loading } = useSelector((state) => state.user);
+
+  // While checking if the user is logged in (on refresh), show nothing.
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading...
+      </div>
+    );
+  }
+
+  // Use 'replace' to prevent the user from clicking 'back' into a protected route
+  return isLoggedIn ? children : <Navigate to="/login" replace />;
 };
 
 const LayoutWrapper = ({ children }) => {

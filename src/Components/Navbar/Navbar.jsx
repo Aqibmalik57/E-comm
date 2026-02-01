@@ -7,7 +7,7 @@ import { IoIosArrowDown, IoIosSearch } from "react-icons/io";
 import { FaRegBell } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../../store/feature/userSlice";
+import { clearUserState, logout } from "../../store/feature/userSlice";
 import { fetchCart } from "../../store/feature/CartSlice";
 import { useTranslation } from "react-i18next";
 
@@ -111,10 +111,6 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    if (isLogout) navigate("/");
-  }, [navigate, isLogout]);
-
-  useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target))
         setIsOpen(false);
@@ -127,9 +123,22 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    setIsLogout(true);
+  const handleLogout = async () => {
+    try {
+      // This waits for the server to clear the cookie/session
+      await dispatch(logout()).unwrap();
+
+      // This wipes the Redux state completely
+      dispatch(clearUserState());
+
+      // Navigate immediately to home or login
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Even if server fails, clear local state for safety
+      dispatch(clearUserState());
+      navigate("/login", { replace: true });
+    }
   };
 
   return (

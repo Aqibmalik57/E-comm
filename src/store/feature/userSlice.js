@@ -59,7 +59,7 @@ export const MyProfile = createAsyncThunk(
       toast.success(response.data.message);
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message);
+      console.log(error.response?.data?.message);
       return rejectWithValue(
         error.response?.data?.message || "An unknown error occurred",
       );
@@ -308,7 +308,18 @@ const initialState = {
 const userSlice = createSlice({
   name: "user",
   initialState,
-  reducers: {},
+  reducers: {
+    clearErrors: (state) => {
+      state.error = null;
+    },
+    clearUserState: (state) => {
+      state.user = null;
+      state.isLoggedIn = false;
+      state.error = null;
+      state.message = "";
+      state.loading = false;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Signup cases
@@ -525,4 +536,5 @@ const userSlice = createSlice({
   },
 });
 
+export const { clearErrors, clearUserState } = userSlice.actions;
 export default userSlice.reducer;
