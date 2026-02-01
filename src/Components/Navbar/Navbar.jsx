@@ -18,8 +18,6 @@ const Navbar = () => {
   const [isPagesOpen, setIsPagesOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [navbarHeight, setNavbarHeight] = useState(0);
-  const [isLogout, setIsLogout] = useState(false);
-
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const { user } = useSelector((state) => state.user);
   const { items } = useSelector((state) => state.cart);
