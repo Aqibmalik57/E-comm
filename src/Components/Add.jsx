@@ -8,7 +8,7 @@ const Add = () => {
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState("");
   const [stock, setStock] = useState(""); // New state for stock
-  const [file, setFile] = useState(""); 
+  const [file, setFile] = useState("");
   const [imagePreview, setImagePreview] = useState("");
 
   const addProduct = async (e) => {
@@ -32,14 +32,18 @@ const Add = () => {
             "Content-Type": "application/json",
           },
           withCredentials: true, // Send cookies with the request
-        }
+        },
       );
 
       // Display success message from backend
       toast.success(result.data.message || "Product added successfully!");
     } catch (error) {
       // Check if error has a response and display the error message from backend
-      if (error.response && error.response.data && error.response.data.message) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
         toast.error(error.response.data.message);
       } else {
         toast.error("An error occurred while adding the product.");
@@ -64,7 +68,9 @@ const Add = () => {
   return (
     <div className="bg-[#f9fafb] min-h-screen flex items-center justify-center">
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
-        <h1 className="text-3xl font-bold text-center mb-8 text-[#10b981]">Add Product</h1>
+        <h1 className="text-3xl font-bold text-center mb-8 text-[#10b981]">
+          Add Product
+        </h1>
         <form onSubmit={addProduct} className="space-y-6">
           <div>
             <label className="block text-gray-700">Title:</label>
@@ -134,7 +140,11 @@ const Add = () => {
           {/* Image preview */}
           {imagePreview && (
             <div className="mt-4">
-              <img src={imagePreview} alt="Preview" className="w-48 mx-auto rounded-md" />
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-48 mx-auto rounded-md"
+              />
             </div>
           )}
 

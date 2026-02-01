@@ -3,16 +3,16 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { fetchCart } from "./CartSlice";
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 // Signup thunk
 export const signup = createAsyncThunk(
   "user/signup",
   async (info, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/v2/signup",
-        info,
-        { withCredentials: true },
-      );
+      const response = await axios.post(`${API_URL}/signup`, info, {
+        withCredentials: true,
+      });
       toast.success(response.data.message);
       return response.data;
     } catch (error) {
@@ -29,14 +29,11 @@ export const login = createAsyncThunk(
   "user/login",
   async (info, { rejectWithValue, dispatch }) => {
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/v2/login",
-        info,
-        { withCredentials: true },
-      );
+      const response = await axios.post(`${API_URL}/login`, info, {
+        withCredentials: true,
+      });
       toast.success(response.data.message);
       dispatch(fetchCart(response.data.user._id));
-
       return response.data.user;
     } catch (error) {
       toast.error(error.response?.data?.message);
@@ -52,14 +49,11 @@ export const MyProfile = createAsyncThunk(
   "user/myprofile",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/v2/myprofile",
-        { withCredentials: true },
-      );
-      toast.success(response.data.message);
+      const response = await axios.get(`${API_URL}/myprofile`, {
+        withCredentials: true,
+      });
       return response.data;
     } catch (error) {
-      console.log(error.response?.data?.message);
       return rejectWithValue(
         error.response?.data?.message || "An unknown error occurred",
       );
@@ -72,11 +66,9 @@ export const updateProfile = createAsyncThunk(
   "user/updateProfile",
   async (info, { rejectWithValue }) => {
     try {
-      const response = await axios.put(
-        "http://localhost:5000/api/v2/updateprofile",
-        info,
-        { withCredentials: true },
-      );
+      const response = await axios.put(`${API_URL}/updateprofile`, info, {
+        withCredentials: true,
+      });
       toast.success(response.data.message);
       return response.data;
     } catch (error) {
@@ -94,7 +86,7 @@ export const logout = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/v2/logout",
+        `${API_URL}/logout`,
         {},
         {
           withCredentials: true,
@@ -109,13 +101,13 @@ export const logout = createAsyncThunk(
   },
 );
 
-// Thunk to update user role
+// Update user role thunk
 export const updateUserRole = createAsyncThunk(
   "user/updateUserRole",
   async ({ userId, role }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/v2/updateRole/${userId}`,
+        `${API_URL}/updateRole/${userId}`,
         { role },
         { withCredentials: true },
       );
@@ -123,9 +115,7 @@ export const updateUserRole = createAsyncThunk(
       return response.data;
     } catch (error) {
       toast.error(error.response?.data?.message);
-      return rejectWithValue(
-        error.response?.data || { message: "Something went wrong!" },
-      );
+      return rejectWithValue(error.response?.data || "Something went wrong!");
     }
   },
 );
@@ -135,11 +125,9 @@ export const fetchUsers = createAsyncThunk(
   "user/fetchUsers",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/v2/allUsers",
-        { withCredentials: true },
-      );
-      toast.success(response.data.message);
+      const response = await axios.get(`${API_URL}/allUsers`, {
+        withCredentials: true,
+      });
       return response.data.users;
     } catch (error) {
       toast.error(error.response?.data?.message);
@@ -155,18 +143,13 @@ export const fetchSingleUser = createAsyncThunk(
   "user/fetchSingleUser",
   async (userId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/api/v2/singleuser/${userId}`,
-        { withCredentials: true },
-      );
-      toast.success(response.data.message);
+      const response = await axios.get(`${API_URL}/singleuser/${userId}`, {
+        withCredentials: true,
+      });
       return response.data.user;
     } catch (error) {
       toast.error(error.response?.data?.message);
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "User not found or an unknown error occurred",
-      );
+      return rejectWithValue(error.response?.data?.message || "User not found");
     }
   },
 );
@@ -176,29 +159,25 @@ export const updatePassword = createAsyncThunk(
   "user/updatePassword",
   async (info, { rejectWithValue }) => {
     try {
-      const response = await axios.put(
-        "http://localhost:5000/api/v2/updatePass",
-        info,
-        { withCredentials: true },
-      );
+      const response = await axios.put(`${API_URL}/updatePass`, info, {
+        withCredentials: true,
+      });
       toast.success(response.data.message);
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "An unknown error occurred");
-      return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred",
-      );
+      toast.error(error.response?.data?.message);
+      return rejectWithValue(error.response?.data?.message);
     }
   },
 );
 
-// edit user profile by Admin thunk
+// Edit user profile by Admin thunk
 export const editUserProfile = createAsyncThunk(
   "user/editProfile",
   async (info, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/v2/updateUserProfile/${info.id}`,
+        `${API_URL}/updateUserProfile/${info.id}`,
         info,
         { withCredentials: true },
       );
@@ -206,9 +185,7 @@ export const editUserProfile = createAsyncThunk(
       return response.data;
     } catch (error) {
       toast.error(error.response?.data?.message);
-      return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred",
-      );
+      return rejectWithValue(error.response?.data?.message);
     }
   },
 );
@@ -218,17 +195,14 @@ export const deleteOwnProfile = createAsyncThunk(
   "user/deleteProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(
-        "http://localhost:5000/api/v2/deleteProfile",
-        { withCredentials: true },
-      );
+      const response = await axios.delete(`${API_URL}/deleteProfile`, {
+        withCredentials: true,
+      });
       toast.success(response.data.message);
       return response.data;
     } catch (error) {
       toast.error(error.response?.data?.message);
-      return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred",
-      );
+      return rejectWithValue(error.response?.data?.message);
     }
   },
 );
@@ -238,30 +212,24 @@ export const deleteUser = createAsyncThunk(
   "user/deleteUser",
   async (userId, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(
-        `http://localhost:5000/api/v2/deleteUser/${userId}`,
-        { withCredentials: true },
-      );
+      const response = await axios.delete(`${API_URL}/deleteUser/${userId}`, {
+        withCredentials: true,
+      });
       toast.success(response.data.message);
       return response.data;
     } catch (error) {
       toast.error(error.response?.data?.message);
-      return rejectWithValue(
-        error.response?.data?.message || "An unknown error occurred",
-      );
+      return rejectWithValue(error.response?.data?.message);
     }
   },
 );
 
-// Thunk for Forgot Password
+// Forgot Password
 export const forgotPassword = createAsyncThunk(
   "user/forgotPassword",
   async ({ email }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/v2/forgotPassword",
-        { email },
-      );
+      const response = await axios.post(`${API_URL}/forgotPassword`, { email });
       toast.success(response.data.message);
       return response.data;
     } catch (error) {
@@ -272,18 +240,15 @@ export const forgotPassword = createAsyncThunk(
   },
 );
 
-// Create AsyncThunk for reset password
+// Reset Password
 export const resetPassword = createAsyncThunk(
   "user/resetPassword",
   async ({ token, newPassword, confirmPassword }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
-        `http://localhost:5000/api/v2/resetPassword/${token}`,
-        {
-          newPassword,
-          confirmPassword,
-        },
-      );
+      const response = await axios.post(`${API_URL}/resetPassword/${token}`, {
+        newPassword,
+        confirmPassword,
+      });
       toast.success(response.data.message);
       return response.data;
     } catch (error) {
