@@ -17,26 +17,21 @@ const UpdatePassword = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  
+
     const info = {
       oldPassword,
       Password: password,
       ConfirmPassword: confirmPassword,
     };
-  
+
     dispatch(updatePassword(info)).then(() => {
       dispatch(MyProfile());
     });
   };
-  
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-white">
-      <FaArrowLeft
-        className="absolute top-5 left-5 text-2xl text-[#10b981] cursor-pointer"
-        onClick={() => navigate(-1)}
-      />
-      <div className="w-1/2 max-w-md mx-auto p-6 bg-gray-50 rounded-lg shadow-lg">
+    <div className="flex items-center justify-center min-h-max bg-gray-100 py-10">
+      <div className="w-1/2 max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
         <h2 className="text-2xl font-semibold text-[#10b981] mb-6 text-center">
           Update Password
         </h2>

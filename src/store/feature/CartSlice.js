@@ -2,16 +2,16 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_URL = "/api/v2";
+const API_URL = "http://localhost:5000/api/v2";
 
 // Async thunk to fetch cart data
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
   async (userId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000${API_URL}/cart/${userId}`,
-      );
+      const response = await axios.get(`${API_URL}/cart/${userId}`, {
+        withCredentials: true,
+      });
       return response.data.cart; // Assuming response.data.cart contains the cart items
     } catch (error) {
       toast.error(error.response.data.message || "Failed to fetch cart data");
@@ -26,10 +26,15 @@ export const addToCart = createAsyncThunk(
   async ({ userId, productId, quantity }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000${API_URL}/add-to-cart`,
-        { userId, productId, quantity },
+        `${API_URL}/add-to-cart`,
+        {
+          userId,
+          productId,
+          quantity,
+        },
+        { withCredentials: true },
       );
-      toast.success("Item added to cart successfully");
+      toast.success("Product added to cart");
       return response.data.cart;
     } catch (error) {
       toast.error(error.response.data.message || "Failed to add to cart");
@@ -44,7 +49,7 @@ export const increaseCartQuantity = createAsyncThunk(
   async ({ userId, productId }, { rejectWithValue, dispatch }) => {
     try {
       const response = await axios.put(
-        `http://localhost:5000${API_URL}/increase-quantity`,
+        `${API_URL}/increase-quantity`,
         { userId, productId },
         { withCredentials: true },
       );
@@ -65,7 +70,7 @@ export const decreaseCartQuantity = createAsyncThunk(
   async ({ userId, productId }, { rejectWithValue, dispatch }) => {
     try {
       const response = await axios.put(
-        `http://localhost:5000${API_URL}/decrease-quantity`,
+        `${API_URL}/decrease-quantity`,
         { userId, productId },
         { withCredentials: true },
       );
@@ -83,9 +88,10 @@ export const removeFromCart = createAsyncThunk(
   "cart/removeFromCart",
   async ({ userId, productId }) => {
     const response = await axios.delete(
-      `http://localhost:5000${API_URL}/remove/${userId}/${productId}`,
+      `${API_URL}/remove/${userId}/${productId}`,
+      { withCredentials: true },
     );
-    return response.data; // Returns the updated cart
+    return response.data;
   },
 );
 

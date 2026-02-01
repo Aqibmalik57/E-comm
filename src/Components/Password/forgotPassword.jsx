@@ -10,21 +10,19 @@ const ForgotPassword = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loading , error } = useSelector((state) => state.user);
+  const { loading, error } = useSelector((state) => state.user);
 
   const handleForgotPassword = (e) => {
     e.preventDefault();
     dispatch(forgotPassword({ email }));
 
-    setMessage("Your reset password link has been sent. Please check your inbox.");
+    setMessage(
+      "Your reset password link has been sent. Please check your inbox.",
+    );
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <FaArrowLeft
-        className="absolute top-5 left-5 text-2xl text-[#10b981] cursor-pointer"
-        onClick={() => navigate(-1)}
-      />
+    <div className="min-h-max flex items-center justify-center bg-gray-100 py-10">
       <div className="bg-white p-10 rounded-lg shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-center text-[#10b981]">
           Forgot Password

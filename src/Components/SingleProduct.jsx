@@ -16,6 +16,7 @@ import {
   FaLeaf,
 } from "react-icons/fa";
 import { HiOutlineShoppingBag } from "react-icons/hi";
+import { toast } from "react-toastify";
 
 const SingleProduct = () => {
   const { id } = useParams();
@@ -31,11 +32,22 @@ const SingleProduct = () => {
     dispatch(getAllProducts());
   }, [dispatch, id]);
 
-  const handleAddToCart = () => {
-    if (user && product) {
-      dispatch(
-        addToCart({ userId: user._id, productId: product._id, quantity }),
-      );
+  const handleAddToCart = async () => {
+    try {
+      if (user && product) {
+        await dispatch(
+          addToCart({ userId: user?._id, productId: product._id, quantity }),
+        ).unwrap();
+      } else if (!user) {
+        toast.warn("Please login to add items to cart");
+      }
+    } catch (backendError) {
+      const errorMessage =
+        typeof backendError === "string"
+          ? backendError
+          : backendError?.message || "Failed to add to cart";
+
+      toast.error(errorMessage);
     }
   };
 

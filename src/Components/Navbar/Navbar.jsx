@@ -149,7 +149,9 @@ const Navbar = () => {
             <Link to="/contact">{t("navbar.contactUs")}</Link>
           </li>
           <li className="border-r-2 w-20 border-neutral-500 text-center">
-            <Link to="/profile">{t("navbar.myAccount")}</Link>
+            <Link to={isLoggedIn ? "/profile" : "/login"}>
+              {t("navbar.myAccount")}
+            </Link>
           </li>
           <li className="w-16 flex justify-center">
             {!user ? (
@@ -195,14 +197,16 @@ const Navbar = () => {
             <FaRegBell />
             <div
               className="relative inline-block cursor-pointer"
-              onClick={() => navigate("/cart/add")}
+              onClick={() => navigate("/cart")}
             >
               <FiShoppingCart className="text-2xl" />
-              <span className="absolute top-[-5px] right-[-15px] inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full">
-                {totalQuantity}
-              </span>
+              {user ? (
+                <span className="absolute top-[-5px] right-[-15px] inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full">
+                  {totalQuantity}
+                </span>
+              ) : null}
             </div>
-            <Link to="/profile">
+            <Link to={isLoggedIn ? "/profile" : "/login"}>
               <RxPerson />
             </Link>
           </div>
@@ -277,7 +281,7 @@ const Navbar = () => {
                           onClick={() => setIsPagesOpen(false)}
                           className="block capitalize text-gray-800"
                         >
-                          {t(`navbar.${page.replace("-", "")}`)}
+                          {t(`${page.replace("-", "")}`)}
                         </Link>
                       </li>
                     ),

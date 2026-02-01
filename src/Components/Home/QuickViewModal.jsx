@@ -10,7 +10,8 @@ import {
   FaEye,
   FaHeadset,
 } from "react-icons/fa";
-import { HiOutlineShoppingBag } from "react-icons/hi"; // Closer to the image icon
+import { HiOutlineShoppingBag } from "react-icons/hi";
+import { toast } from "react-toastify";
 
 const QuickViewModal = ({ product, isOpen, onClose }) => {
   const dispatch = useDispatch();
@@ -26,12 +27,14 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
     return (total / reviews.length).toFixed(1);
   };
 
-  const handleAddToCart = () => {
-    if (user) {
-      dispatch(
-        addToCart({ userId: user._id, productId: product._id, quantity }),
-      );
-      onClose();
+  const handleAddToCart = async () => {
+    try {
+      // Send request even if user is null to let backend handle the error message
+      await dispatch(
+        addToCart({ userId: user?._id, productId: product._id, quantity }),
+      ).unwrap();
+    } catch (backendError) {
+      toast.error(backendError || "Failed to add to cart");
     }
   };
 
@@ -40,9 +43,9 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 text-left">
       <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full relative overflow-hidden flex flex-col md:flex-row p-8 gap-8">
-        {/* Close Button - Exact Red Square from Image */}
+        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 bg-[#ff4b4b] text-white p-2 rounded-lg hover:bg-red-600 transition-colors z-10"
@@ -102,7 +105,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
           </div>
 
           {/* Quantity and Action Buttons Row */}
-          <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-6 w-full">
             <div className="flex items-center border border-gray-200 rounded-md h-12">
               <button
                 onClick={decrementQuantity}
@@ -148,14 +151,9 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
               </span>
             </div>
             <div className="flex gap-2">
-              {[product.category].map((tag) => (
-                <span
-                  key={tag}
-                  className="px-3 py-1 bg-[#f9fafb] text-gray-400 text-xs rounded border border-gray-100"
-                >
-                  {tag}
-                </span>
-              ))}
+              <span className="px-3 py-1 bg-[#f9fafb] text-gray-400 text-xs rounded border border-gray-100">
+                {product.category}
+              </span>
             </div>
           </div>
 

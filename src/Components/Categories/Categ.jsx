@@ -14,6 +14,7 @@ import "./Category.css";
 import ProductContext from "../Context/ProductContext";
 import Product404 from "../../Assets/Images/404 error with person looking for-amico.png";
 import QuickViewModal from "../Home/QuickViewModal";
+import { toast } from "react-toastify";
 
 const Categ = () => {
   const { category } = useParams();
@@ -97,9 +98,15 @@ const Categ = () => {
     return discountMap[category.toLowerCase()] || 0;
   };
 
-  const handleAddToCart = (productId, quantity = 1) => {
-    const userId = user._id;
-    dispatch(addToCart({ userId, productId, quantity }));
+  const handleAddToCart = async (productId, quantity = 1) => {
+    try {
+      // Pass user?._id. If user is null, backend receives undefined and triggers its "not logged in" logic
+      const userId = user?._id;
+      await dispatch(addToCart({ userId, productId, quantity })).unwrap();
+    } catch (backendError) {
+      // Displays the specific error message sent from your API
+      toast.error(backendError || "Something went wrong");
+    }
   };
 
   const handleQuickView = (product) => {
@@ -120,7 +127,7 @@ const Categ = () => {
 
   return (
     <>
-      <div ref={ref} className="bg-[#f9fafb]">
+      <div ref={ref} className="bg-[#f9fafb] pb-10">
         <CategCard onCategorySelect={handleCategoryClick} />
         <div className="Categ-Carousal w-full flex items-center h-20 mt-9 mb-9">
           <div className="my-swiper-containe w-[93%] mx-11">
@@ -366,7 +373,7 @@ const Categ = () => {
         </div>
 
         {visibleProducts < sortedProducts?.length && (
-          <div className="flex justify-center mb-10">
+          <div className="flex justify-center">
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded-md"
               onClick={handleLoadMore}

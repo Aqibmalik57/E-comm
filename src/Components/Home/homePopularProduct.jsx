@@ -6,6 +6,7 @@ import { FaCartPlus, FaStar } from "react-icons/fa6";
 import { IoExpand } from "react-icons/io5";
 import QuickViewModal from "./QuickViewModal";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const HomePopularProduct = () => {
   const dispatch = useDispatch();
@@ -34,9 +35,15 @@ const HomePopularProduct = () => {
     dispatch(getAllProducts());
   }, [dispatch]);
 
-  const handleAddToCart = (productId, quantity = 1) => {
-    const userId = user._id;
-    dispatch(addToCart({ userId, productId, quantity }));
+  const handleAddToCart = async (productId, quantity = 1) => {
+    try {
+      // Pass user?._id. If user is null, backend receives undefined and triggers its "not logged in" logic
+      const userId = user?._id;
+      await dispatch(addToCart({ userId, productId, quantity })).unwrap();
+    } catch (backendError) {
+      // Displays the specific error message sent from your API
+      toast.error(backendError || "Something went wrong");
+    }
   };
 
   const handleQuickView = (product) => {
@@ -75,19 +82,8 @@ const HomePopularProduct = () => {
             <div
               key={item._id}
               onClick={() => navigate(`/product/${item._id}`)}
-              className="items-card w-[240px] bg-white p-4 rounded-xl relative group hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-gray-100 overflow-hidden"
+              className="items-card w-[240px] bg-white p-4 rounded-xl relative group hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-gray-100 overflow-hidden cursor-pointer"
             >
-              {/* Stock Badge
-              <div
-                className={`absolute top-3 left-3 px-3 py-1 text-xs font-semibold text-white rounded-full z-10 shadow-md ${
-                  item.stock > 0
-                    ? "bg-gradient-to-r from-green-500 to-green-600"
-                    : "bg-gradient-to-r from-red-500 to-red-600"
-                }`}
-              >
-                {item.stock > 0 ? `Stock: ${item.stock}` : "Out of Stock"}
-              </div> */}
-
               {/* Image Container */}
               <div className="relative mb-4 overflow-hidden rounded-lg">
                 <img
@@ -117,8 +113,9 @@ const HomePopularProduct = () => {
                   </button>
                 </div>
               </div>
+
               {/* Product Info */}
-              <div className="space-y-2">
+              <div className="space-y-2 text-left">
                 <h1 className="text-sm font-semibold text-gray-800 line-clamp-2 leading-tight">
                   {item.title}
                 </h1>
@@ -139,8 +136,8 @@ const HomePopularProduct = () => {
                     ))}
                   </div>
                   <span className="text-xs text-gray-500">
-                    {calculateRating(item.reviews)} ({item.reviews?.length || 0}{" "}
-                    reviews)
+                    {calculateRating(item.reviews)} ({item.reviews?.length || 0}
+                    )
                   </span>
                 </div>
 
