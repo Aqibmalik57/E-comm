@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import "./Home.css";
 import Carousal from "../Carousal/Carousal";
 import Offer from "../Offers/HomeOffer";
 import Category from "../Categories/CategoryProduct";

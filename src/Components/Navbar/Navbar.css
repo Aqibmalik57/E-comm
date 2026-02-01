@@ -97,8 +97,6 @@ body {
   visibility: visible;
 }
 
-/* No other changes to your CSS are necessary unless you want smoother effects elsewhere */
-
 /* Red Ping Effect for Nav */
 .ping-node-red {
   height: 8px;

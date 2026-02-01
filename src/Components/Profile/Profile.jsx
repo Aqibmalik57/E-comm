@@ -8,7 +8,6 @@ import {
 } from "../../store/feature/userSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { FaArrowLeft } from "react-icons/fa";
 
 const Profile = () => {
   const dispatch = useDispatch();

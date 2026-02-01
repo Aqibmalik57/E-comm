@@ -1,14 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { FaArrowLeft } from "react-icons/fa6";
 import { forgotPassword } from "../../store/feature/userSlice";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const { loading, error } = useSelector((state) => state.user);
 

@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from "react";
-import Navbar from "../Navbar/Navbar";
 import "./about.css";
 import Veg1 from "../../Assets/Images/vecteezy_a-vibrant-assortment-of-fresh-fruits-and-vegetables-isolated_46822441.png";
 import Veg2 from "../../Assets/Images/vecteezy_vegetable-png-transparent_22984730.png";
@@ -13,7 +12,6 @@ import Pers3 from "../../Assets/Images/team-3_ld3323.webp";
 import Pers4 from "../../Assets/Images/team-4_i7jvx7.webp";
 import Pers5 from "../../Assets/Images/team-5_ylyklw.webp";
 import Pers6 from "../../Assets/Images/team-6_gmlts4.webp";
-import Footer from "../Footer/Footer";
 
 const About = () => {
   const ref = useRef(null);

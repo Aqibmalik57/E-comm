@@ -46,7 +46,7 @@ const Login = () => {
         navigate("/");
       }
     }
-  }, [user]);
+  }, [isLoginAttempted, navigate, user]);
 
   const handleLogin = (e) => {
     e.preventDefault();

@@ -1,6 +1,4 @@
 import React, { useEffect, useRef } from "react";
-import Navbar from "../Navbar/Navbar";
-import Footer from "../Footer/Footer";
 import Veg1 from "../../Assets/Images/vecteezy_a-vibrant-assortment-of-fresh-fruits-and-vegetables-isolated_46822441.png";
 import Veg2 from "../../Assets/Images/vecteezy_vegetable-png-transparent_22984730.png";
 

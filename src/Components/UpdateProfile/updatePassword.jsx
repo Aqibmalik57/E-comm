@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { MyProfile, updatePassword } from "../../store/feature/userSlice";
-import { useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaEye, FaEyeSlash } from "react-icons/fa6";
+import { FaEye, FaEyeSlash } from "react-icons/fa6";
 
 const UpdatePassword = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { error } = useSelector((state) => state.user);
   const [oldPassword, setOldPassword] = useState("");
   const [password, setPassword] = useState("");

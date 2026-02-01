@@ -7,10 +7,8 @@ import {
 import { IoMdTime, IoIosLock, IoMdCheckmarkCircle } from "react-icons/io";
 import { HiTicket } from "react-icons/hi2";
 import "./offers.css";
-import Navbar from "../Navbar/Navbar";
 import Veg1 from "../../Assets/Images/vecteezy_a-vibrant-assortment-of-fresh-fruits-and-vegetables-isolated_46822441.png";
 import Veg2 from "../../Assets/Images/vecteezy_vegetable-png-transparent_22984730.png";
-import Footer from "../Footer/Footer";
 
 const Offers = () => {
   const dispatch = useDispatch();

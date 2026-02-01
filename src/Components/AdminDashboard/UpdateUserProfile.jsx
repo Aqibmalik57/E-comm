@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +15,6 @@ const UpdateUserProfile = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const nameRegex = /^[a-zA-Z\s]+$/;
     if (!name.trim()) {
       toast.error("Name is required");
       return;

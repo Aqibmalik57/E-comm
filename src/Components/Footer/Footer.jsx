@@ -22,7 +22,7 @@ const Footer = () => {
   return (
     <>
       <div className="Footer">
-        <div className="store-apps flex items-center min-h-[70vh] bg-[#eef2ff] grid grid-cols-3">
+        <div className="store-apps min-h-max bg-[#eef2ff] grid grid-cols-3 py-16">
           <div className="flex justify-center">
             <img src={Uiimg1} alt="" />
           </div>
@@ -37,7 +37,7 @@ const Footer = () => {
             </p>
             <div className="buttons flex gap-5 justify-center mt-8">
               <button className="bg-[#000000] text-white p-2 w-[195px] rounded-md">
-                <a href="#" className="flex gap-4">
+                <a href="/" className="flex gap-4">
                   <FaApple className="text-[43px]" />
                   <div className="text-start">
                     <p className="text-[10px]">Available on the</p>
@@ -46,7 +46,7 @@ const Footer = () => {
                 </a>
               </button>
               <button className="bg-[#000000] text-white p-2 w-[195px] rounded-md">
-                <a href="#" className="flex gap-4">
+                <a href="/" className="flex gap-4">
                   <img src={Playstore} alt="" />
                   <div className="text-start">
                     <p className="text-[10px]">Available on the</p>
@@ -140,7 +140,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="border Social-border m-14 mb-0"></div>
-        <div className="Social-Follow mx-11 me-12 me-5 rounded-xl min-h-48 bg-[#f9fafb] grid grid-cols-3 gap-16 ">
+        <div className="Social-Follow mx-11 me-12 rounded-xl min-h-48 bg-[#f9fafb] grid grid-cols-3 gap-16 ">
           <div className="mb-3 flex justify-center ms-8 flex-col">
             <p className="text-xl font-normal mb-4">Follow Us</p>
             <div className="flex items-center gap-4">

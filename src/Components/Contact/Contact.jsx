@@ -1,6 +1,4 @@
 import React, { useEffect, useRef } from "react";
-import "./contact.css";
-import Navbar from "../Navbar/Navbar";
 import { Link } from "react-router-dom";
 import Veg1 from "../../Assets/Images/vecteezy_a-vibrant-assortment-of-fresh-fruits-and-vegetables-isolated_46822441.png";
 import Veg2 from "../../Assets/Images/vecteezy_vegetable-png-transparent_22984730.png";
@@ -8,7 +6,6 @@ import { MdOutlineMailOutline } from "react-icons/md";
 import { FiBell } from "react-icons/fi";
 import { GrLocation } from "react-icons/gr";
 import contact from "../../Assets/Images/contact-us.webp";
-import Footer from "../Footer/Footer";
 
 const Contact = () => {
   const ref = useRef(null);
