@@ -13,13 +13,15 @@ const Profile = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isLogout, setIsLogout] = useState(false);
-  const { user, loading } = useSelector((state) => state.user);
   const [newRole, setNewRole] = useState("");
   const [showRoleInput, setShowRoleInput] = useState(false);
+  const { user, loading, isLoggedIn } = useSelector((state) => state.user);
 
   useEffect(() => {
-    dispatch(MyProfile());
-  }, [dispatch]);
+    if (!isLoggedIn && !loading) {
+      dispatch(MyProfile());
+    }
+  }, [dispatch, isLoggedIn, loading]);
 
   useEffect(() => {
     if (user) {

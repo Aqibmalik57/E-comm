@@ -17,7 +17,33 @@
     "languages": "Languages",
     "english": "English",
     "bangla": "Bangla",
-    "arabic": "Arabic"
+    "arabic": "Arabic",
+    "categoryNames": {
+      "men": "Men",
+      "fishMeat": "Fish & Meat",
+      "fruitsVegetable": "Fruits & Vegetable",
+      "cooking": "Cooking",
+      "biscuitCake": "Biscuit & Cake",
+      "householdTools": "Household Tools",
+      "petCare": "Pet Care",
+      "beautyHealth": "Beauty & Health",
+      "jamJelly": "Jam & Jelly",
+      "milkDairy": "Milk & Dairy",
+      "drinks": "Drinks",
+      "breakfast": "Breakfast"
+    },
+    "subcategories": {
+      "fishMeat": ["Fish", "Meat"],
+      "fruitsVegetable": ["Baby Food", "Fresh Fruit", "Dry Fruits"],
+      "cooking": ["Flour", "Oil"],
+      "biscuitCake": ["Biscuits", "Cakes"],
+      "householdTools": ["Water Filter", "Cleaning Tools", "Pest Control"],
+      "petCare": ["Dog Care", "Cat Care"],
+      "beautyHealth": ["Women", "Men"],
+      "milkDairy": ["Milk", "Dairy"],
+      "drinks": ["Tea", "Water", "Juice"],
+      "breakfast": ["Bread", "Cereal"]
+    }
   },
   "home": {
     "welcome": "Welcome to our store",

@@ -14,7 +14,7 @@ const ForgotPassword = () => {
     dispatch(forgotPassword({ email }));
 
     setMessage(
-      "Your reset password link has been sent. Please check your inbox.",
+      "Your reset password link has been sent. Please check your mail inbox.",
     );
   };
 

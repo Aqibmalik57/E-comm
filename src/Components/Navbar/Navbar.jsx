@@ -3,7 +3,7 @@ import "./Navbar.css";
 import { FiPhoneCall, FiShoppingCart } from "react-icons/fi";
 import { RxPerson } from "react-icons/rx";
 import Logo from "../../Assets/Images/logo-light_hls14v.svg";
-import { IoIosArrowDown, IoIosSearch } from "react-icons/io";
+import { IoIosArrowDown, IoIosSearch, IoIosArrowForward } from "react-icons/io";
 import { FaRegBell } from "react-icons/fa6";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -30,58 +30,34 @@ const Navbar = () => {
   const langRef = useRef(null);
 
   const categories = [
-    { name: "men", path: "/category/men", subcategories: [] },
+    { key: "men", path: "/category/men", subKey: null },
+    { key: "fishMeat", path: "/category/fish & meat", subKey: "fishMeat" },
     {
-      name: "fish & meat",
-      path: "/category/fish & meat",
-      subcategories: ["Fish", "Meat"],
-    },
-    {
-      name: "fruits & vegetable",
+      key: "fruitsVegetable",
       path: "/category/fruits & vegetable",
-      subcategories: ["Baby Food", "Fresh Fruit", "Dry Fruits"],
+      subKey: "fruitsVegetable",
     },
+    { key: "cooking", path: "/category/cooking", subKey: "cooking" },
     {
-      name: "cooking",
-      path: "/category/cooking",
-      subcategories: ["Flour", "Oil"],
-    },
-    {
-      name: "biscuit & cake",
+      key: "biscuitCake",
       path: "/category/biscuit & cake",
-      subcategories: ["Biscuits", "Cakes"],
+      subKey: "biscuitCake",
     },
     {
-      name: "household tools",
+      key: "householdTools",
       path: "/category/household tools",
-      subcategories: ["Water Filter", "Cleaning Tools", "Pest Control"],
+      subKey: "householdTools",
     },
+    { key: "petCare", path: "/category/pet care", subKey: "petCare" },
     {
-      name: "pet care",
-      path: "/category/pet care",
-      subcategories: ["Dog Care", "Cat Care"],
-    },
-    {
-      name: "Beauty & Health",
+      key: "beautyHealth",
       path: "/category/Beauty & Health",
-      subcategories: ["Women", "Men"],
+      subKey: "beautyHealth",
     },
-    { name: "jam & jelly", path: "/category/jam & jelly", subcategories: [] },
-    {
-      name: "milk & dairy",
-      path: "/category/milk & dairy",
-      subcategories: ["Milk", "Dairy"],
-    },
-    {
-      name: "drinks",
-      path: "/category/drinks",
-      subcategories: ["Tea", "Water", "Juice"],
-    },
-    {
-      name: "breakfast",
-      path: "/category/breakfast",
-      subcategories: ["Bread", "Cereal"],
-    },
+    { key: "jamJelly", path: "/category/jam & jelly", subKey: null },
+    { key: "milkDairy", path: "/category/milk & dairy", subKey: "milkDairy" },
+    { key: "drinks", path: "/category/drinks", subKey: "drinks" },
+    { key: "breakfast", path: "/category/breakfast", subKey: "breakfast" },
   ];
 
   const totalQuantity = items?.reduce((acc, curr) => acc + curr.quantity, 0);
@@ -242,8 +218,29 @@ const Navbar = () => {
                         onClick={() => setIsOpen(false)}
                         className="block capitalize font-medium text-gray-800"
                       >
-                        {cat.name}
+                        {t(`navbar.categoryNames.${cat.key}`)}
                       </Link>
+                      {cat.subKey && (
+                        <ul className="mt-1">
+                          {t(`navbar.subcategories.${cat.subKey}`, {
+                            returnObjects: true,
+                          }).map((sub, j) => (
+                            <li key={j} className="px-4 py-1 hover:bg-green-50">
+                              <Link
+                                to={`/category/${sub}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setIsOpen(false);
+                                }}
+                                className="flex items-center gap-x-1 text-neutral-500 text-[11px] hover:text-green-500"
+                              >
+                                <IoIosArrowForward className="text-[10px]" />
+                                <span>{sub}</span>
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </li>
                   ))}
                 </ul>

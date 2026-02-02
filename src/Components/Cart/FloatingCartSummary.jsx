@@ -6,12 +6,20 @@ const FloatingCartSummary = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const cartItems = useSelector((state) => state.cart.items);
+  console.log("Cart Items:", cartItems);
 
+  // 1. Calculate Total Items (This was likely working)
   const totalItems =
-    cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-  const totalPrice =
-    cartItems?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
+    cartItems?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
 
+  const totalPrice =
+    cartItems?.reduce((sum, item) => {
+      // Check for price in both populated (productId.price)
+      // and flat (item.price) structures
+      const price = item.productId?.price || item.price || 0;
+
+      return sum + price * item.quantity;
+    }, 0) || 0;
   // Only show on home page and when cart has items
   if (location.pathname !== "/") return null;
 

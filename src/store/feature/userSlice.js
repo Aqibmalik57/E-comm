@@ -311,7 +311,7 @@ const userSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload; // This is response.data.user from your thunk
+        state.user = action.payload;
         state.isLoggedIn = true;
         state.error = null;
       })
@@ -329,11 +329,13 @@ const userSlice = createSlice({
       .addCase(MyProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.isLoggedIn = true; // If we can fetch profile, we are logged in
+        state.isLoggedIn = true;
         state.error = null;
       })
       .addCase(MyProfile.rejected, (state, action) => {
         state.loading = false;
+        state.isLoggedIn = false; // Add this
+        state.user = null; // Add this
         state.error = action.payload;
       })
       // UpdateProfile cases

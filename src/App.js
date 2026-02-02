@@ -74,7 +74,7 @@ const LayoutWrapper = ({ children }) => {
   // 2. Check for dynamic routes (regex)
   const isDynamicRoute =
     location.pathname.startsWith("/category/") ||
-    location.pathname.startsWith("/reset/") ||
+    // location.pathname.startsWith("/reset/") ||
     location.pathname.startsWith("/product/") ||
     location.pathname.startsWith("/singleUser/") ||
     location.pathname.startsWith("/updateUser/");

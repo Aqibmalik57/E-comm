@@ -17,7 +17,33 @@
     "languages": "ভাষা",
     "english": "ইংরেজি",
     "bangla": "বাংলা",
-    "arabic": "আরবি"
+    "arabic": "আরবি",
+    "categoryNames": {
+      "men": "পুরুষ",
+      "fishMeat": "মাছ এবং মাংস",
+      "fruitsVegetable": "ফল এবং শাকসবজি",
+      "cooking": "রান্না",
+      "biscuitCake": "বিস্কুট এবং কেক",
+      "householdTools": "গৃহস্থালী সরঞ্জাম",
+      "petCare": "পোষা প্রাণী যত্ন",
+      "beautyHealth": "সৌন্দর্য এবং স্বাস্থ্য",
+      "jamJelly": "জ্যাম এবং জেলি",
+      "milkDairy": "দুধ এবং দুগ্ধজাত",
+      "drinks": "পানীয়",
+      "breakfast": "প্রাতরাশ"
+    },
+    "subcategories": {
+      "fishMeat": ["মাছ", "মাংস"],
+      "fruitsVegetable": ["শিশু খাদ্য", "তাজা ফল", "শুকনো ফল"],
+      "cooking": ["আটা", "তেল"],
+      "biscuitCake": ["বিস্কুট", "কেক"],
+      "householdTools": ["জল ফিল্টার", "পরিষ্কার সরঞ্জাম", "কীটনাশক"],
+      "petCare": ["কুকুর যত্ন", "বিড়াল যত্ন"],
+      "beautyHealth": ["মহিলা", "পুরুষ"],
+      "milkDairy": ["দুধ", "দুগ্ধজাত"],
+      "drinks": ["চা", "জল", "জুস"],
+      "breakfast": ["রুটি", "সিরিয়াল"]
+    }
   },
   "home": {
     "welcome": "আমাদের স্টোরে স্বাগতম",
