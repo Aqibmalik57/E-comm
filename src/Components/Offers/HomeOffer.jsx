@@ -42,7 +42,7 @@ const HomeOffer = () => {
   };
 
   return (
-    <div className="Homeoffer border-2 my-5 w-[92%] lg:w-[38.5%] rounded-xl border-[#6366f1] hover:border-[#8b5cf6] mx-auto lg:mx-0 relative overflow-hidden transition-all duration-300 shadow-lg">
+    <div className="Homeoffer border-2 my-5 w-[99%] lg:w-[37.5%] rounded-xl border-[#6366f1] hover:border-[#8b5cf6] mx-auto lg:mx-0 relative overflow-hidden transition-all duration-300 shadow-lg">
       <div className="offer-title text-center p-3 bg-[#f5f3ff] font-black text-[#4338ca] text-xs lg:text-sm uppercase tracking-widest border-b border-[#e0e7ff]">
         ⚡ Flash Sale Coupons
       </div>

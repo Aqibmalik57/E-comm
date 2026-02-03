@@ -272,7 +272,7 @@ const Navbar = () => {
               </button>
               {isPagesOpen && (
                 <ul className="absolute top-full mt-2 rounded-md w-48 bg-white border border-gray-200 shadow-lg z-50">
-                  {["offers", "faqs", "privacy-policy", "terms-conditions"].map(
+                  {["offers", "faqs", "privacy-policy", "terms&Conditions"].map(
                     (page) => (
                       <li key={page} className="px-4 py-2 hover:bg-green-50">
                         <Link
@@ -280,7 +280,7 @@ const Navbar = () => {
                           onClick={() => setIsPagesOpen(false)}
                           className="block capitalize text-gray-800"
                         >
-                          {t(`${page.replace("-", "")}`)}
+                          {t(page.replace(/-/g, " ").split("&").join(" "))}
                         </Link>
                       </li>
                     ),
@@ -414,7 +414,7 @@ const Navbar = () => {
                         "offers",
                         "faqs",
                         "privacy-policy",
-                        "terms-conditions",
+                        "terms&Conditions",
                       ].map((page) => (
                         <Link
                           key={page}
@@ -422,7 +422,7 @@ const Navbar = () => {
                           onClick={() => setMobileMenuOpen(false)}
                           className="capitalize"
                         >
-                          {t(`${page.replace("-", "")}`)}
+                          {t(page.replace(/-/g, " ").split("&").join(" "))}{" "}
                         </Link>
                       ))}
                     </div>

@@ -14,10 +14,12 @@ const Terms = () => {
   return (
     <div ref={ref} className="terms-conditions bg-gray-50 min-h-screen">
       {/* Header Section */}
-      <div className="About-us flex justify-between items-center h-44">
-        <img src={Veg1} alt="" />
-        <h1 className="text-5xl font-medium">Term & Conditions</h1>
-        <img src={Veg2} alt="" />
+      <div className="About-us flex justify-center sm:justify-between items-center h-32 lg:h-44 bg-[#fdf2f2] lg:bg-transparent px-4">
+        <img src={Veg1} alt="" className="h-20 lg:h-auto sm:block hidden" />
+        <h1 className="text-3xl lg:text-5xl font-medium text-center">
+          Term & Conditions
+        </h1>
+        <img src={Veg2} alt="" className="h-20 lg:h-auto sm:block hidden" />
       </div>
 
       {/* Main Content */}
