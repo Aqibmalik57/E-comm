@@ -19,152 +19,146 @@ const Login = () => {
 
   const validateEmail = (value) => {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!value) {
-      setEmailError("Email is required");
-    } else if (!emailPattern.test(value)) {
+    if (!value) setEmailError("Email is required");
+    else if (!emailPattern.test(value))
       setEmailError("Please enter a valid email address");
-    } else {
-      setEmailError("");
-    }
+    else setEmailError("");
   };
 
   const validatePassword = (value) => {
-    if (!value) {
-      setPasswordError("Password is required");
-    } else if (value.length < 8) {
-      setPasswordError("Password must be at least 8 characters long");
-    } else {
-      setPasswordError("");
-    }
+    if (!value) setPasswordError("Password is required");
+    else setPasswordError("");
   };
 
   useEffect(() => {
     if (user && isLoginAttempted) {
-      if (user.role === "admin") {
-        navigate("/dashboard");
-      } else {
-        navigate("/");
-      }
+      if (user.role === "admin") navigate("/dashboard");
+      else navigate("/");
     }
   }, [isLoginAttempted, navigate, user]);
 
   const handleLogin = (e) => {
     e.preventDefault();
-    setIsLoginAttempted(true);
-
     validateEmail(email);
     validatePassword(password);
 
-    if (!emailError && !passwordError) {
+    if (!emailError && !passwordError && email && password) {
+      setIsLoginAttempted(true);
       dispatch(login({ email, password }));
     }
   };
 
   return (
-    <div className="min-h-max flex items-center justify-center  bg-gray-100 py-10">
-      {loading ? (
-        <div className="flex justify-center items-center">Loading...</div>
-      ) : (
-        <div className="bg-white p-10 rounded-lg shadow-xl w-full max-w-md">
-          <h2 className="text-3xl font-bold mb-8 text-center text-[#10b981]">
-            Login
-          </h2>
-          <form onSubmit={handleLogin}>
-            <div className="mb-6">
-              <label
-                className="block text-gray-700 text-sm font-semibold mb-2"
-                htmlFor="email"
-              >
-                Email
-              </label>
+    // Changed min-h-screen to ensure content is never cut off on small mobile browsers
+    <div className="min-h-[100dvh] flex items-center justify-center bg-gray-50 px-4 py-8 sm:py-12">
+      {/* max-w-md for desktop, w-full for mobile */}
+      <div className="bg-white p-6 sm:p-10 rounded-2xl shadow-xl w-full max-w-[440px] border border-gray-100">
+        <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 text-center text-[#10b981]">
+          Welcome Back
+        </h2>
+        <p className="text-center text-gray-500 mb-6 sm:mb-8 text-sm">
+          Please enter your details to login
+        </p>
+
+        <form onSubmit={handleLogin} className="space-y-5 sm:space-y-6">
+          <div>
+            <label className="block text-gray-700 text-xs font-bold uppercase mb-1 ml-1">
+              Email
+            </label>
+            <input
+              type="email"
+              placeholder="email@example.com"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                validateEmail(e.target.value);
+              }}
+              className={`w-full p-3 text-sm sm:text-base border rounded-xl outline-none transition-all ${
+                emailError
+                  ? "border-red-500 ring-1 ring-red-500"
+                  : "border-gray-200 focus:border-[#10b981] focus:ring-2 focus:ring-[#10b981]/20"
+              }`}
+            />
+            {emailError && (
+              <p className="text-red-500 text-[11px] sm:text-xs mt-1 ml-1 font-medium italic">
+                {emailError}
+              </p>
+            )}
+          </div>
+
+          <div className="relative">
+            <label className="block text-gray-700 text-xs font-bold uppercase mb-1 ml-1">
+              Password
+            </label>
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                validatePassword(e.target.value);
+              }}
+              className={`w-full p-3 text-sm sm:text-base border rounded-xl outline-none transition-all ${
+                passwordError
+                  ? "border-red-500 ring-1 ring-red-500"
+                  : "border-gray-200 focus:border-[#10b981] focus:ring-2 focus:ring-[#10b981]/20"
+              }`}
+            />
+            <button
+              type="button"
+              className="absolute top-[32px] sm:top-[34px] right-3 text-gray-400 hover:text-[#10b981] p-1"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            </button>
+            {passwordError && (
+              <p className="text-red-500 text-[11px] sm:text-xs mt-1 ml-1 font-medium italic">
+                {passwordError}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 text-sm">
+            <label className="flex items-center cursor-pointer group">
               <input
-                type="email"
-                id="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  validateEmail(e.target.value);
-                }}
-                className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 ${
-                  emailError ? "border-red-500" : "border-gray-300"
-                } focus:ring-[#10b981]`}
-                required
+                type="checkbox"
+                className="w-4 h-4 accent-[#10b981] rounded border-gray-300"
               />
-              {emailError && (
-                <div className="text-red-500 text-sm">{emailError}</div>
-              )}
-            </div>
+              <span className="ml-2 text-gray-600 group-hover:text-gray-800 transition-colors text-xs sm:text-sm">
+                Remember me
+              </span>
+            </label>
+            <Link
+              to="/forgetpassword"
+              className="text-[#10b981] font-semibold hover:underline text-xs sm:text-sm ml-1 sm:ml-0"
+            >
+              Forgot Password?
+            </Link>
+          </div>
 
-            <div className="mb-6 relative">
-              <label
-                className="block text-gray-700 text-sm font-semibold mb-2"
-                htmlFor="password"
-              >
-                Password
-              </label>
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  validatePassword(e.target.value);
-                }}
-                className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 ${
-                  passwordError ? "border-red-500" : "border-gray-300"
-                } focus:ring-[#10b981]`}
-                required
-              />
-              <div
-                className="absolute top-11 right-0 pr-4 flex items-center cursor-pointer"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </div>
-              {passwordError && (
-                <div className="text-red-500 text-sm">{passwordError}</div>
-              )}
-            </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#10b981] text-white p-3 rounded-xl font-bold hover:bg-green-600 transition duration-300 shadow-lg shadow-green-100 flex justify-center items-center active:scale-[0.98]"
+          >
+            {loading ? (
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              "Login"
+            )}
+          </button>
 
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="rememberMe"
-                  className="mr-2 accent-[#10b981]"
-                />
-                <label
-                  htmlFor="rememberMe"
-                  className="text-gray-700 text-sm font-semibold"
-                >
-                  Remember Me
-                </label>
-              </div>
-              <div>
-                <Link to="/forgetpassword" className="text-[#10b981] text-sm">
-                  Forgot Password?
-                </Link>
-              </div>
-            </div>
-
-            <div className="flex justify-center">
-              <button
-                type="submit"
-                className="bg-[#10b981] text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-200"
-              >
-                Login
-              </button>
-            </div>
-            <div className="mt-4 text-center">
-              <Link to="/signup" className="text-[#10b981]">
-                Don't have an account? Sign Up
-              </Link>
-            </div>
-          </form>
-        </div>
-      )}
+          <p className="text-center text-gray-600 text-sm mt-4 sm:mt-6">
+            Don't have an account?{" "}
+            <Link
+              to="/signup"
+              className="text-[#10b981] font-bold hover:underline"
+            >
+              Sign Up
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 };

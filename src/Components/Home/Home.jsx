@@ -19,7 +19,7 @@ const Home = () => {
       <div ref={ref} className="home">
         <div className="carousal-offers">
           {/* Stack on mobile, side-by-side on LG */}
-          <div className="flex flex-col md:flex-row gap-6 px-4 lg:px-0">
+          <div className="flex flex-col md:flex-row md:gap-2 lg:gap-4 px-4 lg:px-0">
             <Carousal />
             <Offer />
           </div>

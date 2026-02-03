@@ -42,10 +42,10 @@ const FAQs = () => {
   }, []);
   return (
     <div ref={ref} className="contact">
-      <div className="About-us flex justify-between items-center h-44">
-        <img src={Veg1} alt="" />
-        <h1 className="text-5xl font-medium">FAQs</h1>
-        <img src={Veg2} alt="" />
+      <div className="About-us flex justify-center sm:justify-between items-center h-32 lg:h-44 bg-[#fdf2f2] lg:bg-transparent px-4">
+        <img src={Veg1} alt="" className="h-20 lg:h-auto sm:block hidden" />
+        <h1 className="text-3xl lg:text-5xl font-medium">FAQs</h1>
+        <img src={Veg2} alt="" className="h-20 lg:h-auto sm:block hidden" />
       </div>
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 py-20">
         <div className="max-w-6xl w-full bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col md:flex-row border border-gray-100">

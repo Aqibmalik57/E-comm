@@ -1,5 +1,7 @@
 .category-cards .categ-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   cursor: pointer;
 }
 
@@ -13,6 +15,6 @@
   font-weight: 900;
   font-size: 15px !important;
   background-color: #34d399;
-  padding: 7px 14px;
+  padding: 7px 10px;
   border-radius: 5px;
 }

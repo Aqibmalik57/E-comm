@@ -29,10 +29,10 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
 
   const handleAddToCart = async () => {
     try {
-      // Send request even if user is null to let backend handle the error message
       await dispatch(
         addToCart({ userId: user?._id, productId: product._id, quantity }),
       ).unwrap();
+      toast.success("Added to cart");
     } catch (backendError) {
       toast.error(backendError || "Failed to add to cart");
     }
@@ -44,11 +44,14 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 text-left">
-      <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full relative overflow-hidden flex flex-col md:flex-row p-8 gap-8">
-        {/* Close Button */}
+      {/* 1. Added max-h-[90vh] and overflow-y-auto so it's scrollable on mobile.
+          2. Kept your p-8 and gap-8 for large screens.
+      */}
+      <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full relative overflow-y-auto md:overflow-hidden flex flex-col md:flex-row p-6 md:p-8 gap-6 md:gap-8 max-h-[95vh]">
+        {/* Close Button - Added z-20 and mobile positioning */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 bg-[#ff4b4b] text-white p-2 rounded-lg hover:bg-red-600 transition-colors z-10"
+          className="absolute top-4 right-4 bg-[#ff4b4b] text-white p-2 rounded-lg hover:bg-red-600 transition-colors z-20"
         >
           <FaTimes size={20} />
         </button>
@@ -58,7 +61,8 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
           <img
             src={product.imageUrl}
             alt={product.title}
-            className="w-full h-[400px] object-contain rounded-lg"
+            // Made height auto on mobile to prevent stretching, kept 400px for md+
+            className="w-full h-auto max-h-[300px] md:h-[400px] object-contain rounded-lg"
           />
         </div>
 
@@ -69,7 +73,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
             In stock: <span className="font-semibold">{product.stock}</span>
           </div>
 
-          <h2 className="text-2xl font-bold text-gray-800 mb-1">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-1">
             {product.title}
           </h2>
 
@@ -104,8 +108,8 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
             ${product.price}
           </div>
 
-          {/* Quantity and Action Buttons Row */}
-          <div className="flex items-center gap-2 mb-6 w-full">
+          {/* Quantity and Action Buttons Row - Wrapped in flex-wrap for small screens */}
+          <div className="flex flex-wrap items-center gap-3 mb-6 w-full">
             <div className="flex items-center border border-gray-200 rounded-md h-12">
               <button
                 onClick={decrementQuantity}
@@ -126,7 +130,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
 
             <button
               onClick={handleAddToCart}
-              className="flex-1 bg-[#10b981] text-white h-12 px-4 rounded-md font-medium flex items-center justify-center gap-2 hover:bg-[#059669] transition-all"
+              className="flex-1 bg-[#10b981] text-white h-12 px-4 rounded-md font-medium flex items-center justify-center gap-2 hover:bg-[#059669] transition-all min-w-[140px]"
             >
               <div className="border border-white/30 rounded p-0.5">
                 <HiOutlineShoppingBag size={18} />
@@ -136,7 +140,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
 
             <button
               onClick={() => navigate(`/product/${product._id}`)}
-              className="bg-[#f3f4f6] text-gray-600 h-12 px-4 rounded-md font-medium flex items-center justify-center gap-2 hover:bg-gray-200 transition-all text-sm whitespace-nowrap"
+              className="bg-[#f3f4f6] text-gray-600 h-12 px-4 rounded-md font-medium flex items-center justify-center gap-2 hover:bg-gray-200 transition-all text-sm whitespace-nowrap w-full sm:w-auto"
             >
               <FaEye /> View details
             </button>
