@@ -33,6 +33,7 @@ import Footer from "./Components/Footer/Footer.jsx";
 import FloatingCartSummary from "./Components/Cart/FloatingCartSummary.jsx";
 import { MyProfile } from "./store/feature/userSlice.js";
 import { useEffect } from "react";
+import FAQs from "./Components/FAQs.jsx";
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children }) => {
@@ -69,6 +70,7 @@ const LayoutWrapper = ({ children }) => {
     "/profile",
     "/updateprofile",
     "/updatepassword",
+    "/faqs",
   ];
 
   // 2. Check for dynamic routes (regex)
@@ -120,6 +122,7 @@ function App() {
             <Route path="/privacy-policy" element={<Privacy />} />
             <Route path="/terms&Conditions" element={<Terms />} />
             <Route path="/cart" element={<AddCart />} />
+            <Route path="/faqs" element={<FAQs />} />
             <Route path="*" element={<NotFound />} />
 
             {/* Protected Routes */}
