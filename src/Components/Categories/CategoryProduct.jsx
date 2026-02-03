@@ -93,7 +93,7 @@ const CategoryProduct = () => {
         Choose your necessary products from this feature categories.
       </p>
 
-      <div className="category-cards grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-px mx-11 pb-14">
+      <div className="category-cards grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px mx-11 pb-14">
         {categories.map((cat, index) => (
           <div
             key={index}

@@ -17,7 +17,6 @@ const HomePopularProduct = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Function to get discount based on category
   const getDiscount = (category) => {
     if (!category) return 0;
     const discountMap = {
@@ -37,11 +36,9 @@ const HomePopularProduct = () => {
 
   const handleAddToCart = async (productId, quantity = 1) => {
     try {
-      // Pass user?._id. If user is null, backend receives undefined and triggers its "not logged in" logic
       const userId = user?._id;
       await dispatch(addToCart({ userId, productId, quantity })).unwrap();
     } catch (backendError) {
-      // Displays the specific error message sent from your API
       toast.error(backendError || "Something went wrong");
     }
   };
@@ -63,11 +60,13 @@ const HomePopularProduct = () => {
   };
 
   return (
-    <div className="PpProducts bg-[#f9fafb] text-center">
-      <h1 className="text-2xl text-neutral-900 font-bold pt-20 pb-2">
+    <div className="PpProducts bg-[#f9fafb] text-center px-4">
+      {/* Title responsive text size and padding */}
+      <h1 className="text-xl lg:text-2xl text-neutral-900 font-bold pt-12 lg:pt-20 pb-2">
         Popular Products for Daily Shopping
       </h1>
-      <p className="text-neutral-500 font-normal pb-9 w-[36%] mx-auto">
+      {/* Description: full width on mobile, 36% on lg */}
+      <p className="text-neutral-500 font-normal pb-9 w-full lg:w-[36%] mx-auto text-sm lg:text-base">
         See all our popular products this week. You can choose your daily needs
         from this list and get special offers with free shipping.
       </p>
@@ -75,32 +74,34 @@ const HomePopularProduct = () => {
       {loading && <p className="text-blue-500">Loading products...</p>}
       {error && <p className="text-red-500">Error: {error}</p>}
 
-      <div className="grid grid-cols-5 gap-5 mx-8 pb-10">
+      {/* Grid: 2 columns on mobile, 3 on tablet, 5 on desktop */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 lg:gap-5 mx-0 lg:mx-8 pb-10">
         {!loading &&
           !error &&
           products?.slice(0, 18)?.map((item) => (
             <div
               key={item._id}
               onClick={() => navigate(`/product/${item._id}`)}
-              className="items-card w-[240px] bg-white p-4 rounded-xl relative group hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-gray-100 overflow-hidden cursor-pointer"
+              /* Removed fixed width w-[240px] for mobile fluidity, kept it lg:w-auto */
+              className="items-card w-full bg-white p-3 lg:p-4 rounded-xl relative group hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-gray-100 overflow-hidden cursor-pointer"
             >
               {/* Image Container */}
               <div className="relative mb-4 overflow-hidden rounded-lg">
                 <img
                   src={item.imageUrl}
                   alt={item.title}
-                  className="h-40 w-full object-contain hover:scale-105 transition-transform duration-500"
+                  className="h-32 lg:h-40 w-full object-contain hover:scale-105 transition-transform duration-500"
                 />
 
                 {/* Discount Badge */}
                 {getDiscount(item.category) > 0 && (
-                  <div className="absolute top-0 right-0 bg-[#ffedea] text-[#f74b81] px-2 py-1 text-[10px] font-bold rounded-md z-20 border border-[#fbd9d3] w-fit shadow-sm">
+                  <div className="absolute top-0 right-0 bg-[#ffedea] text-[#f74b81] px-2 py-1 text-[9px] lg:text-[10px] font-bold rounded-md z-20 border border-[#fbd9d3] w-fit shadow-sm">
                     {getDiscount(item.category)}% Off
                   </div>
                 )}
 
-                {/* Quick View Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                {/* Quick View Overlay (Hidden or simplified on touch devices usually, but kept for lg) */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -109,19 +110,19 @@ const HomePopularProduct = () => {
                     className="bg-white text-gray-800 px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition-colors shadow-lg flex items-center space-x-2"
                   >
                     <IoExpand size={16} />
-                    <span>Quick View</span>
+                    <span className="hidden sm:inline">Quick View</span>
                   </button>
                 </div>
               </div>
 
               {/* Product Info */}
               <div className="space-y-2 text-left">
-                <h1 className="text-sm font-semibold text-gray-800 line-clamp-2 leading-tight">
+                <h1 className="text-xs lg:text-sm font-semibold text-gray-800 line-clamp-2 leading-tight h-8 lg:h-10">
                   {item.title}
                 </h1>
 
-                {/* Rating Display */}
-                <div className="flex items-center space-x-2">
+                {/* Rating Display - Simplified for mobile */}
+                <div className="flex items-center space-x-1 lg:space-x-2">
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
                       <FaStar
@@ -131,50 +132,47 @@ const HomePopularProduct = () => {
                             ? "text-yellow-400"
                             : "text-gray-300"
                         }
-                        size={14}
+                        size={12}
                       />
                     ))}
                   </div>
-                  <span className="text-xs text-gray-500">
-                    {calculateRating(item.reviews)} ({item.reviews?.length || 0}
-                    )
+                  <span className="text-[10px] lg:text-xs text-gray-500">
+                    ({item.reviews?.length || 0})
                   </span>
                 </div>
 
-                {/* Price */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                {/* Price and Cart */}
+                <div className="flex items-center justify-between gap-1">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:gap-2">
                     {getDiscount(item.category) > 0 ? (
                       <>
-                        <span className="text-lg font-bold text-green-600">
+                        <span className="text-sm lg:text-lg font-bold text-green-600">
                           $
                           {(
                             item.price *
                             (1 - getDiscount(item.category) / 100)
                           ).toFixed(2)}
                         </span>
-                        <span className="text-sm text-gray-500 line-through">
+                        <span className="text-[10px] lg:text-sm text-gray-500 line-through">
                           ${item.price}
                         </span>
                       </>
                     ) : (
-                      <span className="text-lg font-bold text-green-600">
+                      <span className="text-sm lg:text-lg font-bold text-green-600">
                         ${item.price}
                       </span>
                     )}
                   </div>
 
-                  {/* Add to Cart Button */}
                   <button
-                    className="bg-gradient-to-r from-green-500 to-green-600 text-white p-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r from-green-500 to-green-600 text-white p-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md disabled:opacity-50"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleAddToCart(item._id, 1);
                     }}
                     disabled={item.stock <= 0}
-                    aria-label={`Add ${item.title} to cart`}
                   >
-                    <FaCartPlus size={16} />
+                    <FaCartPlus size={14} className="lg:w-4 lg:h-4" />
                   </button>
                 </div>
               </div>
@@ -182,7 +180,6 @@ const HomePopularProduct = () => {
           ))}
       </div>
 
-      {/* Quick View Modal */}
       <QuickViewModal
         product={selectedProduct}
         isOpen={isModalOpen}

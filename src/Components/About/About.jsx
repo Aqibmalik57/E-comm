@@ -24,39 +24,38 @@ const About = () => {
 
   return (
     <>
-      <div ref={ref} className="About">
-        <div className="About-us flex justify-between items-center h-44">
-          <img src={Veg1} alt="" />
-          <h1 className="text-5xl font-medium">About Us</h1>
-          <img src={Veg2} alt="" />
+      <div ref={ref} className="About overflow-hidden">
+        {/* Banner Section */}
+        <div className="About-us flex justify-center sm:justify-between items-center h-32 lg:h-44 bg-[#fdf2f2] lg:bg-transparent px-4">
+          <img src={Veg1} alt="" className="h-20 lg:h-auto sm:block hidden" />
+          <h1 className="text-3xl lg:text-5xl font-medium">About Us</h1>
+          <img src={Veg2} alt="" className="h-20 lg:h-auto sm:block hidden" />
         </div>
-        <div className="shop-detail grid grid-cols-2 min-h-[130vh]">
-          <div className="h-full flex flex-col justify-center p-11 pb-4">
-            <h1 className="mb-5 text-3xl font-medium">
+
+        {/* Shop Detail Section */}
+        <div className="shop-detail grid grid-cols-1 lg:grid-cols-2 min-h-fit lg:min-h-[100vh]">
+          <div className="h-full flex flex-col justify-center p-6 lg:p-11 pb-4">
+            <h1 className="mb-5 text-2xl lg:text-3xl font-medium">
               Welcome to our KachaBazar shop
             </h1>
-            <p className="text-lg text-neutral-700 font-normal para-font">
-              Holisticly seize parallel metrics and functional ROI.Seamlessly
+            <p className="text-base lg:text-lg text-neutral-700 font-normal para-font">
+              Holisticly seize parallel metrics and functional ROI. Seamlessly
               revolutionize error-free internal or organic sources before
               effective scenarios. Progressively incentivize state of the art
               applications for efficient intellectual capital. Credibly leverage
               existing distinctive mindshare through cutting-edge schemas.
               Proactively procrastinate team building paradigms coordinate
-              client-centric total transparent internal. Dynamically embrace
-              diverse customer service and installed base paradigms. Credibly
-              seize enterprise-wide experiences for end-to-end data.
-              Professionally brand flexible alignments and cost effective
-              architectures. Enthusiastically incentivize seamless communities
-              with seamlessly facilitate revolutionary metrics with strategic
-              theme areas.
+              client-centric total transparent internal.
             </p>
-            <div className="grid gap-7 grid-cols-2 mt-7">
+
+            {/* Stats Grid */}
+            <div className="grid gap-4 lg:gap-7 grid-cols-1 sm:grid-cols-2 mt-7">
               <div className="bg-[#eef2ff] p-6 rounded-xl">
                 <h1 className="text-3xl font-extrabold leading-relaxed">8K</h1>
                 <h4 className="text-xl font-[550] leading-relaxed">
                   Lovely Customer
                 </h4>
-                <p className="para-font font-normal">
+                <p className="para-font font-normal text-sm">
                   Competently productize virtual models without performance.
                 </p>
               </div>
@@ -65,95 +64,97 @@ const About = () => {
                 <h4 className="text-xl font-[550] leading-relaxed">
                   Listed Products
                 </h4>
-                <p className="para-font font-normal">
-                  Dynamically morph team driven partnerships after vertical
+                <p className="para-font font-normal text-sm">
+                  Dynamically morph team driven partnerships after vertical.
                 </p>
               </div>
             </div>
           </div>
-          <div
-            className="h-full pe-11 shop-detail-sub2 
-          gap-4 flex items-center"
-          >
-            <div className="grid grid-rows-2 gap-4">
-              <img src={Veg3} alt="" className="rounded-2xl" />
-              <img src={Veg4} alt="" className="rounded-2xl" />
+
+          {/* Image Collage Section */}
+          <div className="h-full p-6 lg:pe-11 shop-detail-sub2 gap-4 flex items-center justify-center">
+            <div className="grid grid-rows-2 gap-4 w-1/2">
+              <img
+                src={Veg3}
+                alt=""
+                className="rounded-2xl w-full object-cover"
+              />
+              <img
+                src={Veg4}
+                alt=""
+                className="rounded-2xl w-full object-cover"
+              />
             </div>
-            <div>
-              <img src={Veg5} alt="" className="rounded-2xl" />
+            <div className="w-1/2">
+              <img
+                src={Veg5}
+                alt=""
+                className="rounded-2xl w-full object-cover h-full"
+              />
             </div>
           </div>
         </div>
-        <div className="more-detail p-11 pt-0">
-          <p className="text-lg text-neutral-700 font-normal para-font mb-5">
+
+        {/* Text and Large Image Section */}
+        <div className="more-detail p-6 py-0 lg:p-11 lg:pt-0">
+          <p className="text-base lg:text-lg text-neutral-700 font-normal para-font mb-5">
             Holisticly seize parallel metrics and functional ROI. Seamlessly
             revolutionize error-free internal or organic sources before
             effective scenarios. Progressively incentivize state of the art
             applications for efficient intellectual capital. Credibly leverage
             existing distinctive mindshare through cutting-edge schemas.
-            Proactively procrastinate team building paradigms coordinate
-            client-centric total transparent internal. Energistically
-            reconceptualize global leadership for high-quality networks.
-            Credibly restore an expanded array of systems rather than accurate
-            results. Collaboratively synergize backend bandwidth without 24/7
-            functionalities. Credibly utilize proactive ideas whereas
-            cross-media core competencies. Uniquely maximize professional best
-            practices through resource maximizing services. Conveniently
-            architect cross-unit web services for e-business imperatives.
           </p>
-          <p className="text-lg text-neutral-700 font-normal para-font mb-14">
+          <p className="text-base lg:text-lg text-neutral-700 font-normal para-font mb-10 lg:mb-14">
             Appropriately visualize market-driven data before one-to-one
             scenarios. Collaboratively productize multifunctional ROI through
             intuitive supply chains. Enthusiastically seize revolutionary value
-            and process-centric services. Competently harness intuitive
-            information after interoperable markets. Interactively revolutionize
-            future-proof value before granular sources. Dynamically embrace
-            diverse customer service and installed base paradigms. Credibly
-            seize enterprise-wide experiences for end-to-end data.
-            Professionally brand flexible alignments and cost effective
-            architectures. Enthusiastically incentivize seamless communities
-            with seamlessly facilitate revolutionary metrics with strategic
-            theme areas.
+            and process-centric services.
           </p>
-          <img src={Veg6} alt="" className="rounded-2xl" />
+          <img src={Veg6} alt="" className="rounded-2xl w-full" />
         </div>
-        <div className="Our-team min-h-[90vh] bg-[#f9fafb] mt-7 flex flex-col justify-center p-11">
-          <h1 className="text-5xl font-bold mb-5">Our Team</h1>
-          <p className="w-3/5 para-font text-lg font-normal">
+
+        {/* Team Section */}
+        <div className="Our-team min-h-fit lg:min-h-[90vh] bg-[#f9fafb] mt-7 flex flex-col justify-center p-6 lg:p-11">
+          <h1 className="text-3xl lg:text-5xl font-bold mb-5">Our Team</h1>
+          <p className="w-full lg:w-3/5 para-font text-base lg:text-lg font-normal">
             We’re impartial and independent, and every day we create
             distinctive, world-class reintermediate backend supply programmes.
           </p>
-          <div className="grid grid-cols-6 gap-8 mt-8">
-            <div className="leading-7">
-              <img src={Pers1} alt="" className="rounded-lg" />
-              <h1 className="font-bold text-xl mt-4">Niamh Shea</h1>
-              <p className="text-neutral-500">Co-founder & Executive</p>
-            </div>
-            <div className="leading-7">
-              <img src={Pers2} alt="" className="rounded-lg" />
-              <h1 className="font-bold text-xl mt-4">Orla Dwyer</h1>
-              <p className="text-neutral-500">Orla Dwyer</p>
-            </div>
-            <div className="leading-7">
-              <img src={Pers3} alt="" className="rounded-lg" />
-              <h1 className="font-bold text-xl mt-4">Danien James</h1>
-              <p className="text-neutral-500">Co-founder, Chairman</p>
-            </div>
-            <div className="leading-7">
-              <img src={Pers4} alt="" className="rounded-lg" />
-              <h1 className="font-bold text-xl mt-4">Dara Frazier</h1>
-              <p className="text-neutral-500">Chief Strategy Officer</p>
-            </div>
-            <div className="leading-7">
-              <img src={Pers5} alt="" className="rounded-lg" />
-              <h1 className="font-bold text-xl mt-4">Glenda Arvidson</h1>
-              <p className="text-neutral-500">HR Officer</p>
-            </div>
-            <div className="leading-7">
-              <img src={Pers6} alt="" className="rounded-lg" />
-              <h1 className="font-bold text-xl mt-4">Melvin Davis</h1>
-              <p className="text-neutral-500">Lead Developer</p>
-            </div>
+
+          {/* Team Grid: 2 cols on mobile, 3 on tablet, 6 on desktop */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 lg:gap-8 mt-8">
+            {[
+              {
+                img: Pers1,
+                name: "Niamh Shea",
+                role: "Co-founder & Executive",
+              },
+              { img: Pers2, name: "Orla Dwyer", role: "Marketing Lead" },
+              {
+                img: Pers3,
+                name: "Danien James",
+                role: "Co-founder, Chairman",
+              },
+              {
+                img: Pers4,
+                name: "Dara Frazier",
+                role: "Chief Strategy Officer",
+              },
+              { img: Pers5, name: "Glenda Arvidson", role: "HR Officer" },
+              { img: Pers6, name: "Melvin Davis", role: "Lead Developer" },
+            ].map((member, idx) => (
+              <div key={idx} className="leading-7 text-center lg:text-left">
+                <img
+                  src={member.img}
+                  alt={member.name}
+                  className="rounded-lg w-full"
+                />
+                <h1 className="font-bold text-lg lg:text-xl mt-4">
+                  {member.name}
+                </h1>
+                <p className="text-neutral-500 text-sm">{member.role}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

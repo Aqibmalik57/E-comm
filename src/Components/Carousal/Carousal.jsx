@@ -3,11 +3,12 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import { Pagination, Autoplay } from "swiper/modules";
-import './Carousal.css'
+import "./Carousal.css";
 
 const Carousal = () => {
   return (
-    <div className="flex justify-center ms-11 w-[53%]">
+    /* Width is 100% on mobile, 53% on large screens */
+    <div className="flex justify-center mx-4 ms-0 lg:ms-11 w-full md:w-[53%]">
       <Swiper
         pagination={true}
         modules={[Pagination, Autoplay]}
@@ -16,63 +17,27 @@ const Carousal = () => {
           delay: 3500,
           disableOnInteraction: false,
         }}
-        className="w-[100%] h-[50vh] my-5 rounded-lg"
+        className="w-[100%] h-[43vh] lg:h-[50vh] my-5 rounded-lg"
       >
-        <SwiperSlide className="Slider flex justify-center items-center ps-9 pt-8 h-full">
-          <h1 className="text-3xl font-medium w-72">
-            The Best Quality Products Guaranteed!
-          </h1>
-          <p className="text-lg text-gray-600 mt-2 mb-5 font-[3px] w-80">
-            The Best Quality Products Guaranteed!
-          </p>
-          <button className="bg-[#10b981] text-white px-5 py-2 rounded-lg">
-            Shop Now
-          </button>
-        </SwiperSlide>
-        <SwiperSlide className="Slider2 flex justify-center items-center ps-9 pt-8 h-full">
-          <h1 className="text-3xl font-medium w-72">
-            Best Different Type of Grocery Store
-          </h1>
-          <p className="text-lg text-gray-600 mt-2 mb-5 font-[3px] w-72">
-            Quickly aggregate empowered networks after emerging products...
-          </p>
-          <button className="bg-[#10b981] text-white px-5 py-2 rounded-lg">
-            Shop Now
-          </button>
-        </SwiperSlide>
-        <SwiperSlide className="Slider3 flex justify-center items-center ps-9 pt-8 h-full">
-          <h1 className="text-3xl font-medium w-72">
-            Quality Freshness Guaranteed!
-          </h1>
-          <p className="text-lg text-gray-600 mt-2 mb-5 font-[3px] w-72">
-            Intrinsicly fashion performance based products rather than accurate benefits...
-          </p>
-          <button className="bg-[#10b981] text-white px-5 py-2 rounded-lg">
-            Shop Now
-          </button>
-        </SwiperSlide>
-        <SwiperSlide className="Slider4 flex justify-center items-center ps-9 pt-8 h-full">
-          <h1 className="text-3xl font-medium w-72">
-            The Best Quality Products Guaranteed!
-          </h1>
-          <p className="text-lg text-gray-600 mt-2 mb-5 font-[3px] w-72">
-            Dramatically facilitate effective total linkage for go forward processes...
-          </p>
-          <button className="bg-[#10b981] text-white px-5 py-2 rounded-lg">
-            Shop Now
-          </button>
-        </SwiperSlide>
-        <SwiperSlide className="Slider5 flex justify-center items-center ps-9 pt-8 h-full">
-          <h1 className="text-3xl font-medium w-72">
-            Best Different Type of Grocery Store
-          </h1>
-          <p className="text-lg text-gray-600 mt-2 mb-5 font-[3px] w-72">
-            Quickly aggregate empowered networks after emerging products...
-          </p>
-          <button className="bg-[#10b981] text-white px-5 py-2 rounded-lg">
-            Shop Now
-          </button>
-        </SwiperSlide>
+        {/* Slides: Adjusted text sizes for mobile */}
+        {[1, 2, 3, 4, 5].map((num) => (
+          <SwiperSlide
+            key={num}
+            className={`Slider${num === 1 ? "" : num} flex flex-col justify-center items-start ps-6 lg:ps-9 pt-8 h-full`}
+          >
+            <h1 className="text-xl lg:text-3xl font-bold w-full lg:w-72">
+              {num === 3
+                ? "Quality Freshness Guaranteed!"
+                : "The Best Quality Products Guaranteed!"}
+            </h1>
+            <p className="text-sm lg:text-lg text-gray-600 mt-2 mb-5 w-full lg:w-80">
+              The Best Quality Products Guaranteed!
+            </p>
+            <button className="bg-[#10b981] text-white px-5 py-2 rounded-lg">
+              Shop Now
+            </button>
+          </SwiperSlide>
+        ))}
       </Swiper>
     </div>
   );

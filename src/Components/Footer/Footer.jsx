@@ -22,20 +22,21 @@ const Footer = () => {
   return (
     <>
       <div className="Footer">
-        <div className="store-apps min-h-max bg-[#eef2ff] grid grid-cols-3 py-16">
-          <div className="flex justify-center">
-            <img src={Uiimg1} alt="" />
+        {/* App section: 1 col on mobile, 3 cols on lg */}
+        <div className="store-apps min-h-max bg-[#eef2ff] grid grid-cols-1 lg:grid-cols-3 py-16 px-6 lg:px-0 gap-10 lg:gap-0">
+          <div className="flex justify-center md:hidden lg:block">
+            <img src={Uiimg1} alt="" className="max-w-[200px] lg:max-w-full" />
           </div>
           <div className="store-app-sub1 text-center">
-            <h1 className="text-3xl font-bold mb-4">
+            <h1 className="text-2xl lg:text-3xl font-bold mb-4">
               Get Your Daily Needs From Our KachaBazar Store
             </h1>
-            <p className="text-lg text-neutral-700">
+            <p className="text-base lg:text-lg text-neutral-700">
               There are many products you will find in our shop, Choose your
               daily necessary product from our KachaBazar shop and get some
               special offers.
             </p>
-            <div className="buttons flex gap-5 justify-center mt-8">
+            <div className="buttons flex flex-col sm:flex-row gap-5 justify-center mt-8 items-center">
               <button className="bg-[#000000] text-white p-2 w-[195px] rounded-md">
                 <a href="/" className="flex gap-4">
                   <FaApple className="text-[43px]" />
@@ -56,29 +57,33 @@ const Footer = () => {
               </button>
             </div>
           </div>
-          <div className="flex justify-center">
-            <img src={Uiimg2} alt="" />
+          <div className="flex justify-center md:hidden lg:block">
+            <img src={Uiimg2} alt="" className="max-w-[200px] lg:max-w-full" />
           </div>
         </div>
-        <div className="Footer-sub2 flex justify-between p-11 py-6 border-b-[1.5px] mb-10">
-          <p className="w-72 text-sm flex justify-center items-center text-slate-950 font-medium border-r border-inherit">
+
+        {/* Feature bar: Wrap on mobile, no-wrap on lg */}
+        <div className="Footer-sub2 flex flex-wrap lg:flex-nowrap justify-between p-6 lg:p-11 py-6 border-b-[1.5px] mb-10 gap-y-6 lg:gap-y-0">
+          <p className="w-full sm:w-1/2 lg:w-72 text-sm flex justify-center items-center text-slate-950 font-medium lg:border-r border-inherit">
             <MdOutlineLocalShipping className="text-xl me-3 text-[#059669]" />
             Free Shipping From €500.00
           </p>
-          <p className="w-72 text-sm flex justify-center items-center text-slate-950 font-medium border-r border-inherit">
+          <p className="w-full sm:w-1/2 lg:w-72 text-sm flex justify-center items-center text-slate-950 font-medium lg:border-r border-inherit">
             <FiPhoneCall className="text-lg me-3 text-[#059669]" />
             Support 24/7 At Anytime
           </p>
-          <p className="w-72 text-sm flex justify-center items-center text-slate-950 font-medium border-r border-inherit">
+          <p className="w-full sm:w-1/2 lg:w-72 text-sm flex justify-center items-center text-slate-950 font-medium lg:border-r border-inherit">
             <FiCreditCard className="text-lg me-3 text-[#059669]" />
             Secure Payment Totally Safe
           </p>
-          <p className="w-72 text-sm flex justify-center items-center text-slate-950 font-medium border-r border-inherit">
+          <p className="w-full sm:w-1/2 lg:w-72 text-sm flex justify-center items-center text-slate-950 font-medium border-r-0 border-inherit">
             <AiOutlineGift className="text-xl me-3 text-[#059669]" />
             Latest Offer Upto 20% Off
           </p>
         </div>
-        <div className="Main-Footer grid grid-cols-4 gap-20 p-12 py-5">
+
+        {/* Links: 1 col on mobile, 4 on lg */}
+        <div className="Main-Footer grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-20 px-8 lg:px-12 py-5 text-center lg:text-left">
           <div className="">
             <h1 className="text-xl mb-6">Company</h1>
             <ul className="leading-8 text-neutral-500">
@@ -130,7 +135,7 @@ const Footer = () => {
               </li>
             </ul>
           </div>
-          <div className="text-[15px] text-neutral-500">
+          <div className="text-[15px] text-neutral-500 flex flex-col items-center lg:items-start">
             <img src={ColorLogo} alt="Logo" className="mb-6 h-10" />
             <p className="leading-8">
               987 Andre Plain Suite High Street 838, Lake Hestertown, USA
@@ -139,9 +144,12 @@ const Footer = () => {
             <p className="leading-8">Email : ccruidk@test.com</p>
           </div>
         </div>
-        <div className="border Social-border m-14 mb-0"></div>
-        <div className="Social-Follow mx-11 me-12 rounded-xl min-h-48 bg-[#f9fafb] grid grid-cols-3 gap-16 ">
-          <div className="mb-3 flex justify-center ms-8 flex-col">
+
+        <div className="border Social-border m-6 mb-0 lg:m-14 lg:mb-0"></div>
+
+        {/* Social Bar: 1 col on mobile, 3 on lg */}
+        <div className="Social-Follow mx-6 lg:mx-11 lg:me-12 rounded-xl min-h-48 bg-[#f9fafb] grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-16 py-6 lg:p-0">
+          <div className="flex justify-center lg:ms-8 flex-col items-center lg:items-start">
             <p className="text-xl font-normal mb-4">Follow Us</p>
             <div className="flex items-center gap-4">
               <Link to="">
@@ -167,27 +175,28 @@ const Footer = () => {
           </div>
           <div className="flex items-center justify-center">
             <form>
-              <fieldset className="border-2 rounded-lg w-auto">
-                <legend>
+              <fieldset className="border-2 rounded-lg w-full p-2">
+                <legend className="mx-auto lg:mx-0">
                   <img src={paypal} alt="" className="h-10" />
                 </legend>
-                <div className="flex items-center gap-2 w-full">
+                <div className="flex items-center gap-2 w-full justify-center">
                   <img src={visa} alt="" className="h-12 w-auto" />
                   <img src={mastercard} alt="" className="h-6 w-auto" />
                   <img src={maestro} alt="" className="h-10 w-auto" />
-                  <img src={american} alt="" className="h-8 w-auto me-3" />
+                  <img src={american} alt="" className="h-8 w-auto lg:me-3" />
                 </div>
               </fieldset>
             </form>
           </div>
         </div>
-        <p className="flex items-center justify-center my-4">
+
+        <p className="flex flex-wrap items-center justify-center my-4 text-center px-4">
           Copyright 2024 @&nbsp;
           <span className="flex items-center text-green-600 font-medium">
             CodingHeart&nbsp;
             <FaHeart className="text-red-500 mt-1" />
           </span>
-          , All rights reserved.
+          &nbsp;, All rights reserved.
         </p>
       </div>
     </>

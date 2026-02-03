@@ -18,27 +18,31 @@ const Contact = () => {
 
   return (
     <>
-      <div ref={ref} className="contact">
-        <div className="About-us flex justify-between items-center h-44">
-          <img src={Veg1} alt="" />
-          <h1 className="text-5xl font-medium">Contact Us</h1>
-          <img src={Veg2} alt="" />
+      <div ref={ref} className="contact overflow-hidden">
+        {/* Banner Section */}
+        <div className="About-us flex justify-center sm:justify-between items-center h-32 lg:h-44 bg-[#fdf2f2] lg:bg-transparent px-4">
+          <img src={Veg1} alt="" className="h-20 lg:h-auto sm:block hidden" />
+          <h1 className="text-3xl lg:text-5xl font-medium">Contact Us</h1>
+          <img src={Veg2} alt="" className="h-20 lg:h-auto sm:block hidden" />
         </div>
-        <div className="contact-cards flex justify-evenly p-10 mt-10">
-          <div className="flex flex-col items-center justify-center pb-10 px-8 border-gray-300 rounded-md border">
+
+        {/* Contact Cards: 1 col on mobile, 3 on LG */}
+        <div className="contact-cards flex flex-col lg:flex-row justify-evenly p-6 lg:p-10 mt-5 lg:mt-10 gap-6">
+          <div className="flex flex-col items-center justify-center py-10 px-8 border-gray-300 rounded-md border text-center">
             <MdOutlineMailOutline className="text-4xl mb-4 text-[#3cc598]" />
             <h1 className="text-2xl font-bold mb-3">Email Us</h1>
-            <p className="text-center text-md w-72 leading-7 font-[450]">
+            <p className="text-md w-full sm:w-72 leading-7 font-[450]">
               <Link to="" className="text-[#47c99e] font-medium">
                 info@kachabazar.com
               </Link>{" "}
               Interactively grow empowered for process-centric total linkage.
             </p>
           </div>
-          <div className="flex flex-col items-center justify-center pb-8 px-8 border-gray-300 rounded-md border">
+
+          <div className="flex flex-col items-center justify-center py-10 px-8 border-gray-300 rounded-md border text-center">
             <FiBell className="text-4xl mb-4 text-[#3cc598]" />
             <h1 className="text-2xl font-bold mb-3">Call Us</h1>
-            <p className="text-center text-md w-72 leading-7 font-[450]">
+            <p className="text-md w-full sm:w-72 leading-7 font-[450]">
               <Link to="" className="text-[#47c99e] font-medium">
                 029-00124667
               </Link>{" "}
@@ -46,33 +50,43 @@ const Contact = () => {
               ministate.
             </p>
           </div>
-          <div className="flex flex-col items-center justify-center pb-8 px-8 border-gray-300 rounded-md border">
-            <GrLocation className="text-4xl mb-4 text-[#3cc598] mt-12" />
+
+          <div className="flex flex-col items-center justify-center py-10 px-8 border-gray-300 rounded-md border text-center">
+            <GrLocation className="text-4xl mb-4 text-[#3cc598]" />
             <h1 className="text-2xl font-bold mb-3">Location</h1>
-            <p className="text-center text-md w-72 leading-7 font-[450]">
-              Boho One, Bridge Street West, Middlesbrough, North Yorkshire, TS2
-              1AE.
-            </p>
-            <p>561-4535 Nulla LA</p>
-            <p>United States 96522.</p>
+            <div className="text-md w-full sm:w-72 leading-7 font-[450]">
+              <p>
+                Boho One, Bridge Street West, Middlesbrough, North Yorkshire,
+                TS2 1AE.
+              </p>
+              <p>561-4535 Nulla LA</p>
+              <p>United States 96522.</p>
+            </div>
           </div>
         </div>
-        <div className="contact-form grid grid-cols-2 p-10 pt-11 mb-12">
-          <div>
-            <img src={contact} alt="" className="w-[550px]" />
+
+        {/* Form Section: Stacks on mobile, 2 cols on LG */}
+        <div className="contact-form grid grid-cols-1 lg:grid-cols-2 p-6 lg:p-10 pt-11 mb-12 gap-10">
+          <div className="flex justify-center items-center">
+            <img
+              src={contact}
+              alt="Contact"
+              className="w-full max-w-[550px] h-auto"
+            />
           </div>
-          <div className="ps-6">
-            <h1 className="font-bold text-4xl">
-              For any suppoort just send your query
+
+          <div className="lg:ps-6">
+            <h1 className="font-bold text-3xl lg:text-4xl text-center lg:text-left">
+              For any support just send your query
             </h1>
-            <p className="text-lg mt-5">
+            <p className="text-lg mt-5 text-center lg:text-left text-neutral-600">
               Collaboratively promote client-focused convergence vis-a-vis
               customer-directed alignments via plagiarized strategic users and
               standardized infrastructures.
             </p>
 
             <form action="" className="mt-10">
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label className="text-[#7c82a4]">Your Name</label>
                   <input
@@ -103,19 +117,21 @@ const Contact = () => {
                   placeholder="Enter your subject"
                 />
               </div>
-              <label className="text-[#7c82a4]">Message</label>
-              <textarea
-                name="message"
-                id=""
-                cols="30"
-                rows="3"
-                className="p-3 mt-2 border w-full border-gray-[#a2aabd] rounded-md outline-[0.1px] outline-[#47c99e]"
-                placeholder="Write your message here...."
-              ></textarea>
+              <div>
+                <label className="text-[#7c82a4]">Message</label>
+                <textarea
+                  name="message"
+                  rows="4"
+                  className="p-3 mt-2 border w-full border-gray-[#a2aabd] rounded-md outline-[0.1px] outline-[#47c99e]"
+                  placeholder="Write your message here...."
+                ></textarea>
+              </div>
 
-              <button className="bg-[#10b981] font-medium text-white mt-6 px-7 py-3 rounded-md">
-                Send Message
-              </button>
+              <div className="flex justify-center lg:justify-start">
+                <button className="bg-[#10b981] font-medium text-white mt-6 px-10 py-3 rounded-md w-full sm:w-auto hover:bg-[#059669] transition-colors">
+                  Send Message
+                </button>
+              </div>
             </form>
           </div>
         </div>
