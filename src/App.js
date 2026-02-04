@@ -34,6 +34,8 @@ import FloatingCartSummary from "./Components/Cart/FloatingCartSummary.jsx";
 import { MyProfile } from "./store/feature/userSlice.js";
 import { useEffect } from "react";
 import FAQs from "./Components/FAQs.jsx";
+import Checkout from "./Components/Cart/Checkout.jsx";
+import Invoice from "./Components/Cart/invoice.jsx";
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children }) => {
@@ -71,9 +73,10 @@ const LayoutWrapper = ({ children }) => {
     "/updateprofile",
     "/updatepassword",
     "/faqs",
+    "/checkout",
+    "/Invoice-order-success",
   ];
 
-  // 2. Check for dynamic routes (regex)
   const isDynamicRoute =
     location.pathname.startsWith("/category/") ||
     // location.pathname.startsWith("/reset/") ||
@@ -163,6 +166,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <UpdateUserProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/checkout"
+              element={
+                <ProtectedRoute>
+                  <Checkout />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Invoice-order-success"
+              element={
+                <ProtectedRoute>
+                  <Invoice />
                 </ProtectedRoute>
               }
             />
