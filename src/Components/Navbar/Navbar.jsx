@@ -272,19 +272,22 @@ const Navbar = () => {
               </button>
               {isPagesOpen && (
                 <ul className="absolute top-full mt-2 rounded-md w-48 bg-white border border-gray-200 shadow-lg z-50">
-                  {["offers", "faqs", "privacy-policy", "terms&Conditions"].map(
-                    (page) => (
-                      <li key={page} className="px-4 py-2 hover:bg-green-50">
-                        <Link
-                          to={`/${page}`}
-                          onClick={() => setIsPagesOpen(false)}
-                          className="block capitalize text-gray-800"
-                        >
-                          {t(page.replace(/-/g, " ").split("&").join(" "))}
-                        </Link>
-                      </li>
-                    ),
-                  )}
+                  {[
+                    { key: "offers", path: "offers" },
+                    { key: "faqs", path: "faqs" },
+                    { key: "privacyPolicy", path: "privacy-policy" },
+                    { key: "termsConditions", path: "terms&Conditions" },
+                  ].map((page) => (
+                    <li key={page.key} className="px-4 py-2 hover:bg-green-50">
+                      <Link
+                        to={`/${page.path}`}
+                        onClick={() => setIsPagesOpen(false)}
+                        className="block capitalize text-gray-800"
+                      >
+                        {t(`navbar.${page.key}`)}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               )}
             </li>
@@ -389,7 +392,7 @@ const Navbar = () => {
 
               <nav className="flex flex-col gap-5 font-semibold text-gray-700">
                 <Link to="/" onClick={() => setMobileMenuOpen(false)}>
-                  Home
+                  {t("navbar.home")}
                 </Link>
                 <Link to="/about" onClick={() => setMobileMenuOpen(false)}>
                   {t("navbar.aboutUs")}
@@ -411,18 +414,18 @@ const Navbar = () => {
                   {mobilePagesOpen && (
                     <div className="flex flex-col gap-4 mt-4 ml-4 font-medium text-sm text-gray-500">
                       {[
-                        "offers",
-                        "faqs",
-                        "privacy-policy",
-                        "terms&Conditions",
+                        { key: "offers", path: "offers" },
+                        { key: "faqs", path: "faqs" },
+                        { key: "privacyPolicy", path: "privacy-policy" },
+                        { key: "termsConditions", path: "terms&Conditions" },
                       ].map((page) => (
                         <Link
-                          key={page}
-                          to={`/${page}`}
+                          key={page.key}
+                          to={`/${page.path}`}
                           onClick={() => setMobileMenuOpen(false)}
                           className="capitalize"
                         >
-                          {t(page.replace(/-/g, " ").split("&").join(" "))}{" "}
+                          {t(`navbar.${page.key}`)}
                         </Link>
                       ))}
                     </div>
