@@ -12,10 +12,20 @@ export const fetchCart = createAsyncThunk(
       const response = await axios.get(`${API_URL}/cart/${userId}`, {
         withCredentials: true,
       });
-      return response.data.cart; // Assuming response.data.cart contains the cart items
+
+      // We return response.data.cart because that's where the items are
+      return response.data.cart;
     } catch (error) {
-      toast.error(error.response.data.message || "Failed to fetch cart data");
-      return rejectWithValue(error.response.data);
+      // If error is 404 (Not Found), it might just mean the cart is empty
+      const message =
+        error.response?.data?.message || "Failed to fetch cart data";
+
+      // Only show toast if it's a real server error (500), not just an empty cart
+      if (error.response?.status !== 404) {
+        toast.error(message);
+      }
+
+      return rejectWithValue(message);
     }
   },
 );

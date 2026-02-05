@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../../store/feature/userSlice";
+import { login, googleLogin } from "../../store/feature/userSlice";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { GoogleLogin } from "@react-oauth/google";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -48,10 +50,20 @@ const Login = () => {
     }
   };
 
+  // Google Login Success Handler
+  const handleGoogleSuccess = (credentialResponse) => {
+    setIsLoginAttempted(true);
+    // Send the idToken to your backend via Redux action
+    dispatch(googleLogin({ idToken: credentialResponse.credential }));
+  };
+
+  // Google Login Error Handler
+  const handleGoogleError = () => {
+    toast.error("Google Login Failed. Please try again.");
+  };
+
   return (
-    // Changed min-h-screen to ensure content is never cut off on small mobile browsers
     <div className="min-h-[100dvh] flex items-center justify-center bg-gray-50 px-4 py-8 sm:py-12">
-      {/* max-w-md for desktop, w-full for mobile */}
       <div className="bg-white p-6 sm:p-10 rounded-2xl shadow-xl w-full max-w-[440px] border border-gray-100">
         <h2 className="text-2xl sm:text-3xl font-extrabold mb-2 text-center text-[#10b981]">
           Welcome Back
@@ -61,6 +73,7 @@ const Login = () => {
         </p>
 
         <form onSubmit={handleLogin} className="space-y-5 sm:space-y-6">
+          {/* Email Field */}
           <div>
             <label className="block text-gray-700 text-xs font-bold uppercase mb-1 ml-1">
               Email
@@ -86,6 +99,7 @@ const Login = () => {
             )}
           </div>
 
+          {/* Password Field */}
           <div className="relative">
             <label className="block text-gray-700 text-xs font-bold uppercase mb-1 ml-1">
               Password
@@ -147,6 +161,29 @@ const Login = () => {
               "Login"
             )}
           </button>
+
+          {/* OR Divider */}
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-gray-200"></div>
+            <span className="flex-shrink mx-4 text-gray-400 text-[10px] sm:text-xs uppercase font-medium">
+              Or continue with
+            </span>
+            <div className="flex-grow border-t border-gray-200"></div>
+          </div>
+
+          {/* Google Login Button Container */}
+          <div className="flex justify-center w-full">
+            <div className="w-full max-w-full overflow-hidden flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                theme="outline" // Changing from 'filled_blue' to 'outline' removes the blue background
+                size="large"
+                shape="pill"
+                width="100"
+              />
+            </div>
+          </div>
 
           <p className="text-center text-gray-600 text-sm mt-4 sm:mt-6">
             Don't have an account?{" "}

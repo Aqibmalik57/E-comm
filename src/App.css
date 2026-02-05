@@ -1,3 +1,16 @@
-body{
-    scroll-behavior: smooth;
+body {
+  scroll-behavior: smooth;
+}
+
+/* Removes the blue outline from the Google Login container */
+[data-gapiattachment="true"],
+.S67E6c,
+div[role="button"] {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Specific target for the library's iframe container */
+iframe[src^="https://accounts.google.com"] {
+  outline: none !important;
 }

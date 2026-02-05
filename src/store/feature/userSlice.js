@@ -5,18 +5,25 @@ import { fetchCart } from "./CartSlice";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-// Signup thunk
-export const signup = createAsyncThunk(
-  "user/signup",
-  async (info, { rejectWithValue }) => {
+// --- Updated Google Login Thunk ---
+export const googleLogin = createAsyncThunk(
+  "user/googleLogin",
+  async ({ idToken }, { rejectWithValue, dispatch }) => {
     try {
-      const response = await axios.post(`${API_URL}/signup`, info, {
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        `${API_URL}/googlelogin`,
+        { idToken },
+        { withCredentials: true },
+      );
+
       toast.success(response.data.message);
+      if (response.data.user?._id) {
+        dispatch(fetchCart(response.data.user._id));
+      }
+
       return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message);
+      toast.error(error.response?.data?.message || "Google Login Failed");
       return rejectWithValue(
         error.response?.data?.message || "An unknown error occurred",
       );
@@ -35,6 +42,25 @@ export const login = createAsyncThunk(
       toast.success(response.data.message);
       dispatch(fetchCart(response.data.user._id));
       return response.data.user;
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+      return rejectWithValue(
+        error.response?.data?.message || "An unknown error occurred",
+      );
+    }
+  },
+);
+
+// Signup thunk
+export const signup = createAsyncThunk(
+  "user/signup",
+  async (info, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${API_URL}/signup`, info, {
+        withCredentials: true,
+      });
+      toast.success(response.data.message);
+      return response.data;
     } catch (error) {
       toast.error(error.response?.data?.message);
       return rejectWithValue(
@@ -267,7 +293,7 @@ const initialState = {
   message: "",
   loading: false,
   users: [],
-  success: null, // Added for password resets
+  success: null,
 };
 
 const userSlice = createSlice({
@@ -287,20 +313,20 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Signup cases
-      .addCase(signup.pending, (state) => {
+      // --- Added Google Login Cases ---
+      .addCase(googleLogin.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(signup.fulfilled, (state, action) => {
+      .addCase(googleLogin.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user; // Set the user object from response
+        state.user = action.payload.user;
         state.isLoggedIn = true;
         state.error = null;
-        state.message = action.payload.message;
       })
-      .addCase(signup.rejected, (state, action) => {
+      .addCase(googleLogin.rejected, (state, action) => {
         state.loading = false;
+        state.user = null;
         state.isLoggedIn = false;
         state.error = action.payload;
       })
@@ -321,6 +347,23 @@ const userSlice = createSlice({
         state.isLoggedIn = false;
         state.error = action.payload;
       })
+      // Signup cases
+      .addCase(signup.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(signup.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.isLoggedIn = true;
+        state.error = null;
+        state.message = action.payload.message;
+      })
+      .addCase(signup.rejected, (state, action) => {
+        state.loading = false;
+        state.isLoggedIn = false;
+        state.error = action.payload;
+      })
       // MyProfile cases
       .addCase(MyProfile.pending, (state) => {
         state.loading = true;
@@ -334,8 +377,8 @@ const userSlice = createSlice({
       })
       .addCase(MyProfile.rejected, (state, action) => {
         state.loading = false;
-        state.isLoggedIn = false; // Add this
-        state.user = null; // Add this
+        state.isLoggedIn = false;
+        state.user = null;
         state.error = action.payload;
       })
       // UpdateProfile cases
