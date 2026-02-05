@@ -12,12 +12,13 @@ import {
 const Checkout = () => {
   const navigate = useNavigate();
 
-  const { items = [] } = useSelector((state) => state.cart || {});
-  const { user = {} } = useSelector((state) => state.user || {});
+  const { items = [], loading: cartLoading } = useSelector(
+    (state) => state.cart || {},
+  );
+  const { user } = useSelector((state) => state.user || {});
   const { claimedCoupons = [], selectedCoupons = [] } = useSelector(
     (state) => state.offer || {},
   );
-
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -28,7 +29,6 @@ const Checkout = () => {
     overnight: { name: "Priority", price: 35.0, provider: "UPS" },
   };
 
-  // Safe Calculation Logic
   const subtotal = items.reduce((acc, item) => {
     const price = item.productId?.price || 0;
     return acc + price * item.quantity;
@@ -46,6 +46,42 @@ const Checkout = () => {
     return acc;
   }, 0);
 
+  if (!user || cartLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="w-10 h-10 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin mb-4" />
+        <p className="text-slate-500 animate-pulse text-sm font-medium">
+          Verifying session...
+        </p>
+      </div>
+    );
+  }
+
+  if (!user || Object.keys(user).length === 0) {
+    navigate("/login");
+    return null;
+  }
+
+  if (!items || items.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 gap-4 text-center">
+        <div className="bg-slate-100 p-6 rounded-full mb-2">
+          <FaLock className="text-4xl text-slate-300" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-800">Your cart is empty</h2>
+        <p className="text-slate-500 max-w-xs">
+          Add some items to your cart before proceeding to checkout.
+        </p>
+        <button
+          onClick={() => navigate("/")}
+          className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition-colors"
+        >
+          Go Shopping
+        </button>
+      </div>
+    );
+  }
+
   const shippingCost = deliveryOptions[shippingMethod]?.price || 0;
   const total = Math.max(0, subtotal - discount + shippingCost);
 
@@ -53,7 +89,6 @@ const Checkout = () => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // Capture form data for the invoice
     const formData = new FormData(e.currentTarget);
     const customerDetails = {
       name: formData.get("fullName") || user?.name,
@@ -64,7 +99,6 @@ const Checkout = () => {
 
     setTimeout(() => {
       setIsProcessing(false);
-      // Navigate and pass the compiled order data
       navigate("/Invoice-order-success", {
         state: {
           orderData: {
@@ -88,15 +122,14 @@ const Checkout = () => {
   };
 
   const sectionClass =
-    "bg-white border border-slate-200 rounded-xl p-6 mb-6 shadow-sm";
+    "bg-white border border-slate-200 rounded-xl p-4 md:p-6 mb-6 shadow-sm";
   const inputClass =
     "w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all bg-white";
   const labelClass = "text-xs font-semibold text-slate-600 mb-1.5 block";
 
-  // If cart is empty, show a fallback instead of a blank screen or error
   if (!items || items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 gap-4 text-center">
         <p className="text-slate-500">Your cart is empty</p>
         <button
           onClick={() => navigate("/")}
@@ -111,7 +144,7 @@ const Checkout = () => {
   return (
     <div className="min-h-screen bg-[#F9FBFC] font-sans text-slate-900">
       <header className="bg-white border-b border-slate-200 z-50">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FaLock className="text-teal-600 text-sm" />
             <span className="font-bold text-slate-800 tracking-tight">
@@ -121,15 +154,15 @@ const Checkout = () => {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      <main className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-10">
         <form
           onSubmit={handlePlaceOrder}
-          className="grid grid-cols-1 lg:grid-cols-12 gap-10"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10"
         >
-          <div className="lg:col-span-7">
+          <div className="order-2 lg:order-1 lg:col-span-7">
             {/* 1. Contact */}
             <div className={sectionClass}>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-6 flex items-center gap-2">
+              <h3 className="text-[11px] md:text-sm font-bold uppercase tracking-wider text-slate-400 mb-6 flex items-center gap-2">
                 <span className="w-5 h-5 bg-slate-900 text-white rounded-full flex items-center justify-center text-[10px]">
                   1
                 </span>
@@ -170,7 +203,7 @@ const Checkout = () => {
 
             {/* 2. Shipping */}
             <div className={sectionClass}>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-6 flex items-center gap-2">
+              <h3 className="text-[11px] md:text-sm font-bold uppercase tracking-wider text-slate-400 mb-6 flex items-center gap-2">
                 <span className="w-5 h-5 bg-slate-900 text-white rounded-full flex items-center justify-center text-[10px]">
                   2
                 </span>
@@ -204,7 +237,7 @@ const Checkout = () => {
                       name="state"
                       type="text"
                       className={inputClass}
-                    />{" "}
+                    />
                   </div>
                   <div>
                     <label className={labelClass}>ZIP Code</label>
@@ -213,7 +246,7 @@ const Checkout = () => {
                       name="zip"
                       type="text"
                       className={inputClass}
-                    />{" "}
+                    />
                   </div>
                 </div>
               </div>
@@ -221,7 +254,7 @@ const Checkout = () => {
 
             {/* 3. Delivery */}
             <div className={sectionClass}>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-6 flex items-center gap-2">
+              <h3 className="text-[11px] md:text-sm font-bold uppercase tracking-wider text-slate-400 mb-6 flex items-center gap-2">
                 <span className="w-5 h-5 bg-slate-900 text-white rounded-full flex items-center justify-center text-[10px]">
                   3
                 </span>
@@ -233,9 +266,9 @@ const Checkout = () => {
                     key={key}
                     type="button"
                     onClick={() => setShippingMethod(key)}
-                    className={`p-4 rounded-lg border text-left transition-all ${shippingMethod === key ? "border-teal-600 bg-teal-50/30" : "border-slate-200 hover:border-slate-300 bg-white"}`}
+                    className={`p-4 rounded-lg border text-left transition-all flex sm:flex-col justify-between sm:justify-start gap-2 ${shippingMethod === key ? "border-teal-600 bg-teal-50/30" : "border-slate-200 hover:border-slate-300 bg-white"}`}
                   >
-                    <div className="flex justify-between items-center mb-1">
+                    <div className="flex justify-between items-center w-full">
                       <span className="text-[10px] font-bold text-slate-400 uppercase">
                         {opt.provider}
                       </span>
@@ -243,12 +276,14 @@ const Checkout = () => {
                         <div className="w-2 h-2 bg-teal-600 rounded-full" />
                       )}
                     </div>
-                    <p className="text-sm font-bold text-slate-800">
-                      {opt.name}
-                    </p>
-                    <p className="text-xs font-semibold text-teal-700 mt-1">
-                      {opt.price === 0 ? "Free" : `$${opt.price.toFixed(2)}`}
-                    </p>
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">
+                        {opt.name}
+                      </p>
+                      <p className="text-xs font-semibold text-teal-700 mt-1">
+                        {opt.price === 0 ? "Free" : `$${opt.price.toFixed(2)}`}
+                      </p>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -256,13 +291,13 @@ const Checkout = () => {
 
             {/* 4. Payment */}
             <div className={sectionClass}>
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-6 flex items-center gap-2">
+              <h3 className="text-[11px] md:text-sm font-bold uppercase tracking-wider text-slate-400 mb-6 flex items-center gap-2">
                 <span className="w-5 h-5 bg-slate-900 text-white rounded-full flex items-center justify-center text-[10px]">
                   4
                 </span>
                 Payment
               </h3>
-              <div className="flex gap-4 mb-6">
+              <div className="flex gap-3 md:gap-4 mb-6">
                 <PaymentTab
                   active={paymentMethod === "card"}
                   onClick={() => setPaymentMethod("card")}
@@ -286,7 +321,7 @@ const Checkout = () => {
                       className={inputClass}
                     />
                   </div>
-                  <div>
+                  <div className="col-span-1">
                     <label className={labelClass}>Expiry</label>
                     <input
                       type="text"
@@ -294,7 +329,7 @@ const Checkout = () => {
                       className={inputClass}
                     />
                   </div>
-                  <div>
+                  <div className="col-span-1">
                     <label className={labelClass}>CVC</label>
                     <input
                       type="text"
@@ -307,38 +342,35 @@ const Checkout = () => {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-5">
-            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm sticky top-24">
+          {/* Sidebar - Summary */}
+          <div className="order-1 lg:order-2 lg:col-span-5">
+            <div className="bg-white border border-slate-200 rounded-xl p-4 md:p-6 shadow-sm lg:sticky lg:top-24">
               <h3 className="text-sm font-bold uppercase tracking-wider text-slate-800 mb-6">
                 Order Summary
               </h3>
-              <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto pr-3 custom-scrollbar">
+              <div className="divide-y divide-slate-100 max-h-[300px] lg:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                 {items.map((item, idx) => (
-                  <div key={idx} className="py-5 flex gap-5 items-center group">
-                    {/* Increased size from w-12/h-12 to w-20/h-20 */}
-                    <div className="w-20 h-20 bg-slate-50 border border-slate-100 rounded-lg p-2 flex-shrink-0 flex items-center justify-center transition-transform group-hover:scale-105">
+                  <div key={idx} className="py-4 flex gap-4 items-center group">
+                    <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-50 border border-slate-100 rounded-lg p-2 flex-shrink-0 flex items-center justify-center transition-transform group-hover:scale-105">
                       <img
                         src={item.productId?.imageUrl}
                         alt={item.productId?.title}
                         className="max-w-full max-h-full object-contain mix-blend-multiply"
                       />
                     </div>
-
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-bold text-slate-800 leading-tight mb-1">
+                      <h4 className="text-xs md:text-sm font-bold text-slate-800 leading-tight mb-1 truncate">
                         {item.productId?.title}
                       </h4>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[11px] font-medium px-2 py-0.5 bg-slate-100 text-slate-600 rounded">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">
                           Qty: {item.quantity}
                         </span>
-                        <span className="text-[11px] text-slate-400 font-medium">
+                        <span className="text-[10px] text-slate-400 font-medium">
                           ${(item.productId?.price || 0).toFixed(2)} / unit
                         </span>
                       </div>
                     </div>
-
                     <div className="text-sm font-black text-slate-900 whitespace-nowrap">
                       $
                       {((item.productId?.price || 0) * item.quantity).toFixed(
@@ -374,7 +406,7 @@ const Checkout = () => {
                   <span className="text-base font-bold text-slate-900">
                     Total
                   </span>
-                  <span className="text-2xl font-black text-slate-900 tracking-tight">
+                  <span className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
                     ${total.toFixed(2)}
                   </span>
                 </div>
@@ -383,7 +415,7 @@ const Checkout = () => {
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-lg font-bold text-sm transition-all mt-8 disabled:bg-slate-300 flex items-center justify-center gap-2"
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-lg font-bold text-sm transition-all mt-6 md:mt-8 disabled:bg-slate-300 flex items-center justify-center gap-2"
               >
                 {isProcessing ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -419,7 +451,9 @@ const PaymentTab = ({ active, onClick, icon, label }) => (
     }`}
   >
     <span className="text-sm">{icon}</span>
-    <span className="text-xs font-bold tracking-wide">{label}</span>
+    <span className="text-[10px] md:text-xs font-bold tracking-wide">
+      {label}
+    </span>
   </button>
 );
 
