@@ -18,7 +18,7 @@ export const googleLogin = createAsyncThunk(
 
       toast.success(response.data.message);
       if (response.data.user?._id) {
-        dispatch(fetchCart(response.data.user._id));
+        dispatch(fetchCart());
       }
 
       return response.data;
@@ -40,10 +40,10 @@ export const login = createAsyncThunk(
         withCredentials: true,
       });
       toast.success(response.data.message);
-      dispatch(fetchCart(response.data.user._id));
+      dispatch(fetchCart());
       return response.data.user;
     } catch (error) {
-      toast.error(error.response?.data?.message);
+      toast.error(error.response?.data?.message || "Login failed");
       return rejectWithValue(
         error.response?.data?.message || "An unknown error occurred",
       );
@@ -54,12 +54,15 @@ export const login = createAsyncThunk(
 // Signup thunk
 export const signup = createAsyncThunk(
   "user/signup",
-  async (info, { rejectWithValue }) => {
+  async (info, { rejectWithValue, dispatch }) => {
     try {
       const response = await axios.post(`${API_URL}/signup`, info, {
         withCredentials: true,
       });
       toast.success(response.data.message);
+      if (response.data.user?._id) {
+        dispatch(fetchCart());
+      }
       return response.data;
     } catch (error) {
       toast.error(error.response?.data?.message);
@@ -202,7 +205,7 @@ export const editUserProfile = createAsyncThunk(
   "user/editProfile",
   async (info, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
+      const response = await axios.put(
         `${API_URL}/updateUserProfile/${info.id}`,
         info,
         { withCredentials: true },
@@ -293,6 +296,8 @@ const initialState = {
   message: "",
   loading: false,
   users: [],
+  usersLoading: false,
+  usersError: null,
   success: null,
 };
 
@@ -419,7 +424,6 @@ const userSlice = createSlice({
       })
       .addCase(updateUserRole.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user; // Update the user state with the new role
         state.message = action.payload.message; // Set the success message
       })
       .addCase(updateUserRole.rejected, (state, action) => {
@@ -461,7 +465,6 @@ const userSlice = createSlice({
       })
       .addCase(updatePassword.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user; // Assuming the updated user is returned
         state.message = action.payload.message; // Success message from response
         state.error = null;
       })

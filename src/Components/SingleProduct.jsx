@@ -35,7 +35,7 @@ const SingleProduct = () => {
     try {
       if (user && product) {
         await dispatch(
-          addToCart({ userId: user?._id, productId: product._id, quantity }),
+          addToCart({ productId: product._id, quantity }),
         ).unwrap();
         toast.success("Added to cart");
       } else if (!user) {
@@ -80,7 +80,11 @@ const SingleProduct = () => {
             Shop
           </button>
           <span>/</span>
-          <span className="text-slate-900 font-bold">{product.category}</span>
+          <span className="text-slate-900 font-bold">
+            {typeof product.category === "object"
+              ? product.category.name
+              : product.category}
+          </span>
         </nav>
 
         <div className="flex flex-col lg:flex-row gap-8 xl:gap-20">
@@ -117,7 +121,9 @@ const SingleProduct = () => {
               {/* Product Header */}
               <div className="space-y-2">
                 <p className="text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em]">
-                  {product.category}
+                  {typeof product.category === "object"
+                    ? product.category.name
+                    : product.category}
                 </p>
                 <h1 className="text-3xl sm:text-4xl xl:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">
                   {product.title}

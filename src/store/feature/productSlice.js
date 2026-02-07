@@ -48,7 +48,7 @@ export const getSingleProduct = createAsyncThunk(
   async (productId, { rejectWithValue }) => {
     try {
       const response = await axios.get(
-        `${API_URL}/singleproduct/${productId}`,
+        `${API_URL}/singleProduct/${productId}`,
         {
           withCredentials: true,
         },
@@ -66,11 +66,11 @@ export const getSingleProduct = createAsyncThunk(
 // product review thunk
 export const productReview = createAsyncThunk(
   "product/productReview",
-  async ({ productId, review }, { rejectWithValue }) => {
+  async ({ productId, text, rating }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/Product/Review/${productId}`,
-        { review },
+        `${API_URL}/product/review/${productId}`,
+        { text, rating },
         { withCredentials: true },
       );
       toast.success(response.data.message);
@@ -84,13 +84,58 @@ export const productReview = createAsyncThunk(
   },
 );
 
+// update product thunk
+export const updateProduct = createAsyncThunk(
+  "product/updateProduct",
+  async ({ productId, updateData }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        `${API_URL}/update/product/${productId}`,
+        updateData,
+        {
+          withCredentials: true,
+        },
+      );
+      toast.success(response.data.message);
+      return response.data.product;
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+      return rejectWithValue(
+        error.response?.data?.message || "An unknown error occurred",
+      );
+    }
+  },
+);
+
+// delete product thunk
+export const deleteProduct = createAsyncThunk(
+  "product/deleteProduct",
+  async (productId, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(
+        `${API_URL}/delete/product/${productId}`,
+        {
+          withCredentials: true,
+        },
+      );
+      toast.success(response.data.message);
+      return productId;
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+      return rejectWithValue(
+        error.response?.data?.message || "An unknown error occurred",
+      );
+    }
+  },
+);
+
 // delete product review by user thunk
 export const deleteProductReview = createAsyncThunk(
   "product/deleteProductReview",
-  async (reviewId, { rejectWithValue }) => {
+  async (productId, { rejectWithValue }) => {
     try {
       const response = await axios.delete(
-        `${API_URL}/review/delete/${reviewId}`,
+        `${API_URL}/review/delete/${productId}`,
         {
           withCredentials: true,
         },
@@ -204,6 +249,32 @@ const productSlice = createSlice({
       .addCase(deleteProductReview.rejected, (state, action) => {
         state.loading = false;
         state.product = null;
+        state.error = action.payload;
+      })
+      // update product
+      .addCase(updateProduct.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateProduct.fulfilled, (state, action) => {
+        state.loading = false;
+        state.product = action.payload;
+      })
+      .addCase(updateProduct.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // delete product
+      .addCase(deleteProduct.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteProduct.fulfilled, (state, action) => {
+        state.loading = false;
+        state.products = state.products.filter(
+          (product) => product._id !== action.payload,
+        );
+      })
+      .addCase(deleteProduct.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       })
       // delete review cases

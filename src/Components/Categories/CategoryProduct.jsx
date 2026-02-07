@@ -1,22 +1,12 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import "./Category.css";
 import { IoIosArrowForward } from "react-icons/io";
-import { useDispatch } from "react-redux";
-import { getAllProducts } from "../../store/feature/productSlice";
 import { Link, useNavigate } from "react-router-dom";
 import ProductContext from "../Context/ProductContext";
 
 const CategoryProduct = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { images } = useContext(ProductContext);
-  const [products, setproducts] = useState(null);
-
-  useEffect(() => {
-    if (products === null) {
-      setproducts(dispatch(getAllProducts()));
-    }
-  }, [dispatch, products]);
 
   // Data configuration to keep the JSX clean and dry
   const categories = [

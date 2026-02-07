@@ -7,9 +7,9 @@ const API_URL = process.env.REACT_APP_API_URL;
 // Async thunk to fetch cart data
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
-  async (userId, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/cart/${userId}`, {
+      const response = await axios.get(`${API_URL}/cart`, {
         withCredentials: true,
       });
 
@@ -33,12 +33,11 @@ export const fetchCart = createAsyncThunk(
 // Async thunk for adding an item to the cart
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
-  async ({ userId, productId, quantity }, { rejectWithValue }) => {
+  async ({ productId, quantity }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${API_URL}/add-to-cart`,
+        `${API_URL}/add/cart`,
         {
-          userId,
           productId,
           quantity,
         },
@@ -56,15 +55,15 @@ export const addToCart = createAsyncThunk(
 // Async thunk for increasing item quantity in the cart
 export const increaseCartQuantity = createAsyncThunk(
   "cart/increaseCartQuantity",
-  async ({ userId, productId }, { rejectWithValue, dispatch }) => {
+  async ({ productId }, { rejectWithValue, dispatch }) => {
     try {
       const response = await axios.put(
         `${API_URL}/increase-quantity`,
-        { userId, productId },
+        { productId },
         { withCredentials: true },
       );
       console.log(response.data.cart.items);
-      dispatch(fetchCart(userId)); // Re-fetch the cart to ensure full product data
+      dispatch(fetchCart()); // Re-fetch the cart to ensure full product data
       return response.data.cart.items; // Assuming the response contains the updated cart
     } catch (error) {
       toast.error(error.response.data.message || "Failed to increase quantity");
@@ -77,14 +76,14 @@ export const increaseCartQuantity = createAsyncThunk(
 
 export const decreaseCartQuantity = createAsyncThunk(
   "cart/decreaseCartQuantity",
-  async ({ userId, productId }, { rejectWithValue, dispatch }) => {
+  async ({ productId }, { rejectWithValue, dispatch }) => {
     try {
       const response = await axios.put(
         `${API_URL}/decrease-quantity`,
-        { userId, productId },
+        { productId },
         { withCredentials: true },
       );
-      dispatch(fetchCart(userId)); // Re-fetch the cart to ensure full product data
+      dispatch(fetchCart()); // Re-fetch the cart to ensure full product data
       return response.data.cart; // Assuming the response contains the updated cart
     } catch (error) {
       toast.error(error.response.data.message || "Failed to decrease quantity");
@@ -96,12 +95,30 @@ export const decreaseCartQuantity = createAsyncThunk(
 // Thunk to remove product from cart
 export const removeFromCart = createAsyncThunk(
   "cart/removeFromCart",
-  async ({ userId, productId }) => {
-    const response = await axios.delete(
-      `${API_URL}/remove/${userId}/${productId}`,
-      { withCredentials: true },
-    );
+  async ({ productId }) => {
+    const response = await axios.delete(`${API_URL}/remove-item/${productId}`, {
+      withCredentials: true,
+    });
     return response.data;
+  },
+);
+
+// Async thunk for applying coupon to cart
+export const applyCouponToCart = createAsyncThunk(
+  "cart/applyCouponToCart",
+  async ({ couponTitle }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/apply-coupon`,
+        { couponTitle },
+        { withCredentials: true },
+      );
+      toast.success(response.data.message);
+      return response.data.cart;
+    } catch (error) {
+      toast.error(error.response.data.message || "Failed to apply coupon");
+      return rejectWithValue(error.response.data);
+    }
   },
 );
 
@@ -109,7 +126,13 @@ export const removeFromCart = createAsyncThunk(
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
-    items: [],
+    cart: {
+      items: [],
+      subtotal: 0,
+      discount: 0,
+      total: 0,
+      appliedCoupon: null,
+    },
     loading: false,
     initialLoading: false,
     error: null,
@@ -119,7 +142,7 @@ const cartSlice = createSlice({
     builder
       // Handle fetch cart success
       .addCase(fetchCart.fulfilled, (state, action) => {
-        state.items = action.payload?.items || []; // Adjust this according to your response structure
+        state.cart = action.payload; // Update the full cart object
         state.loading = false;
         state.initialLoading = false;
         state.error = null;
@@ -140,7 +163,7 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(addToCart.fulfilled, (state, action) => {
-        state.items = action.payload?.items || []; // Adjust this according to your response structure
+        state.cart = action.payload; // Update the full cart object
         state.loading = false;
         state.error = null;
       })
@@ -179,12 +202,26 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(removeFromCart.fulfilled, (state, action) => {
+        state.cart = action.payload.cart; // Update the full cart object
         state.loading = false;
-        state.items = action.payload?.items || []; // Update the items with the new cart
       })
       .addCase(removeFromCart.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      })
+      // Handle apply coupon
+      .addCase(applyCouponToCart.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(applyCouponToCart.fulfilled, (state, action) => {
+        state.cart = action.payload; // Update the full cart object
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(applyCouponToCart.rejected, (state, action) => {
+        state.error = action.payload;
+        state.loading = false;
       });
   },
 });

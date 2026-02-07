@@ -12,13 +12,11 @@ const HomePopularProduct = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error, products } = useSelector((state) => state.product);
-  const { user } = useSelector((state) => state.user);
-
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const getDiscount = (category) => {
-    if (!category) return 0;
+    if (!category || typeof category !== "string") return 0;
     const discountMap = {
       vegetable: 10,
       fruit: 5,
@@ -36,8 +34,7 @@ const HomePopularProduct = () => {
 
   const handleAddToCart = async (productId, quantity = 1) => {
     try {
-      const userId = user?._id;
-      await dispatch(addToCart({ userId, productId, quantity })).unwrap();
+      await dispatch(addToCart({ productId, quantity })).unwrap();
     } catch (backendError) {
       toast.error(backendError || "Something went wrong");
     }

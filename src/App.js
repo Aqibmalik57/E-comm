@@ -14,7 +14,14 @@ import Signup from "./Components/Signup/Signup";
 import Profile from "./Components/Profile/Profile";
 import UpdateProfile from "./Components/UpdateProfile/updateprofile";
 import { useDispatch, useSelector } from "react-redux";
-// import AdminDashboard from "./Components/AdminDashboard/AdminDashboard";
+import AdminDashboard from "./Components/AdminDashboard/AdminDashboard";
+import AdminLayout from "./Components/AdminDashboard/AdminLayout";
+import UsersManagement from "./Components/AdminDashboard/UsersManagement";
+import ProductsManagement from "./Components/AdminDashboard/ProductsManagement";
+import CategoriesManagement from "./Components/AdminDashboard/CategoriesManagement";
+import OrdersManagement from "./Components/AdminDashboard/OrdersManagement";
+import CouponsManagement from "./Components/AdminDashboard/CouponsManagement";
+import ReviewsManagement from "./Components/AdminDashboard/ReviewsManagement";
 import SingleUserProfile from "./Components/Profile/SingleUserProfile";
 import UpdatePassword from "./Components/UpdateProfile/updatePassword";
 import UpdateUserProfile from "./Components/AdminDashboard/UpdateUserProfile";
@@ -22,7 +29,6 @@ import ForgotPassword from "./Components/Password/forgotPassword";
 import ResetPassword from "./Components/Password/resetPassword";
 import NotFound from "./Notfound-404";
 import Category from "./Components/Categories/Categ.jsx";
-// import Add from "./Components/Add.jsx";
 import AddCart from "./Components/Cart/Cart.jsx";
 import SingleProduct from "./Components/SingleProduct.jsx";
 import Offers from "./Components/Offers/Offers.jsx";
@@ -41,11 +47,11 @@ import Invoice from "./Components/Cart/invoice.jsx";
 const ProtectedRoute = ({ children }) => {
   const { isLoggedIn, loading } = useSelector((state) => state.user);
 
-  // While checking if the user is logged in (on refresh), show nothing.
+  // While checking if the user is logged in (on refresh), show loading spinner
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        Loading...
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#10b981]"></div>
       </div>
     );
   }
@@ -54,8 +60,42 @@ const ProtectedRoute = ({ children }) => {
   return isLoggedIn ? children : <Navigate to="/login" replace />;
 };
 
+// AdminProtectedRoute component - checks for admin role
+const AdminProtectedRoute = ({ children }) => {
+  const { isLoggedIn, loading, user } = useSelector((state) => state.user);
+
+  // While checking if the user is logged in (on refresh), show loading spinner
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#10b981]"></div>
+      </div>
+    );
+  }
+
+  // If not logged in, redirect to login
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // If logged in but not admin, redirect to home
+  if (user?.role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
 const LayoutWrapper = ({ children }) => {
   const location = useLocation();
+
+  // Check if current path is an admin route
+  const isAdminRoute = location.pathname.startsWith("/admin");
+
+  // If it's an admin route, don't show navbar and footer
+  if (isAdminRoute) {
+    return <>{children}</>;
+  }
 
   // 1. Define all your valid existing paths here
   const validPaths = [
@@ -79,7 +119,6 @@ const LayoutWrapper = ({ children }) => {
 
   const isDynamicRoute =
     location.pathname.startsWith("/category/") ||
-    // location.pathname.startsWith("/reset/") ||
     location.pathname.startsWith("/product/") ||
     location.pathname.startsWith("/singleUser/") ||
     location.pathname.startsWith("/updateUser/");
@@ -185,6 +224,24 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            {/* Admin Routes */}
+            <Route
+              path="/admin"
+              element={
+                <AdminProtectedRoute>
+                  <AdminLayout />
+                </AdminProtectedRoute>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="users" element={<UsersManagement />} />
+              <Route path="products" element={<ProductsManagement />} />
+              <Route path="categories" element={<CategoriesManagement />} />
+              <Route path="orders" element={<OrdersManagement />} />
+              <Route path="coupons" element={<CouponsManagement />} />
+              <Route path="reviews" element={<ReviewsManagement />} />
+            </Route>
           </Routes>
         </LayoutWrapper>
       </BrowserRouter>

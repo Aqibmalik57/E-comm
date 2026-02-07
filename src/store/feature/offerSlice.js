@@ -1,127 +1,111 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
+import { toast } from "react-toastify";
 
-const getAvailableCoupons = () => {
-  const newCoupons = [
-    {
-      id: "flash_sale_01",
-      name: "Midnight Flash Deal",
-      discountType: "percentage",
-      discountValue: 40,
-      description: "Massive 40% off for night owls!",
-      startDate: new Date(Date.now()).toISOString(),
-      expirationDate: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-      isActive: true,
-    },
-    {
-      id: "weekend_bonanza",
-      name: "Weekend Bonanza",
-      discountType: "fixed",
-      discountValue: 50,
-      description: "Get $50 off on high-end electronics.",
-      startDate: new Date(Date.now()).toISOString(),
-      expirationDate: new Date(
-        Date.now() + 2 * 24 * 60 * 60 * 1000,
-      ).toISOString(),
-      isActive: true,
-    },
-    {
-      id: "upcoming_mega",
-      name: "Upcoming Mega Deal",
-      discountType: "percentage",
-      discountValue: 70,
-      description: "This deal is locked! It activates in 1 hour.",
-      startDate: new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString(),
-      expirationDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      isActive: false,
-    },
-    {
-      id: "holiday_15",
-      name: "Holiday Special",
-      discountType: "percentage",
-      discountValue: 15,
-      description: "Get 15% off on all festive items.",
-      startDate: new Date(Date.now()).toISOString(),
-      expirationDate: new Date(
-        Date.now() + 10 * 24 * 60 * 60 * 1000,
-      ).toISOString(),
-      isActive: true,
-    },
-    {
-      id: "black_friday_retro",
-      name: "Black Friday Offer",
-      discountType: "percentage",
-      discountValue: 30,
-      description: "This offer has unfortunately ended.",
-      startDate: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-      expirationDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      isActive: false,
-    },
-    {
-      id: "new_year_25",
-      name: "New Year Promo",
-      discountType: "percentage",
-      discountValue: 25,
-      description: "Starts in 2 hours! Get ready.",
-      startDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-      expirationDate: new Date(
-        Date.now() + 20 * 24 * 60 * 60 * 1000,
-      ).toISOString(),
-      isActive: false,
-    },
-  ];
+const API_URL = process.env.REACT_APP_API_URL;
 
-  const stored = localStorage.getItem("availableCoupons");
-  // Overwrite if count differs to ensure your new 6 coupons show up
-  if (!stored || JSON.parse(stored).length !== newCoupons.length) {
-    localStorage.setItem("availableCoupons", JSON.stringify(newCoupons));
-    return newCoupons;
-  }
+// create coupon thunk
+export const createCoupon = createAsyncThunk(
+  "offer/createCoupon",
+  async (couponData, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/create-coupon`,
+        couponData,
+        {
+          withCredentials: true,
+        },
+      );
+      toast.success(response.data.message);
+      return response.data.coupon;
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+      return rejectWithValue(
+        error.response?.data?.message || "An unknown error occurred",
+      );
+    }
+  },
+);
 
-  return JSON.parse(stored);
-};
+// get all coupons thunk
+export const getAllCoupons = createAsyncThunk(
+  "offer/getAllCoupons",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/get-coupons`, {
+        withCredentials: true,
+      });
+      return response.data.coupons;
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+      return rejectWithValue(
+        error.response?.data?.message || "An unknown error occurred",
+      );
+    }
+  },
+);
+
+// claim coupon thunk
+export const claimCoupon = createAsyncThunk(
+  "offer/claimCoupon",
+  async (couponId, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/claim-coupon/${couponId}`,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
+      toast.success(response.data.message);
+      return response.data; // Assuming it returns the claimed coupon or relevant data
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+      return rejectWithValue(
+        error.response?.data?.message || "An unknown error occurred",
+      );
+    }
+  },
+);
+
+// get my claimed coupons thunk
+export const getMyClaimedCoupons = createAsyncThunk(
+  "offer/getMyClaimedCoupons",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/my-claimed-coupons`, {
+        withCredentials: true,
+      });
+      return response.data.claimedCoupons;
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+      return rejectWithValue(
+        error.response?.data?.message || "An unknown error occurred",
+      );
+    }
+  },
+);
 
 const initialState = {
-  availableCoupons: getAvailableCoupons(),
-  claimedCoupons: JSON.parse(localStorage.getItem("claimedCoupons")) || [],
+  availableCoupons: [],
+  claimedCoupons: [],
   selectedCoupons: JSON.parse(localStorage.getItem("selectedCoupons")) || [],
+  loading: false,
+  error: null,
 };
 
 const offerSlice = createSlice({
   name: "offer",
   initialState,
   reducers: {
-    claimCoupon: (state, action) => {
-      const couponId = action.payload;
-      const coupon = state.availableCoupons.find((c) => c.id === couponId);
-      if (coupon && !state.claimedCoupons.some((c) => c.id === couponId)) {
-        const claimedCoupon = {
-          ...coupon,
-          claimDate: new Date().toISOString(),
-          // Valid for 3 days after claiming
-          expirationDate: new Date(
-            Date.now() + 3 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-        };
-        state.claimedCoupons.push(claimedCoupon);
-        localStorage.setItem(
-          "claimedCoupons",
-          JSON.stringify(state.claimedCoupons),
-        );
-      }
-    },
     updateCouponStatus: (state) => {
       const now = new Date().getTime();
       state.availableCoupons.forEach((coupon) => {
         const start = new Date(coupon.startDate).getTime();
-        const end = new Date(coupon.expirationDate).getTime();
+        const end = new Date(coupon.expireDate).getTime();
         coupon.isActive = now >= start && now <= end;
       });
-      localStorage.setItem(
-        "availableCoupons",
-        JSON.stringify(state.availableCoupons),
-      );
     },
-    // ADDED BACK FOR YOUR CART COMPONENT
     selectCoupon: (state, action) => {
       const couponId = action.payload;
       if (!state.selectedCoupons.includes(couponId)) {
@@ -142,10 +126,71 @@ const offerSlice = createSlice({
         JSON.stringify(state.selectedCoupons),
       );
     },
+    clearOfferErrors: (state) => {
+      state.error = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      // create coupon
+      .addCase(createCoupon.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(createCoupon.fulfilled, (state, action) => {
+        state.loading = false;
+        state.availableCoupons.push(action.payload);
+      })
+      .addCase(createCoupon.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // get all coupons
+      .addCase(getAllCoupons.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getAllCoupons.fulfilled, (state, action) => {
+        state.loading = false;
+        state.availableCoupons = action.payload;
+      })
+      .addCase(getAllCoupons.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // claim coupon
+      .addCase(claimCoupon.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(claimCoupon.fulfilled, (state, action) => {
+        state.loading = false;
+        // Assuming the response includes the claimed coupon details
+        // You may need to adjust based on actual API response
+        // For now, trigger a refetch or update claimedCoupons
+        // Since getMyClaimedCoupons sets claimedCoupons, perhaps dispatch it separately
+      })
+      .addCase(claimCoupon.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // get my claimed coupons
+      .addCase(getMyClaimedCoupons.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getMyClaimedCoupons.fulfilled, (state, action) => {
+        state.loading = false;
+        state.claimedCoupons = action.payload;
+      })
+      .addCase(getMyClaimedCoupons.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 
-export const { claimCoupon, updateCouponStatus, selectCoupon, deselectCoupon } =
-  offerSlice.actions;
+export const {
+  updateCouponStatus,
+  selectCoupon,
+  deselectCoupon,
+  clearOfferErrors,
+} = offerSlice.actions;
 
 export default offerSlice.reducer;

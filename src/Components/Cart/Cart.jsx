@@ -14,7 +14,10 @@ import { IoMdCheckmarkCircle } from "react-icons/io";
 
 const Cart = () => {
   const dispatch = useDispatch();
-  const { items, loading } = useSelector((state) => state.cart);
+  const {
+    cart: { items },
+    loading,
+  } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.user);
   const { claimedCoupons, selectedCoupons } = useSelector(
     (state) => state.offer,
@@ -50,7 +53,7 @@ const Cart = () => {
   const handleQuantityIncrease = async (productId) => {
     if (user._id) {
       try {
-        await dispatch(increaseCartQuantity({ userId: user._id, productId }));
+        await dispatch(increaseCartQuantity({ productId }));
       } catch (error) {
         console.error("Error increasing quantity:", error);
       }
@@ -60,7 +63,7 @@ const Cart = () => {
   const handleQuantityDecrease = async (productId) => {
     if (user._id) {
       try {
-        await dispatch(decreaseCartQuantity({ userId: user._id, productId }));
+        await dispatch(decreaseCartQuantity({ productId }));
       } catch (error) {
         console.error("Error decreasing quantity:", error);
       }
@@ -70,11 +73,9 @@ const Cart = () => {
   const handleRemoveFromCart = async (productId) => {
     if (user && user._id) {
       try {
-        const response = await dispatch(
-          removeFromCart({ userId: user._id, productId }),
-        );
+        const response = await dispatch(removeFromCart({ productId }));
         if (response.meta.requestStatus === "fulfilled") {
-          dispatch(fetchCart(user._id));
+          dispatch(fetchCart());
         }
       } catch (error) {
         console.error("Error removing item:", error);

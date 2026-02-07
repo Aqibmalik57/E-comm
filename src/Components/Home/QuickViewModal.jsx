@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addToCart } from "../../store/feature/CartSlice";
 import {
@@ -16,7 +16,6 @@ import { toast } from "react-toastify";
 const QuickViewModal = ({ product, isOpen, onClose }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.user);
   const [quantity, setQuantity] = useState(1);
 
   if (!isOpen || !product) return null;
@@ -29,9 +28,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
 
   const handleAddToCart = async () => {
     try {
-      await dispatch(
-        addToCart({ userId: user?._id, productId: product._id, quantity }),
-      ).unwrap();
+      await dispatch(addToCart({ productId: product._id, quantity })).unwrap();
       toast.success("Added to cart");
     } catch (backendError) {
       toast.error(backendError || "Failed to add to cart");
@@ -151,12 +148,16 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
             <div className="text-sm font-semibold text-gray-800">
               Category:{" "}
               <span className="font-normal text-gray-500 ml-1">
-                {product.category}
+                {typeof product.category === "object"
+                  ? product.category.name
+                  : product.category}
               </span>
             </div>
             <div className="flex gap-2">
               <span className="px-3 py-1 bg-[#f9fafb] text-gray-400 text-xs rounded border border-gray-100">
-                {product.category}
+                {typeof product.category === "object"
+                  ? product.category.name
+                  : product.category}
               </span>
             </div>
           </div>

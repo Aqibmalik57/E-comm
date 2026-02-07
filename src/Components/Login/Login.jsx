@@ -34,7 +34,7 @@ const Login = () => {
 
   useEffect(() => {
     if (user && isLoginAttempted) {
-      if (user.role === "admin") navigate("/dashboard");
+      if (user.role === "admin") navigate("/admin");
       else navigate("/");
     }
   }, [isLoginAttempted, navigate, user]);
