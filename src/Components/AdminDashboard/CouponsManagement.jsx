@@ -9,7 +9,6 @@ import {
   FaTicketAlt,
   FaCalendar,
   FaPercentage,
-  FaDollarSign,
   FaCopy,
   FaCheck,
   FaExclamationTriangle,
