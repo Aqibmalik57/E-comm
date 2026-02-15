@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   claimCoupon,
+  getAllCoupons,
+  getMyClaimedCoupons,
   updateCouponStatus,
 } from "../../store/feature/offerSlice";
 import { IoMdTime, IoIosLock, IoMdCheckmarkCircle } from "react-icons/io";
@@ -12,10 +14,17 @@ import Veg2 from "../../Assets/Images/vecteezy_vegetable-png-transparent_2298473
 
 const Offers = () => {
   const dispatch = useDispatch();
-  const { availableCoupons, claimedCoupons } = useSelector(
+  const { availableCoupons, claimedCoupons, loading } = useSelector(
     (state) => state.offer,
   );
   const [timeLeft, setTimeLeft] = useState({});
+  const [activeTab, setActiveTab] = useState("available"); // "available" or "claimed"
+
+  // Load coupons and claimed coupons on mount
+  useEffect(() => {
+    dispatch(getAllCoupons());
+    dispatch(getMyClaimedCoupons());
+  }, [dispatch]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -25,11 +34,11 @@ const Offers = () => {
 
       availableCoupons.forEach((coupon) => {
         const start = new Date(coupon.startDate).getTime();
-        const end = new Date(coupon.expirationDate).getTime();
+        const end = new Date(coupon.expireDate).getTime();
 
         if (now < start) {
           const diff = start - now;
-          newTimeLeft[coupon.id] = {
+          newTimeLeft[coupon._id] = {
             label: "Starts in",
             h: Math.floor(diff / 3600000),
             m: Math.floor((diff % 3600000) / 60000),
@@ -38,7 +47,7 @@ const Offers = () => {
           };
         } else if (now <= end) {
           const diff = end - now;
-          newTimeLeft[coupon.id] = {
+          newTimeLeft[coupon._id] = {
             label: "Ends in",
             h: Math.floor(diff / 3600000),
             m: Math.floor((diff % 3600000) / 60000),
@@ -46,7 +55,7 @@ const Offers = () => {
             state: "LIVE",
           };
         } else {
-          newTimeLeft[coupon.id] = { state: "EXPIRED" };
+          newTimeLeft[coupon._id] = { state: "EXPIRED" };
         }
       });
       setTimeLeft(newTimeLeft);
@@ -61,6 +70,22 @@ const Offers = () => {
       ref.current.scrollIntoView();
     }
   }, []);
+
+  const handleClaimCoupon = async (couponId) => {
+    try {
+      await dispatch(claimCoupon(couponId)).unwrap();
+      // Refresh claimed coupons after successful claim
+      dispatch(getMyClaimedCoupons());
+    } catch (error) {
+      // Error is already handled in the thunk with toast
+    }
+  };
+
+  const isCouponClaimed = (couponId) => {
+    return claimedCoupons.some(
+      (c) => c.couponId?._id === couponId || c.couponId === couponId,
+    );
+  };
 
   return (
     <div ref={ref} className="overflow-hidden">
@@ -86,96 +111,222 @@ const Offers = () => {
             <HiTicket className="text-4xl lg:text-5xl text-gray-200 hidden sm:block" />
           </div>
 
-          {/* Vouchers Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-            {availableCoupons.map((coupon) => {
-              const status = timeLeft[coupon.id];
-              const isClaimed = claimedCoupons.some((c) => c.id === coupon.id);
-              const isLive = status?.state === "LIVE" && coupon.isActive;
+          {/* Tabs */}
+          <div className="flex gap-4 mb-6">
+            <button
+              onClick={() => setActiveTab("available")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeTab === "available"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              Available Coupons
+            </button>
+            <button
+              onClick={() => setActiveTab("claimed")}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeTab === "claimed"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              My Coupons ({claimedCoupons.length})
+            </button>
+          </div>
 
-              return (
-                <div
-                  key={coupon.id}
-                  className={`premium-ticket flex flex-row items-stretch min-h-[120px] lg:min-h-[140px] ${!isLive ? "ticket-disabled opacity-75" : ""}`}
-                >
-                  {/* Left Side: The "Value" */}
-                  <div
-                    className={`ticket-value w-24 sm:w-32 flex flex-col justify-center items-center shrink-0 ${isLive ? "bg-indigo-600" : "bg-gray-400"}`}
-                  >
-                    <div className="value-glare"></div>
-                    <span className="text-2xl lg:text-3xl font-black text-white leading-none">
-                      {coupon.discountValue}
-                      <small className="text-sm lg:text-lg">
-                        {coupon.discountType === "percentage" ? "%" : "$"}
-                      </small>
-                    </span>
-                    <span className="text-[9px] lg:text-[10px] font-bold text-white/80 uppercase tracking-widest mt-1">
-                      Discount
-                    </span>
-                  </div>
+          {/* Available Coupons Tab */}
+          {activeTab === "available" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+              {loading ? (
+                <div className="col-span-full text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
+                  <p className="text-gray-500 mt-4">Loading coupons...</p>
+                </div>
+              ) : availableCoupons.length === 0 ? (
+                <div className="col-span-full text-center py-12 bg-white rounded-xl">
+                  <HiTicket className="mx-auto text-4xl text-gray-300 mb-3" />
+                  <p className="text-gray-500">
+                    No coupons available at the moment.
+                  </p>
+                </div>
+              ) : (
+                availableCoupons.map((coupon) => {
+                  const status = timeLeft[coupon._id];
+                  const claimed = isCouponClaimed(coupon._id);
+                  const isLive = status?.state === "LIVE" && coupon.isActive;
 
-                  {/* Middle Side: Info */}
-                  <div className="ticket-info flex-grow p-3 lg:p-4 bg-white flex flex-col justify-center">
-                    <div className="flex items-center gap-2 mb-1 lg:mb-2">
-                      <span
-                        className={`status-pill-lite text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${status?.state.toLowerCase()}`}
+                  return (
+                    <div
+                      key={coupon._id}
+                      className={`premium-ticket flex flex-row items-stretch min-h-[120px] lg:min-h-[140px] ${!isLive ? "ticket-disabled opacity-75" : ""}`}
+                    >
+                      {/* Left Side: The "Value" */}
+                      <div
+                        className={`ticket-value w-24 sm:w-32 flex flex-col justify-center items-center shrink-0 ${isLive ? "bg-indigo-600" : "bg-gray-400"}`}
                       >
-                        {status?.state}
-                      </span>
-                    </div>
-                    <h3 className="text-sm lg:text-base font-bold text-gray-800 line-clamp-1 mb-1">
-                      {coupon.name}
-                    </h3>
-
-                    {isLive && !isClaimed ? (
-                      <div className="flex items-center gap-1.5 text-indigo-600 bg-indigo-50 self-start px-2 py-1 rounded-md text-[10px] lg:text-[11px] font-bold">
-                        <IoMdTime className="text-xs lg:text-sm" />
-                        <span>
-                          {status?.h}H : {status?.m}M : {status?.s}S
+                        <div className="value-glare"></div>
+                        <span className="text-2xl lg:text-3xl font-black text-white leading-none">
+                          {coupon.discountPercent}
+                          <small className="text-sm lg:text-lg">%</small>
+                        </span>
+                        <span className="text-[9px] lg:text-[10px] font-bold text-white/80 uppercase tracking-widest mt-1">
+                          Discount
                         </span>
                       </div>
-                    ) : (
-                      <p className="text-gray-500 text-[11px] lg:text-xs line-clamp-2">
-                        {coupon.description}
-                      </p>
-                    )}
-                  </div>
 
-                  {/* The "Tear" Effect */}
-                  <div className="ticket-tear relative w-4 bg-white flex items-center justify-center">
-                    <div className="notch top absolute -top-2 left-0 w-full h-4 bg-[#f9fafb] rounded-full"></div>
-                    <div className="border-l-2 border-dashed border-gray-200 h-3/4"></div>
-                    <div className="notch bottom absolute -bottom-2 left-0 w-full h-4 bg-[#f9fafb] rounded-full"></div>
-                  </div>
+                      {/* Middle Side: Info */}
+                      <div className="ticket-info flex-grow p-3 lg:p-4 bg-white flex flex-col justify-center">
+                        <div className="flex items-center gap-2 mb-1 lg:mb-2">
+                          <span
+                            className={`status-pill-lite text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${status?.state?.toLowerCase()}`}
+                          >
+                            {status?.state || "UPCOMING"}
+                          </span>
+                        </div>
+                        <h3 className="text-sm lg:text-base font-bold text-gray-800 line-clamp-1 mb-1 uppercase">
+                          {coupon.title}
+                        </h3>
 
-                  {/* Right Side: Action */}
-                  <div className="ticket-action w-20 lg:w-24 bg-white flex items-center justify-center shrink-0 border-l border-gray-50">
-                    {isLive && !isClaimed ? (
-                      <button
-                        onClick={() => dispatch(claimCoupon(coupon.id))}
-                        className="claim-btn-premium text-[10px] lg:text-xs font-bold bg-indigo-600 text-white px-3 py-2 rounded shadow-sm hover:bg-indigo-700 transition-colors"
-                      >
-                        CLAIM
-                      </button>
-                    ) : (
-                      <div className="status-badge">
-                        {isClaimed ? (
-                          <div className="flex flex-col items-center text-emerald-600">
-                            <IoMdCheckmarkCircle className="text-xl lg:text-2xl" />
-                            <span className="text-[9px] lg:text-[10px] font-black mt-1">
-                              SAVED
+                        {isLive && !claimed ? (
+                          <div className="flex items-center gap-1.5 text-indigo-600 bg-indigo-50 self-start px-2 py-1 rounded-md text-[10px] lg:text-[11px] font-bold">
+                            <IoMdTime className="text-xs lg:text-sm" />
+                            <span>
+                              {status?.h}H : {status?.m}M : {status?.s}S
+                            </span>
+                          </div>
+                        ) : status?.state === "UPCOMING" && status?.h <= 48 ? (
+                          <div className="flex items-center gap-1.5 text-amber-600 bg-amber-50 self-start px-2 py-1 rounded-md text-[10px] lg:text-[11px] font-bold">
+                            <IoMdTime className="text-xs lg:text-sm" />
+                            <span>
+                              Starting in {status?.h}H : {status?.m}M
                             </span>
                           </div>
                         ) : (
-                          <IoIosLock className="text-gray-300 text-2xl lg:text-3xl" />
+                          <p className="text-gray-500 text-[11px] lg:text-xs line-clamp-2">
+                            {coupon.description}
+                          </p>
                         )}
                       </div>
-                    )}
-                  </div>
+
+                      {/* The "Tear" Effect */}
+                      <div className="ticket-tear relative w-4 bg-white flex items-center justify-center">
+                        <div className="notch top absolute -top-2 left-0 w-full h-4 bg-[#f9fafb] rounded-full"></div>
+                        <div className="border-l-2 border-dashed border-gray-200 h-3/4"></div>
+                        <div className="notch bottom absolute -bottom-2 left-0 w-full h-4 bg-[#f9fafb] rounded-full"></div>
+                      </div>
+
+                      {/* Right Side: Action */}
+                      <div className="ticket-action w-20 lg:w-24 bg-white flex items-center justify-center shrink-0 border-l border-gray-50">
+                        {isLive && !claimed ? (
+                          <button
+                            onClick={() => handleClaimCoupon(coupon._id)}
+                            className="claim-btn-premium text-[10px] lg:text-xs font-bold bg-indigo-600 text-white px-3 py-2 rounded shadow-sm hover:bg-indigo-700 transition-colors"
+                          >
+                            CLAIM
+                          </button>
+                        ) : (
+                          <div className="status-badge">
+                            {claimed ? (
+                              <div className="flex flex-col items-center text-emerald-600">
+                                <IoMdCheckmarkCircle className="text-xl lg:text-2xl" />
+                                <span className="text-[9px] lg:text-[10px] font-black mt-1">
+                                  SAVED
+                                </span>
+                              </div>
+                            ) : (
+                              <IoIosLock className="text-gray-300 text-2xl lg:text-3xl" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+
+          {/* My Claimed Coupons Tab */}
+          {activeTab === "claimed" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+              {claimedCoupons.length === 0 ? (
+                <div className="col-span-full text-center py-12 bg-white rounded-xl">
+                  <HiTicket className="mx-auto text-4xl text-gray-300 mb-3" />
+                  <p className="text-gray-500">
+                    You haven't claimed any coupons yet.
+                  </p>
+                  <button
+                    onClick={() => setActiveTab("available")}
+                    className="mt-4 text-indigo-600 hover:text-indigo-700 font-medium"
+                  >
+                    Browse available coupons
+                  </button>
                 </div>
-              );
-            })}
-          </div>
+              ) : (
+                claimedCoupons.map((claimedCoupon) => {
+                  const coupon = claimedCoupon.couponId || claimedCoupon;
+                  return (
+                    <div
+                      key={claimedCoupon._id || coupon._id}
+                      className="premium-ticket flex flex-row items-stretch min-h-[120px] lg:min-h-[140px]"
+                    >
+                      {/* Left Side: The "Value" */}
+                      <div className="ticket-value w-24 sm:w-32 flex flex-col justify-center items-center shrink-0 bg-emerald-600">
+                        <div className="value-glare"></div>
+                        <span className="text-2xl lg:text-3xl font-black text-white leading-none">
+                          {coupon.discountPercent ||
+                            claimedCoupon.discountPercent}
+                          <small className="text-sm lg:text-lg">%</small>
+                        </span>
+                        <span className="text-[9px] lg:text-[10px] font-bold text-white/80 uppercase tracking-widest mt-1">
+                          Discount
+                        </span>
+                      </div>
+
+                      {/* Middle Side: Info */}
+                      <div className="ticket-info flex-grow p-3 lg:p-4 bg-white flex flex-col justify-center">
+                        <div className="flex items-center gap-2 mb-1 lg:mb-2">
+                          <span className="status-pill-lite text-[9px] px-2 py-0.5 rounded-full font-bold uppercase bg-emerald-100 text-emerald-600">
+                            CLAIMED
+                          </span>
+                        </div>
+                        <h3 className="text-sm lg:text-base font-bold text-gray-800 line-clamp-1 mb-1 uppercase">
+                          {coupon.title || claimedCoupon.title}
+                        </h3>
+                        <p className="text-gray-500 text-[11px] lg:text-xs line-clamp-2">
+                          {coupon.description || claimedCoupon.description}
+                        </p>
+                        <p className="text-[10px] text-gray-400 mt-2">
+                          Claimed on:{" "}
+                          {new Date(
+                            claimedCoupon.claimedAt || Date.now(),
+                          ).toLocaleDateString()}
+                        </p>
+                      </div>
+
+                      {/* The "Tear" Effect */}
+                      <div className="ticket-tear relative w-4 bg-white flex items-center justify-center">
+                        <div className="notch top absolute -top-2 left-0 w-full h-4 bg-[#f9fafb] rounded-full"></div>
+                        <div className="border-l-2 border-dashed border-gray-200 h-3/4"></div>
+                        <div className="notch bottom absolute -bottom-2 left-0 w-full h-4 bg-[#f9fafb] rounded-full"></div>
+                      </div>
+
+                      {/* Right Side: Action */}
+                      <div className="ticket-action w-20 lg:w-24 bg-white flex items-center justify-center shrink-0 border-l border-gray-50">
+                        <div className="flex flex-col items-center text-emerald-600">
+                          <IoMdCheckmarkCircle className="text-xl lg:text-2xl" />
+                          <span className="text-[9px] lg:text-[10px] font-black mt-1">
+                            READY
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

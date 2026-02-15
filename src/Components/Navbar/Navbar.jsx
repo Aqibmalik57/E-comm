@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { clearUserState, logout } from "../../store/feature/userSlice";
 import { fetchCart } from "../../store/feature/CartSlice";
+import { getAllCategories } from "../../store/feature/categorySlice";
 import { useTranslation } from "react-i18next";
 
 const Navbar = () => {
@@ -23,6 +24,7 @@ const Navbar = () => {
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const { user } = useSelector((state) => state.user);
   const { items } = useSelector((state) => state.cart);
+  const { categories } = useSelector((state) => state.category);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -31,36 +33,9 @@ const Navbar = () => {
   const pagesRef = useRef(null);
   const langRef = useRef(null);
 
-  const categories = [
-    { key: "men", path: "/category/men", subKey: null },
-    { key: "fishMeat", path: "/category/fish & meat", subKey: "fishMeat" },
-    {
-      key: "fruitsVegetable",
-      path: "/category/fruits & vegetable",
-      subKey: "fruitsVegetable",
-    },
-    { key: "cooking", path: "/category/cooking", subKey: "cooking" },
-    {
-      key: "biscuitCake",
-      path: "/category/biscuit & cake",
-      subKey: "biscuitCake",
-    },
-    {
-      key: "householdTools",
-      path: "/category/household tools",
-      subKey: "householdTools",
-    },
-    { key: "petCare", path: "/category/pet care", subKey: "petCare" },
-    {
-      key: "beautyHealth",
-      path: "/category/Beauty & Health",
-      subKey: "beautyHealth",
-    },
-    { key: "jamJelly", path: "/category/jam & jelly", subKey: null },
-    { key: "milkDairy", path: "/category/milk & dairy", subKey: "milkDairy" },
-    { key: "drinks", path: "/category/drinks", subKey: "drinks" },
-    { key: "breakfast", path: "/category/breakfast", subKey: "breakfast" },
-  ];
+  useEffect(() => {
+    dispatch(getAllCategories());
+  }, [dispatch]);
 
   const totalQuantity = items?.reduce((acc, curr) => acc + curr.quantity, 0);
 
@@ -209,38 +184,45 @@ const Navbar = () => {
               </button>
               {isOpen && (
                 <ul className="absolute top-full mt-2 rounded-md w-64 bg-white border border-gray-200 shadow-lg z-50 max-h-96 overflow-y-auto">
-                  {categories.map((cat, i) => (
-                    <li key={i} className="px-4 py-3 hover:bg-green-50">
-                      <Link
-                        to={cat.path}
-                        onClick={() => setIsOpen(false)}
-                        className="block capitalize font-medium text-gray-800"
+                  {categories &&
+                    categories.map((cat, i) => (
+                      <li
+                        key={cat._id || i}
+                        className="px-4 py-3 hover:bg-green-50"
                       >
-                        {t(`navbar.categoryNames.${cat.key}`)}
-                      </Link>
-                      {cat.subKey && (
-                        <ul className="mt-1">
-                          {t(`navbar.subcategories.${cat.subKey}`, {
-                            returnObjects: true,
-                          }).map((sub, j) => (
-                            <li key={j} className="px-4 py-1 hover:bg-green-50">
-                              <Link
-                                to={`/category/${sub}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setIsOpen(false);
-                                }}
-                                className="flex items-center gap-x-1 text-neutral-500 text-[11px] hover:text-green-500"
+                        <Link
+                          to={`/category/${cat.name}`}
+                          onClick={() => setIsOpen(false)}
+                          className="block capitalize font-medium text-gray-800"
+                        >
+                          {cat.name}
+                        </Link>
+                        {cat.subcategories && cat.subcategories.length > 0 && (
+                          <ul className="mt-1">
+                            {cat.subcategories.map((sub, j) => (
+                              <li
+                                key={j}
+                                className="px-4 py-1 hover:bg-green-50"
                               >
-                                <IoIosArrowForward className="text-[10px]" />{" "}
-                                <span>{sub}</span>
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  ))}
+                                <Link
+                                  to={`/category/${sub.name || sub}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsOpen(false);
+                                  }}
+                                  className="flex items-center gap-x-1 text-neutral-500 text-[11px] hover:text-green-500"
+                                >
+                                  <IoIosArrowForward className="text-[10px]" />{" "}
+                                  <span>
+                                    {typeof sub === "object" ? sub.name : sub}
+                                  </span>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    ))}
                 </ul>
               )}
             </li>
@@ -437,34 +419,34 @@ const Navbar = () => {
                     {t("navbar.categories")}
                   </p>
                   <div className="flex flex-col gap-4">
-                    {categories.map((cat) => (
-                      <div key={cat.key}>
-                        <Link
-                          to={cat.path}
-                          className="text-sm block"
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          {t(`navbar.categoryNames.${cat.key}`)}
-                        </Link>
-                        {cat.subKey && (
-                          <ul className="mt-2 ml-4 flex flex-col gap-2">
-                            {t(`navbar.subcategories.${cat.subKey}`, {
-                              returnObjects: true,
-                            }).map((sub, j) => (
-                              <li key={j}>
-                                <Link
-                                  to={`/category/${sub}`}
-                                  onClick={() => setMobileMenuOpen(false)}
-                                  className="text-xs text-gray-500 capitalize"
-                                >
-                                  {sub}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    ))}
+                    {categories &&
+                      categories.map((cat) => (
+                        <div key={cat._id}>
+                          <Link
+                            to={`/category/${cat.name}`}
+                            className="text-sm block"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            {cat.name}
+                          </Link>
+                          {cat.subcategories &&
+                            cat.subcategories.length > 0 && (
+                              <ul className="mt-2 ml-4 flex flex-col gap-2">
+                                {cat.subcategories.map((sub, j) => (
+                                  <li key={j}>
+                                    <Link
+                                      to={`/category/${sub.name || sub}`}
+                                      onClick={() => setMobileMenuOpen(false)}
+                                      className="text-xs text-gray-500 capitalize"
+                                    >
+                                      {typeof sub === "object" ? sub.name : sub}
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                        </div>
+                      ))}
                   </div>
                 </div>
               </nav>

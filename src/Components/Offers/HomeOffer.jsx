@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { claimCoupon } from "../../store/feature/offerSlice";
+import {
+  claimCoupon,
+  getAllCoupons,
+  getMyClaimedCoupons,
+  updateCouponStatus,
+} from "../../store/feature/offerSlice";
 import "./HomeOffer.css";
 
 const HomeOffer = () => {
@@ -10,35 +15,63 @@ const HomeOffer = () => {
   );
   const [timeLeft, setTimeLeft] = useState({});
 
+  // Load coupons and claimed coupons on mount
+  useEffect(() => {
+    dispatch(getAllCoupons());
+    dispatch(getMyClaimedCoupons());
+  }, [dispatch]);
+
   useEffect(() => {
     const timer = setInterval(() => {
+      dispatch(updateCouponStatus());
       const now = new Date().getTime();
       const newTimeLeft = {};
 
       availableCoupons.forEach((coupon) => {
-        const expiration = new Date(coupon.expirationDate).getTime();
-        const distance = expiration - now;
+        const start = new Date(coupon.startDate).getTime();
+        const end = new Date(coupon.expireDate).getTime();
 
-        if (distance > 0) {
-          newTimeLeft[coupon.id] = {
-            hours: Math.floor(
-              (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
-            ),
-            minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-            seconds: Math.floor((distance % (1000 * 60)) / 1000),
-            isExpired: false,
+        if (now < start) {
+          const diff = start - now;
+          newTimeLeft[coupon._id] = {
+            label: "Starts in",
+            h: Math.floor(diff / 3600000),
+            m: Math.floor((diff % 3600000) / 60000),
+            s: Math.floor((diff % 60000) / 1000),
+            state: "UPCOMING",
+          };
+        } else if (now <= end) {
+          const diff = end - now;
+          newTimeLeft[coupon._id] = {
+            label: "Ends in",
+            h: Math.floor(diff / 3600000),
+            m: Math.floor((diff % 3600000) / 60000),
+            s: Math.floor((diff % 60000) / 1000),
+            state: "LIVE",
           };
         } else {
-          newTimeLeft[coupon.id] = { isExpired: true };
+          newTimeLeft[coupon._id] = { state: "EXPIRED" };
         }
       });
       setTimeLeft(newTimeLeft);
     }, 1000);
     return () => clearInterval(timer);
-  }, [availableCoupons]);
+  }, [availableCoupons, dispatch]);
 
-  const handleClaimCoupon = (couponId) => {
-    dispatch(claimCoupon(couponId));
+  const handleClaimCoupon = async (couponId) => {
+    try {
+      await dispatch(claimCoupon(couponId)).unwrap();
+      // Refresh claimed coupons after successful claim
+      dispatch(getMyClaimedCoupons());
+    } catch (error) {
+      // Error is already handled in the thunk with toast
+    }
+  };
+
+  const isCouponClaimed = (couponId) => {
+    return claimedCoupons.some(
+      (c) => c.couponId?._id === couponId || c.couponId === couponId,
+    );
   };
 
   return (
@@ -49,14 +82,14 @@ const HomeOffer = () => {
 
       <div className="bg-white p-4 flex flex-col gap-4">
         {availableCoupons.map((coupon) => {
-          const isClaimed = claimedCoupons.some((c) => c.id === coupon.id);
-          const timer = timeLeft[coupon.id];
+          const status = timeLeft[coupon._id];
+          const claimed = isCouponClaimed(coupon._id);
+          const isLive = status?.state === "LIVE" && coupon.isActive;
 
-          if (!coupon.isActive || isClaimed || (timer && timer.isExpired))
-            return null;
+          if (!isLive || claimed || status?.state === "EXPIRED") return null;
 
           return (
-            <div key={coupon.id} className="coupon-ticket-wrapper">
+            <div key={coupon._id} className="coupon-ticket-wrapper">
               <div className="coupon-ticket-main">
                 <div className="coupon-top-row">
                   <span className="coupon-category">PROMO</span>
@@ -64,7 +97,12 @@ const HomeOffer = () => {
                     <span className="pulse-dot"></span> LIVE
                   </span>
                 </div>
-                <h3 className="coupon-ticket-title">{coupon.name}</h3>
+                <h3 className="coupon-ticket-title">
+                  {coupon.title}{" "}
+                  <span className="discount-badge-small">
+                    {coupon.discountPercent}% OFF
+                  </span>
+                </h3>
                 <p className="coupon-ticket-desc">{coupon.description}</p>
               </div>
 
@@ -77,13 +115,12 @@ const HomeOffer = () => {
 
               <div className="coupon-ticket-action">
                 <div className="countdown-minimal">
-                  <span>{timer?.hours || 0}h</span>:
-                  <span>{timer?.minutes || 0}m</span>:
-                  <span>{timer?.seconds || 0}s</span>
+                  <span>{status?.h || 0}h</span>:<span>{status?.m || 0}m</span>:
+                  <span>{status?.s || 0}s</span>
                 </div>
                 <button
                   className="claim-ticket-btn"
-                  onClick={() => handleClaimCoupon(coupon.id)}
+                  onClick={() => handleClaimCoupon(coupon._id)}
                 >
                   CLAIM
                 </button>

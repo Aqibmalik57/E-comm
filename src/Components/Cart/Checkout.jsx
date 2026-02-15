@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
   FaShieldHalved,
@@ -7,21 +7,26 @@ import {
   FaPaypal,
   FaLock,
   FaChevronRight,
+  FaPercent,
 } from "react-icons/fa6";
+import { applyCouponToCart } from "../../store/feature/CartSlice";
+import { getMyClaimedCoupons } from "../../store/feature/offerSlice";
+import { toast } from "react-toastify";
+import { FaTicketAlt, FaTimes } from "react-icons/fa";
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const { items = [], loading: cartLoading } = useSelector(
-    (state) => state.cart || {},
-  );
-  const { user } = useSelector((state) => state.user || {});
-  const { claimedCoupons = [], selectedCoupons = [] } = useSelector(
-    (state) => state.offer || {},
-  );
+  const { cart, loading: cartLoading } = useSelector((state) => state.cart);
+  const { user } = useSelector((state) => state.user);
+  const { claimedCoupons } = useSelector((state) => state.offer);
+
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [shippingMethod, setShippingMethod] = useState("standard");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [showCouponModal, setShowCouponModal] = useState(false);
 
   const deliveryOptions = {
     standard: { name: "Standard", price: 0, provider: "FedEx" },
@@ -29,29 +34,44 @@ const Checkout = () => {
     overnight: { name: "Priority", price: 35.0, provider: "UPS" },
   };
 
-  const subtotal = items.reduce((acc, item) => {
-    const price = item.productId?.price || 0;
-    return acc + price * item.quantity;
-  }, 0);
+  // Load claimed coupons on mount
+  useEffect(() => {
+    dispatch(getMyClaimedCoupons());
+  }, [dispatch]);
 
-  const discount = selectedCoupons.reduce((acc, couponId) => {
-    const coupon = claimedCoupons.find(
-      (c) => c.id === couponId || c._id === couponId,
-    );
-    if (coupon) {
-      return coupon.discountType === "percentage"
-        ? acc + subtotal * (coupon.discountValue / 100)
-        : acc + coupon.discountValue;
+  // Set selected coupon from cart if exists
+  useEffect(() => {
+    if (cart?.appliedCoupon) {
+      setSelectedCoupon(cart.appliedCoupon);
     }
-    return acc;
-  }, 0);
+  }, [cart?.appliedCoupon]);
 
-  if (!user || cartLoading) {
+  const items = cart?.items || [];
+  const subtotal = cart?.subtotal || 0;
+  const discount = cart?.discount || 0;
+
+  const handleApplyCoupon = async (coupon) => {
+    try {
+      await dispatch(applyCouponToCart({ couponTitle: coupon.title })).unwrap();
+      setSelectedCoupon(coupon);
+      setShowCouponModal(false);
+      toast.success(`Coupon "${coupon.title}" applied successfully!`);
+    } catch (error) {
+      // Error is handled in the thunk
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setSelectedCoupon(null);
+    toast.info("Coupon removed");
+  };
+
+  if (cartLoading && !cart) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <div className="w-10 h-10 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin mb-4" />
         <p className="text-slate-500 animate-pulse text-sm font-medium">
-          Verifying session...
+          Loading cart...
         </p>
       </div>
     );
@@ -289,14 +309,59 @@ const Checkout = () => {
               </div>
             </div>
 
-            {/* 4. Payment */}
+            {/* 4. Coupon Section */}
             <div className={sectionClass}>
               <h3 className="text-[11px] md:text-sm font-bold uppercase tracking-wider text-slate-400 mb-6 flex items-center gap-2">
                 <span className="w-5 h-5 bg-slate-900 text-white rounded-full flex items-center justify-center text-[10px]">
                   4
                 </span>
+                Apply Coupon
+              </h3>
+
+              {selectedCoupon ? (
+                <div className="flex items-center justify-between bg-teal-50 border border-teal-200 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-teal-600 rounded-lg flex items-center justify-center">
+                      <FaPercent className="text-white" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-800 uppercase">
+                        {selectedCoupon.title}
+                      </p>
+                      <p className="text-sm text-teal-600">
+                        {selectedCoupon.discountPercent}% OFF
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowCouponModal(true)}
+                  className="w-full flex items-center justify-center gap-2 p-4 border-2 border-dashed border-slate-300 rounded-lg text-slate-500 hover:border-teal-500 hover:text-teal-600 transition-all"
+                >
+                  <FaTicketAlt />
+                  <span>Select a coupon</span>
+                </button>
+              )}
+            </div>
+
+            {/* 5. Payment */}
+            <div className={sectionClass}>
+              <h3 className="text-[11px] md:text-sm font-bold uppercase tracking-wider text-slate-400 mb-6 flex items-center gap-2">
+                <span className="w-5 h-5 bg-slate-900 text-white rounded-full flex items-center justify-center text-[10px]">
+                  5
+                </span>
                 Payment
               </h3>
+
               <div className="flex gap-3 md:gap-4 mb-6">
                 <PaymentTab
                   active={paymentMethod === "card"}
@@ -436,6 +501,70 @@ const Checkout = () => {
           </div>
         </form>
       </main>
+
+      {/* Coupon Selection Modal */}
+      {showCouponModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="font-bold text-slate-800">Select Coupon</h3>
+              <button
+                onClick={() => setShowCouponModal(false)}
+                className="p-2 text-slate-400 hover:text-slate-600"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto max-h-[60vh] space-y-3">
+              {claimedCoupons.length === 0 ? (
+                <div className="text-center py-8">
+                  <FaTicketAlt className="mx-auto text-4xl text-slate-300 mb-3" />
+                  <p className="text-slate-500">No coupons available</p>
+                  <button
+                    onClick={() => {
+                      setShowCouponModal(false);
+                      navigate("/offers");
+                    }}
+                    className="mt-4 text-teal-600 hover:text-teal-700 font-medium text-sm"
+                  >
+                    Go claim some coupons
+                  </button>
+                </div>
+              ) : (
+                claimedCoupons.map((claimedCoupon) => {
+                  const coupon = claimedCoupon.couponId || claimedCoupon;
+                  return (
+                    <button
+                      key={claimedCoupon._id || coupon._id}
+                      onClick={() => handleApplyCoupon(coupon)}
+                      className="w-full flex items-center gap-3 p-3 border border-slate-200 rounded-lg hover:border-teal-500 hover:bg-teal-50/30 transition-all text-left"
+                    >
+                      <div className="w-12 h-12 bg-teal-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FaPercent className="text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-slate-800 uppercase truncate">
+                          {coupon.title || claimedCoupon.title}
+                        </p>
+                        <p className="text-sm text-teal-600">
+                          {coupon.discountPercent ||
+                            claimedCoupon.discountPercent}
+                          % OFF
+                        </p>
+                        {claimedCoupon.claimedInCycle && (
+                          <p className="text-xs text-slate-400">
+                            Cycle {claimedCoupon.claimedInCycle}
+                          </p>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

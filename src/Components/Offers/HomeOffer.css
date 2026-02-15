@@ -52,6 +52,24 @@
   font-weight: 800;
   margin: 0;
   letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Small discount badge next to title */
+.discount-badge-small {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1e1b4b;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
+  white-space: nowrap;
 }
 
 .coupon-ticket-desc {

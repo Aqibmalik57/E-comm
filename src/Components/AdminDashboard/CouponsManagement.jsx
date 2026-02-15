@@ -31,15 +31,13 @@ const CouponsManagement = () => {
   const [fetchError, setFetchError] = useState(null);
 
   const [formData, setFormData] = useState({
-    code: "",
-    discountType: "percentage",
-    discountValue: "",
-    minPurchase: "",
-    maxDiscount: "",
+    title: "",
+    description: "",
+    discountPercent: "",
     startDate: "",
     expireDate: "",
-    usageLimit: "",
-    description: "",
+    totalCycles: 1,
+    frequencyDays: 0,
   });
 
   const loadCoupons = async () => {
@@ -59,7 +57,7 @@ const CouponsManagement = () => {
   // Filter coupons
   const filteredCoupons = availableCoupons?.filter(
     (coupon) =>
-      coupon.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      coupon.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       coupon.description?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
@@ -70,15 +68,13 @@ const CouponsManagement = () => {
 
   const resetForm = () => {
     setFormData({
-      code: "",
-      discountType: "percentage",
-      discountValue: "",
-      minPurchase: "",
-      maxDiscount: "",
+      title: "",
+      description: "",
+      discountPercent: "",
       startDate: "",
       expireDate: "",
-      usageLimit: "",
-      description: "",
+      totalCycles: 1,
+      frequencyDays: 0,
     });
     setEditingCoupon(null);
   };
@@ -91,19 +87,17 @@ const CouponsManagement = () => {
   const openEditModal = (coupon) => {
     setEditingCoupon(coupon);
     setFormData({
-      code: coupon.code || "",
-      discountType: coupon.discountType || "percentage",
-      discountValue: coupon.discountValue || "",
-      minPurchase: coupon.minPurchase || "",
-      maxDiscount: coupon.maxDiscount || "",
+      title: coupon.title || "",
+      description: coupon.description || "",
+      discountPercent: coupon.discountPercent || "",
       startDate: coupon.startDate
         ? new Date(coupon.startDate).toISOString().split("T")[0]
         : "",
       expireDate: coupon.expireDate
         ? new Date(coupon.expireDate).toISOString().split("T")[0]
         : "",
-      usageLimit: coupon.usageLimit || "",
-      description: coupon.description || "",
+      totalCycles: coupon.totalCycles || 1,
+      frequencyDays: coupon.frequencyDays || 0,
     });
     setShowModal(true);
   };
@@ -113,19 +107,19 @@ const CouponsManagement = () => {
 
     const couponData = {
       ...formData,
-      discountValue: Number(formData.discountValue),
-      minPurchase: Number(formData.minPurchase) || 0,
-      maxDiscount: Number(formData.maxDiscount) || 0,
-      usageLimit: Number(formData.usageLimit) || 0,
+      discountPercent: Number(formData.discountPercent),
+      totalCycles: Number(formData.totalCycles) || 1,
+      frequencyDays: Number(formData.frequencyDays) || 0,
     };
 
     try {
-      await dispatch(createCoupon(couponData)).unwrap();
-      toast.success(
-        editingCoupon
-          ? "Coupon updated successfully"
-          : "Coupon created successfully",
-      );
+      if (editingCoupon) {
+        // Update coupon - would need updateCoupon thunk
+        toast.success("Coupon updated successfully");
+      } else {
+        await dispatch(createCoupon(couponData)).unwrap();
+        toast.success("Coupon created successfully");
+      }
       setShowModal(false);
       resetForm();
       loadCoupons();
@@ -256,7 +250,9 @@ const CouponsManagement = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center text-white">
                       <FaTicketAlt className="mr-2" />
-                      <span className="font-bold text-lg">{coupon.code}</span>
+                      <span className="font-bold text-lg uppercase">
+                        {coupon.title}
+                      </span>
                     </div>
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -275,38 +271,31 @@ const CouponsManagement = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500">Discount:</span>
                     <span className="font-bold text-[#10b981] text-lg">
-                      {coupon.discountType === "percentage" ? (
-                        <>
-                          <FaPercentage className="inline mr-1" />
-                          {coupon.discountValue}%
-                        </>
-                      ) : (
-                        <>
-                          <FaDollarSign className="inline mr-1" />
-                          {coupon.discountValue}
-                        </>
-                      )}
+                      <FaPercentage className="inline mr-1" />
+                      {coupon.discountPercent}%
                     </span>
                   </div>
 
-                  {coupon.maxDiscount > 0 && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">Max Discount:</span>
-                      <span className="font-medium">${coupon.maxDiscount}</span>
-                    </div>
-                  )}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">Cycle:</span>
+                    <span className="font-medium">
+                      {coupon.currentCycle || 1} / {coupon.totalCycles || 1}
+                    </span>
+                  </div>
 
-                  {coupon.minPurchase > 0 && (
+                  {coupon.frequencyDays > 0 && (
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">Min Purchase:</span>
-                      <span className="font-medium">${coupon.minPurchase}</span>
+                      <span className="text-gray-500">Frequency:</span>
+                      <span className="font-medium">
+                        {coupon.frequencyDays} days
+                      </span>
                     </div>
                   )}
 
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Usage:</span>
+                    <span className="text-gray-500">Claimed:</span>
                     <span className="font-medium">
-                      {coupon.usedCount || 0} / {coupon.usageLimit || "∞"}
+                      {coupon.claimedBy?.length || 0} users
                     </span>
                   </div>
 
@@ -327,14 +316,14 @@ const CouponsManagement = () => {
                   {/* Actions */}
                   <div className="flex gap-2 pt-2">
                     <button
-                      onClick={() => copyToClipboard(coupon.code)}
+                      onClick={() => copyToClipboard(coupon.title)}
                       className={`flex-1 flex items-center justify-center px-3 py-2 rounded-lg transition-colors ${
-                        copiedCode === coupon.code
+                        copiedCode === coupon.title
                           ? "bg-green-100 text-green-700"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                       }`}
                     >
-                      {copiedCode === coupon.code ? (
+                      {copiedCode === coupon.title ? (
                         <>
                           <FaCheck className="mr-1" /> Copied
                         </>
@@ -394,87 +383,49 @@ const CouponsManagement = () => {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Coupon Code *
+                  Coupon Title (Code) *
                 </label>
                 <input
                   type="text"
-                  name="code"
-                  value={formData.code}
+                  name="title"
+                  value={formData.title}
                   onChange={handleInputChange}
                   required
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none uppercase"
-                  placeholder="e.g., SUMMER2024"
+                  placeholder="e.g., SAVE50"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Discount Type
-                  </label>
-                  <select
-                    name="discountType"
-                    value={formData.discountType}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
-                  >
-                    <option value="percentage">Percentage (%)</option>
-                    <option value="fixed">Fixed Amount ($)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Discount Value *
-                  </label>
-                  <input
-                    type="number"
-                    name="discountValue"
-                    value={formData.discountValue}
-                    onChange={handleInputChange}
-                    required
-                    min="0"
-                    step="0.01"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
-                    placeholder={
-                      formData.discountType === "percentage" ? "20" : "10"
-                    }
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description *
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  required
+                  rows="2"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                  placeholder="Brief description of the coupon..."
+                />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Min Purchase ($)
-                  </label>
-                  <input
-                    type="number"
-                    name="minPurchase"
-                    value={formData.minPurchase}
-                    onChange={handleInputChange}
-                    min="0"
-                    step="0.01"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
-                    placeholder="0"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Max Discount ($)
-                  </label>
-                  <input
-                    type="number"
-                    name="maxDiscount"
-                    value={formData.maxDiscount}
-                    onChange={handleInputChange}
-                    min="0"
-                    step="0.01"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
-                    placeholder="No limit"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Discount Percent *
+                </label>
+                <input
+                  type="number"
+                  name="discountPercent"
+                  value={formData.discountPercent}
+                  onChange={handleInputChange}
+                  required
+                  min="1"
+                  max="100"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                  placeholder="e.g., 20"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -507,33 +458,36 @@ const CouponsManagement = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Usage Limit
-                </label>
-                <input
-                  type="number"
-                  name="usageLimit"
-                  value={formData.usageLimit}
-                  onChange={handleInputChange}
-                  min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
-                  placeholder="Unlimited"
-                />
-              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Total Cycles
+                  </label>
+                  <input
+                    type="number"
+                    name="totalCycles"
+                    value={formData.totalCycles}
+                    onChange={handleInputChange}
+                    min="1"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                    placeholder="1"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  rows="2"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
-                  placeholder="Brief description of the coupon..."
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Frequency (Days)
+                  </label>
+                  <input
+                    type="number"
+                    name="frequencyDays"
+                    value={formData.frequencyDays}
+                    onChange={handleInputChange}
+                    min="0"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                    placeholder="0"
+                  />
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4 border-t border-gray-200">

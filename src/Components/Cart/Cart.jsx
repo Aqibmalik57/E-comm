@@ -37,12 +37,25 @@ const Cart = () => {
   }, 0);
 
   const discount = selectedCoupons.reduce((acc, couponId) => {
-    const coupon = claimedCoupons.find((c) => c.id === couponId);
+    const coupon = claimedCoupons.find(
+      (c) => (c.couponId?._id || c._id || c.id) === couponId,
+    );
     if (coupon) {
-      if (coupon.discountType === "percentage") {
-        return acc + subtotal * (coupon.discountValue / 100);
-      } else if (coupon.discountType === "fixed") {
-        return acc + coupon.discountValue;
+      const couponData = coupon.couponId || coupon;
+      if (
+        coupon.discountType === "percentage" ||
+        couponData.discountType === "percentage"
+      ) {
+        return (
+          acc +
+          subtotal *
+            ((coupon.discountValue || couponData.discountPercent) / 100)
+        );
+      } else if (
+        coupon.discountType === "fixed" ||
+        couponData.discountType === "fixed"
+      ) {
+        return acc + (coupon.discountValue || couponData.discountValue);
       }
     }
     return acc;
@@ -217,10 +230,14 @@ const Cart = () => {
                   {/* Voucher Section */}
                   {claimedCoupons.filter((c) => {
                     const now = new Date().getTime();
-                    return (
-                      now >= new Date(c.startDate).getTime() &&
-                      now <= new Date(c.expirationDate).getTime()
-                    );
+                    const couponData = c.couponId || c;
+                    const start = new Date(
+                      couponData.startDate || c.startDate,
+                    ).getTime();
+                    const end = new Date(
+                      couponData.expireDate || c.expirationDate || c.expireDate,
+                    ).getTime();
+                    return now >= start && now <= end;
                   }).length > 0 && (
                     <div className="p-4 border border-gray-200 rounded-3xl bg-white">
                       <div className="flex items-center justify-between mb-4">
@@ -234,23 +251,34 @@ const Cart = () => {
                         {claimedCoupons
                           .filter((c) => {
                             const now = new Date().getTime();
-                            return (
-                              now >= new Date(c.startDate).getTime() &&
-                              now <= new Date(c.expirationDate).getTime()
-                            );
+                            const couponData = c.couponId || c;
+                            const start = new Date(
+                              couponData.startDate || c.startDate,
+                            ).getTime();
+                            const end = new Date(
+                              couponData.expireDate ||
+                                c.expirationDate ||
+                                c.expireDate,
+                            ).getTime();
+                            return now >= start && now <= end;
                           })
-                          .map((coupon) => {
-                            const isSelected = selectedCoupons.includes(
-                              coupon.id,
-                            );
+                          .map((claimedCoupon) => {
+                            const coupon =
+                              claimedCoupon.couponId || claimedCoupon;
+                            const couponId =
+                              coupon._id ||
+                              claimedCoupon._id ||
+                              claimedCoupon.id;
+                            const isSelected =
+                              selectedCoupons.includes(couponId);
                             return (
                               <div
-                                key={coupon.id}
+                                key={couponId}
                                 onClick={() => {
                                   if (isSelected) {
-                                    dispatch(deselectCoupon(coupon.id));
+                                    dispatch(deselectCoupon(couponId));
                                   } else {
-                                    dispatch(selectCoupon(coupon.id));
+                                    dispatch(selectCoupon(couponId));
                                   }
                                 }}
                                 className={`flex-shrink-0 w-56 md:w-64 cursor-pointer relative border-2 rounded-xl p-4 transition-all ${
@@ -264,18 +292,19 @@ const Cart = () => {
                                     <h4
                                       className={`text-xs font-bold truncate ${isSelected ? "text-teal-700" : "text-gray-700"}`}
                                     >
-                                      {coupon.name}
+                                      {coupon.title || claimedCoupon.title}
                                     </h4>
                                     <p className="text-[10px] text-gray-500 mt-1 line-clamp-1">
-                                      {coupon.description}
+                                      {coupon.description ||
+                                        claimedCoupon.description}
                                     </p>
                                   </div>
                                   <div
                                     className={`text-xs font-black ${isSelected ? "text-teal-600" : "text-teal-500"}`}
                                   >
-                                    {coupon.discountType === "percentage"
-                                      ? `${coupon.discountValue}%`
-                                      : `$${coupon.discountValue}`}
+                                    {coupon.discountPercent ||
+                                      claimedCoupon.discountPercent}
+                                    %
                                   </div>
                                 </div>
                                 {isSelected && (
@@ -287,7 +316,9 @@ const Cart = () => {
                                   <span className="text-[9px] text-gray-400 font-medium">
                                     Exp:{" "}
                                     {new Date(
-                                      coupon.expirationDate,
+                                      coupon.expireDate ||
+                                        claimedCoupon.expireDate ||
+                                        claimedCoupon.expirationDate,
                                     ).toLocaleDateString()}
                                   </span>
                                   <span className="text-[9px] font-bold text-teal-600">

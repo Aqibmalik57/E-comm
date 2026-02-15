@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { getAllProducts } from "../../store/feature/productSlice";
 import { addToCart } from "../../store/feature/CartSlice";
+import { getAllCategories } from "../../store/feature/categorySlice";
+
 import CategCard from "./CategCard";
 import { FaCartPlus, FaStar } from "react-icons/fa6";
 import { IoExpand } from "react-icons/io5";
@@ -21,6 +23,7 @@ const Categ = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error, products } = useSelector((state) => state.product);
+  const { categories } = useSelector((state) => state.category);
   const ref = useRef(null);
   const { images } = useContext(ProductContext);
 
@@ -46,20 +49,39 @@ const Categ = () => {
 
   useEffect(() => {
     dispatch(getAllProducts());
+    dispatch(getAllCategories());
   }, [dispatch]);
 
-  const matchCategorySubstring = (urlCat, prodCat) => {
-    if (!urlCat || !prodCat) return false;
+  const matchCategoryOrTags = (urlCat, product) => {
+    if (!urlCat || !product) return false;
     const u = urlCat.toLowerCase();
-    const p =
-      typeof prodCat === "object"
-        ? prodCat.name.toLowerCase()
-        : prodCat.toLowerCase();
-    return p.includes(u) || u.includes(p);
+
+    // Check product category
+    const prodCat = product.category;
+    if (prodCat) {
+      const p =
+        typeof prodCat === "object"
+          ? prodCat.name.toLowerCase()
+          : prodCat.toLowerCase();
+      if (p.includes(u) || u.includes(p)) return true;
+    }
+
+    // Check product tags
+    if (product.tags && Array.isArray(product.tags)) {
+      return product.tags.some((tag) => {
+        const t =
+          typeof tag === "object"
+            ? tag.name?.toLowerCase() || tag.toLowerCase()
+            : tag.toLowerCase();
+        return t.includes(u) || u.includes(t);
+      });
+    }
+
+    return false;
   };
 
   const filteredProducts = products?.filter((product) =>
-    matchCategorySubstring(selectedCategory, product.category),
+    matchCategoryOrTags(selectedCategory, product),
   );
 
   const sortedProducts = hasUserSorted
@@ -123,21 +145,6 @@ const Categ = () => {
     return (total / reviews.length).toFixed(1);
   };
 
-  const categoriesNames = [
-    "Men",
-    "Fish & Meat",
-    "Fruits & Vegetables",
-    "Cooking",
-    "Biscuits & Cakes",
-    "Household Tools",
-    "Pets Care",
-    "Beauty & Healths",
-    "Jam & Jelly",
-    "Milk & Dairy",
-    "Drinks",
-    "Breakfast",
-  ];
-
   return (
     <>
       <div ref={ref} className="bg-[#f9fafb] pb-10">
@@ -145,9 +152,9 @@ const Categ = () => {
 
         <div className="w-full mt-6 px-4 md:px-11">
           <div className="p-2">
-            {images && images.length > 0 && (
+            {categories && categories.length > 0 && (
               <Swiper
-                key={images.length}
+                key={categories.length}
                 modules={[Navigation]}
                 navigation
                 loop={true}
@@ -160,24 +167,26 @@ const Categ = () => {
                 }}
                 className="category-swiper"
               >
-                {images.map((image, index) => (
+                {categories.map((cat, index) => (
                   <SwiperSlide
-                    key={index}
-                    onClick={() =>
-                      handleCategoryClick(categoriesNames[index] || "Breakfast")
-                    }
+                    key={cat._id || index}
+                    onClick={() => handleCategoryClick(cat.name)}
                     className="bg-white rounded-xl shadow-sm"
                   >
                     <div className="flex flex-col items-center justify-center p-2 cursor-pointer group">
                       <div className="w-12 h-12 md:w-14 md:h-14 flex items-center justify-center bg-gray-50 rounded-full group-hover:bg-green-50 transition-colors">
                         <img
-                          src={image}
-                          alt=""
+                          src={
+                            cat.imageUrl ||
+                            images[index % images.length] ||
+                            images[0]
+                          }
+                          alt={cat.name}
                           className="w-8 h-8 object-contain group-hover:scale-110 transition-transform"
                         />
                       </div>
                       <span className="text-[10px] md:text-xs font-medium mt-2 text-gray-600 text-center line-clamp-1">
-                        {categoriesNames[index] || "Breakfast"}
+                        {cat.name}
                       </span>
                     </div>
                   </SwiperSlide>

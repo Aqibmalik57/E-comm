@@ -162,15 +162,14 @@ const offerSlice = createSlice({
       })
       .addCase(claimCoupon.fulfilled, (state, action) => {
         state.loading = false;
-        // Assuming the response includes the claimed coupon details
-        // You may need to adjust based on actual API response
-        // For now, trigger a refetch or update claimedCoupons
-        // Since getMyClaimedCoupons sets claimedCoupons, perhaps dispatch it separately
+        // After claiming, we should refresh claimed coupons
+        // The thunk will dispatch getMyClaimedCoupons separately
       })
       .addCase(claimCoupon.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
+
       // get my claimed coupons
       .addCase(getMyClaimedCoupons.pending, (state) => {
         state.loading = true;
@@ -190,6 +189,7 @@ export const {
   updateCouponStatus,
   selectCoupon,
   deselectCoupon,
+  clearClaimedCoupons,
   clearOfferErrors,
 } = offerSlice.actions;
 
