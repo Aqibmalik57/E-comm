@@ -29,7 +29,6 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
   const handleAddToCart = async () => {
     try {
       await dispatch(addToCart({ productId: product._id, quantity })).unwrap();
-      toast.success("Added to cart");
     } catch (backendError) {
       toast.error(backendError || "Failed to add to cart");
     }

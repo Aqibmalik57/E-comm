@@ -13,14 +13,12 @@ export const fetchCart = createAsyncThunk(
         withCredentials: true,
       });
 
-      // We return response.data.cart because that's where the items are
+      // Backend returns: { success: true, cart: { items: [], subtotal, discount, total, appliedCoupon } }
       return response.data.cart;
     } catch (error) {
-      // If error is 404 (Not Found), it might just mean the cart is empty
       const message =
         error.response?.data?.message || "Failed to fetch cart data";
 
-      // Only show toast if it's a real server error (500), not just an empty cart
       if (error.response?.status !== 404) {
         toast.error(message);
       }
@@ -46,8 +44,8 @@ export const addToCart = createAsyncThunk(
       toast.success("Product added to cart");
       return response.data.cart;
     } catch (error) {
-      toast.error(error.response.data.message || "Failed to add to cart");
-      return rejectWithValue(error.response.data);
+      toast.error(error.response?.data?.message || "Failed to add to cart");
+      return rejectWithValue(error.response?.data);
     }
   },
 );
@@ -55,39 +53,41 @@ export const addToCart = createAsyncThunk(
 // Async thunk for increasing item quantity in the cart
 export const increaseCartQuantity = createAsyncThunk(
   "cart/increaseCartQuantity",
-  async ({ productId }, { rejectWithValue, dispatch }) => {
+  async ({ productId }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
         `${API_URL}/increase-quantity`,
         { productId },
         { withCredentials: true },
       );
-      console.log(response.data.cart.items);
-      dispatch(fetchCart()); // Re-fetch the cart to ensure full product data
-      return response.data.cart.items; // Assuming the response contains the updated cart
+      // Backend returns the updated cart with items, subtotal, discount, total
+      return response.data.cart;
     } catch (error) {
-      toast.error(error.response.data.message || "Failed to increase quantity");
-      return rejectWithValue(error.response.data);
+      toast.error(
+        error.response?.data?.message || "Failed to increase quantity",
+      );
+      return rejectWithValue(error.response?.data);
     }
   },
 );
 
 // Async thunk for decreasing item quantity in the cart
-
 export const decreaseCartQuantity = createAsyncThunk(
   "cart/decreaseCartQuantity",
-  async ({ productId }, { rejectWithValue, dispatch }) => {
+  async ({ productId }, { rejectWithValue }) => {
     try {
       const response = await axios.put(
         `${API_URL}/decrease-quantity`,
         { productId },
         { withCredentials: true },
       );
-      dispatch(fetchCart()); // Re-fetch the cart to ensure full product data
-      return response.data.cart; // Assuming the response contains the updated cart
+      // Backend returns the updated cart with items, subtotal, discount, total
+      return response.data.cart;
     } catch (error) {
-      toast.error(error.response.data.message || "Failed to decrease quantity");
-      return rejectWithValue(error.response.data);
+      toast.error(
+        error.response?.data?.message || "Failed to decrease quantity",
+      );
+      return rejectWithValue(error.response?.data);
     }
   },
 );
@@ -95,11 +95,19 @@ export const decreaseCartQuantity = createAsyncThunk(
 // Thunk to remove product from cart
 export const removeFromCart = createAsyncThunk(
   "cart/removeFromCart",
-  async ({ productId }) => {
-    const response = await axios.delete(`${API_URL}/remove-item/${productId}`, {
-      withCredentials: true,
-    });
-    return response.data;
+  async ({ productId }, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(
+        `${API_URL}/remove-item/${productId}`,
+        {
+          withCredentials: true,
+        },
+      );
+      return response.data.cart;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to remove item");
+      return rejectWithValue(error.response?.data);
+    }
   },
 );
 
@@ -116,8 +124,8 @@ export const applyCouponToCart = createAsyncThunk(
       toast.success(response.data.message);
       return response.data.cart;
     } catch (error) {
-      toast.error(error.response.data.message || "Failed to apply coupon");
-      return rejectWithValue(error.response.data);
+      toast.error(error.response?.data?.message || "Failed to apply coupon");
+      return rejectWithValue(error.response?.data);
     }
   },
 );
@@ -137,12 +145,30 @@ const cartSlice = createSlice({
     initialLoading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    clearCart: (state) => {
+      state.cart = {
+        items: [],
+        subtotal: 0,
+        discount: 0,
+        total: 0,
+        appliedCoupon: null,
+      };
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Handle fetch cart success
       .addCase(fetchCart.fulfilled, (state, action) => {
-        state.cart = action.payload; // Update the full cart object
+        // Backend returns cart with flat product data in items
+        // Items structure: { productObjectId, pId, title, price, imageUrl, quantity }
+        state.cart = action.payload || {
+          items: [],
+          subtotal: 0,
+          discount: 0,
+          total: 0,
+          appliedCoupon: null,
+        };
         state.loading = false;
         state.initialLoading = false;
         state.error = null;
@@ -163,7 +189,7 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(addToCart.fulfilled, (state, action) => {
-        state.cart = action.payload; // Update the full cart object
+        state.cart = action.payload;
         state.loading = false;
         state.error = null;
       })
@@ -177,8 +203,8 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(increaseCartQuantity.fulfilled, (state, action) => {
+        state.cart = action.payload;
         state.loading = false;
-        // Cart will be updated by fetchCart dispatch
       })
       .addCase(increaseCartQuantity.rejected, (state, action) => {
         state.loading = false;
@@ -190,24 +216,25 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(decreaseCartQuantity.fulfilled, (state, action) => {
+        state.cart = action.payload;
         state.loading = false;
-        // Cart will be updated by fetchCart dispatch
       })
       .addCase(decreaseCartQuantity.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
+      // Handle remove from cart
       .addCase(removeFromCart.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(removeFromCart.fulfilled, (state, action) => {
-        state.cart = action.payload.cart; // Update the full cart object
+        state.cart = action.payload;
         state.loading = false;
       })
       .addCase(removeFromCart.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
       })
       // Handle apply coupon
       .addCase(applyCouponToCart.pending, (state) => {
@@ -215,7 +242,7 @@ const cartSlice = createSlice({
         state.error = null;
       })
       .addCase(applyCouponToCart.fulfilled, (state, action) => {
-        state.cart = action.payload; // Update the full cart object
+        state.cart = action.payload;
         state.loading = false;
         state.error = null;
       })
@@ -226,4 +253,5 @@ const cartSlice = createSlice({
   },
 });
 
+export const { clearCart } = cartSlice.actions;
 export default cartSlice.reducer;

@@ -23,7 +23,9 @@ const Navbar = () => {
   const [navbarHeight, setNavbarHeight] = useState(0);
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
   const { user } = useSelector((state) => state.user);
-  const { items } = useSelector((state) => state.cart);
+  // Fixed: Access cart data from the nested state structure
+  const cart = useSelector((state) => state.cart.cart);
+  const cartItems = cart?.items || [];
   const { categories } = useSelector((state) => state.category);
 
   const dispatch = useDispatch();
@@ -37,7 +39,8 @@ const Navbar = () => {
     dispatch(getAllCategories());
   }, [dispatch]);
 
-  const totalQuantity = items?.reduce((acc, curr) => acc + curr.quantity, 0);
+  // Show cart products length (number of unique items in cart)
+  const cartItemsLength = cartItems.length;
 
   useEffect(() => {
     if (user?._id) {
@@ -158,8 +161,8 @@ const Navbar = () => {
             >
               <FiShoppingCart className="text-2xl" />
               {user && (
-                <span className="absolute top-[-5px] right-[-15px] inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full">
-                  {totalQuantity}
+                <span className="absolute top-[-5px] right-[-11px] inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full">
+                  {cartItemsLength}
                 </span>
               )}
             </div>

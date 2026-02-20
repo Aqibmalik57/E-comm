@@ -5,95 +5,88 @@ import {
   fetchCart,
   increaseCartQuantity,
   removeFromCart,
+  applyCouponToCart,
 } from "../../store/feature/CartSlice";
-import { selectCoupon, deselectCoupon } from "../../store/feature/offerSlice";
 import { FaArrowLeft, FaMinus, FaPlus, FaTrash, FaLock } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
-import { HiTicket } from "react-icons/hi2";
-import { IoMdCheckmarkCircle } from "react-icons/io";
+import { toast } from "react-toastify";
 
 const Cart = () => {
   const dispatch = useDispatch();
-  const {
-    cart: { items },
-    loading,
-  } = useSelector((state) => state.cart);
+  const { cart, loading } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.user);
-  const { claimedCoupons, selectedCoupons } = useSelector(
-    (state) => state.offer,
-  );
+  const { claimedCoupons } = useSelector((state) => state.offer);
   const navigate = useNavigate();
+
+  // Use backend-calculated values
+  const items = cart?.items || [];
+  const subtotal = cart?.subtotal || 0;
+  const discount = cart?.discount || 0;
+  const total = cart?.total || 0;
+  const appliedCoupon = cart?.appliedCoupon;
 
   useEffect(() => {
     if (user && user._id) {
-      dispatch(fetchCart(user._id));
+      dispatch(fetchCart());
     }
   }, [user, dispatch]);
 
-  const subtotal = (items || []).reduce((acc, item) => {
-    const { productId, quantity } = item;
-    const { price } = productId || {};
-    return acc + (price ? price * quantity : 0);
-  }, 0);
-
-  const discount = selectedCoupons.reduce((acc, couponId) => {
-    const coupon = claimedCoupons.find(
-      (c) => (c.couponId?._id || c._id || c.id) === couponId,
-    );
-    if (coupon) {
-      const couponData = coupon.couponId || coupon;
-      if (
-        coupon.discountType === "percentage" ||
-        couponData.discountType === "percentage"
-      ) {
-        return (
-          acc +
-          subtotal *
-            ((coupon.discountValue || couponData.discountPercent) / 100)
-        );
-      } else if (
-        coupon.discountType === "fixed" ||
-        couponData.discountType === "fixed"
-      ) {
-        return acc + (coupon.discountValue || couponData.discountValue);
-      }
-    }
-    return acc;
-  }, 0);
-
-  const total = subtotal - discount;
-
-  const handleQuantityIncrease = async (productId) => {
-    if (user._id) {
-      try {
-        await dispatch(increaseCartQuantity({ productId }));
-      } catch (error) {
-        console.error("Error increasing quantity:", error);
-      }
-    }
-  };
-
-  const handleQuantityDecrease = async (productId) => {
-    if (user._id) {
-      try {
-        await dispatch(decreaseCartQuantity({ productId }));
-      } catch (error) {
-        console.error("Error decreasing quantity:", error);
-      }
-    }
-  };
-
-  const handleRemoveFromCart = async (productId) => {
+  const handleQuantityIncrease = async (productObjectId) => {
     if (user && user._id) {
       try {
-        const response = await dispatch(removeFromCart({ productId }));
-        if (response.meta.requestStatus === "fulfilled") {
-          dispatch(fetchCart());
-        }
+        await dispatch(increaseCartQuantity({ productId: productObjectId }));
       } catch (error) {
-        console.error("Error removing item:", error);
+        console.error("Error increasing quantity:", error);
+        toast.error("Failed to increase quantity");
       }
     }
+  };
+
+  const handleQuantityDecrease = async (productObjectId) => {
+    if (user && user._id) {
+      try {
+        await dispatch(decreaseCartQuantity({ productId: productObjectId }));
+      } catch (error) {
+        console.error("Error decreasing quantity:", error);
+        toast.error("Failed to decrease quantity");
+      }
+    }
+  };
+
+  const handleRemoveFromCart = async (productObjectId) => {
+    if (user && user._id) {
+      try {
+        await dispatch(removeFromCart({ productId: productObjectId }));
+        toast.success("Item removed from cart");
+      } catch (error) {
+        console.error("Error removing item:", error);
+        toast.error("Failed to remove item");
+      }
+    }
+  };
+
+  const handleApplyCoupon = async (couponTitle) => {
+    try {
+      await dispatch(applyCouponToCart({ couponTitle })).unwrap();
+      toast.success("Coupon applied successfully");
+    } catch (error) {
+      // Error is handled by the thunk
+    }
+  };
+
+  const handleRemoveCoupon = async () => {
+    try {
+      // Pass empty string to toggle off the coupon (backend handles toggle logic)
+      await dispatch(applyCouponToCart({ couponTitle: "" })).unwrap();
+      toast.info("Coupon removed");
+    } catch (error) {
+      // Error is handled by the thunk
+    }
+  };
+
+  // Get product ObjectId for cart operations
+  const getProductId = (item) => {
+    return item.productObjectId?._id || item.productObjectId;
   };
 
   return (
@@ -110,7 +103,7 @@ const Cart = () => {
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8 flex flex-col sm:flex-row sm:items-baseline">
           Shopping Cart
           <span className="text-sm md:text-lg font-normal text-gray-500 sm:ml-4">
-            ({items?.length || 0} items)
+            ({items.length} items)
           </span>
         </h2>
       </div>
@@ -152,8 +145,9 @@ const Cart = () => {
                 <div className="flex-1">
                   <div className="divide-y divide-gray-200">
                     {items.map((item, index) => {
-                      const { productId, quantity } = item;
-                      const { title, price, imageUrl } = productId || {};
+                      const productId = getProductId(item);
+                      const { title, price, imageUrl, quantity, pId } = item;
+
                       return (
                         <div
                           key={index}
@@ -172,6 +166,9 @@ const Cart = () => {
                               <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-1 group-hover:text-teal-600 transition-colors line-clamp-2">
                                 {title}
                               </h3>
+                              <p className="text-xs text-gray-400 mb-1">
+                                SKU: {pId}
+                              </p>
                               <p className="text-sm text-gray-500 mb-4 sm:mb-0">
                                 Unit Price:{" "}
                                 <span className="text-gray-900 font-medium">
@@ -184,7 +181,7 @@ const Cart = () => {
                               <div className="flex items-center bg-white border border-gray-200 rounded-full p-1 shadow-sm">
                                 <button
                                   onClick={() =>
-                                    handleQuantityDecrease(productId._id)
+                                    handleQuantityDecrease(productId)
                                   }
                                   disabled={quantity <= 1}
                                   className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 disabled:opacity-30"
@@ -196,7 +193,7 @@ const Cart = () => {
                                 </span>
                                 <button
                                   onClick={() =>
-                                    handleQuantityIncrease(productId._id)
+                                    handleQuantityIncrease(productId)
                                   }
                                   className="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center rounded-full text-teal-600 hover:bg-teal-50"
                                 >
@@ -210,7 +207,7 @@ const Cart = () => {
                                 </span>
                                 <button
                                   onClick={() =>
-                                    handleRemoveFromCart(productId._id)
+                                    handleRemoveFromCart(productId)
                                   }
                                   className="text-gray-300 hover:text-red-500 transition-colors p-2"
                                 >
@@ -227,111 +224,6 @@ const Cart = () => {
 
                 {/* Right Side: Sidebar */}
                 <div className="lg:w-[380px] space-y-6 md:space-y-8">
-                  {/* Voucher Section */}
-                  {claimedCoupons.filter((c) => {
-                    const now = new Date().getTime();
-                    const couponData = c.couponId || c;
-                    const start = new Date(
-                      couponData.startDate || c.startDate,
-                    ).getTime();
-                    const end = new Date(
-                      couponData.expireDate || c.expirationDate || c.expireDate,
-                    ).getTime();
-                    return now >= start && now <= end;
-                  }).length > 0 && (
-                    <div className="p-4 border border-gray-200 rounded-3xl bg-white">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xs font-black text-gray-700 uppercase tracking-wider flex items-center gap-2">
-                          <HiTicket className="text-teal-600 text-lg" />{" "}
-                          Available Vouchers
-                        </h3>
-                      </div>
-
-                      <div className="flex overflow-x-auto gap-3 scrollbar-hide pb-2">
-                        {claimedCoupons
-                          .filter((c) => {
-                            const now = new Date().getTime();
-                            const couponData = c.couponId || c;
-                            const start = new Date(
-                              couponData.startDate || c.startDate,
-                            ).getTime();
-                            const end = new Date(
-                              couponData.expireDate ||
-                                c.expirationDate ||
-                                c.expireDate,
-                            ).getTime();
-                            return now >= start && now <= end;
-                          })
-                          .map((claimedCoupon) => {
-                            const coupon =
-                              claimedCoupon.couponId || claimedCoupon;
-                            const couponId =
-                              coupon._id ||
-                              claimedCoupon._id ||
-                              claimedCoupon.id;
-                            const isSelected =
-                              selectedCoupons.includes(couponId);
-                            return (
-                              <div
-                                key={couponId}
-                                onClick={() => {
-                                  if (isSelected) {
-                                    dispatch(deselectCoupon(couponId));
-                                  } else {
-                                    dispatch(selectCoupon(couponId));
-                                  }
-                                }}
-                                className={`flex-shrink-0 w-56 md:w-64 cursor-pointer relative border-2 rounded-xl p-4 transition-all ${
-                                  isSelected
-                                    ? "border-teal-500 bg-teal-50/30 shadow-md"
-                                    : "border-gray-100 bg-gray-50/50 hover:border-teal-300"
-                                }`}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div className="max-w-[140px] md:max-w-[160px]">
-                                    <h4
-                                      className={`text-xs font-bold truncate ${isSelected ? "text-teal-700" : "text-gray-700"}`}
-                                    >
-                                      {coupon.title || claimedCoupon.title}
-                                    </h4>
-                                    <p className="text-[10px] text-gray-500 mt-1 line-clamp-1">
-                                      {coupon.description ||
-                                        claimedCoupon.description}
-                                    </p>
-                                  </div>
-                                  <div
-                                    className={`text-xs font-black ${isSelected ? "text-teal-600" : "text-teal-500"}`}
-                                  >
-                                    {coupon.discountPercent ||
-                                      claimedCoupon.discountPercent}
-                                    %
-                                  </div>
-                                </div>
-                                {isSelected && (
-                                  <div className="absolute -top-2 -right-2 bg-teal-500 text-white rounded-full p-0.5 shadow-sm">
-                                    <IoMdCheckmarkCircle className="text-sm" />
-                                  </div>
-                                )}
-                                <div className="mt-2 pt-2 border-t border-dashed border-gray-300 flex justify-between items-center">
-                                  <span className="text-[9px] text-gray-400 font-medium">
-                                    Exp:{" "}
-                                    {new Date(
-                                      coupon.expireDate ||
-                                        claimedCoupon.expireDate ||
-                                        claimedCoupon.expirationDate,
-                                    ).toLocaleDateString()}
-                                  </span>
-                                  <span className="text-[9px] font-bold text-teal-600">
-                                    {isSelected ? "APPLIED" : "TAP TO APPLY"}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                      </div>
-                    </div>
-                  )}
-
                   {/* Summary Card */}
                   <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-xl shadow-gray-200/50 lg:sticky lg:top-8">
                     <h3 className="text-xl font-bold text-gray-900 mb-6">

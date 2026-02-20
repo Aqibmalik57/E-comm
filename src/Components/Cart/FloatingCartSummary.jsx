@@ -5,18 +5,18 @@ import { FiShoppingBag } from "react-icons/fi";
 const FloatingCartSummary = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const cartItems = useSelector((state) => state.cart.items);
+
+  // Access cart data from the nested state structure
+  const cart = useSelector((state) => state.cart.cart);
+  const cartItems = cart?.items || [];
+  const total = cart?.total || 0;
 
   // Calculate Total Items
   const totalItems =
     cartItems?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
 
-  // Calculate Total Price
-  const totalPrice =
-    cartItems?.reduce((sum, item) => {
-      const price = item.productId?.price || item.price || 0;
-      return sum + price * item.quantity;
-    }, 0) || 0;
+  // Use total from cart state (which includes discount calculation)
+  const totalPrice = total;
 
   // Only show on home page and when cart has items
   if (location.pathname !== "/" || totalItems === 0) return null;

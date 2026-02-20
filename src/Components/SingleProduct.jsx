@@ -37,7 +37,6 @@ const SingleProduct = () => {
         await dispatch(
           addToCart({ productId: product._id, quantity }),
         ).unwrap();
-        toast.success("Added to cart");
       } else if (!user) {
         toast.warn("Please login to add items to cart");
       }
