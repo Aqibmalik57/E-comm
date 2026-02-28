@@ -7,15 +7,20 @@ import {
   removeFromCart,
   applyCouponToCart,
 } from "../../store/feature/CartSlice";
+import { selectCoupon, deselectCoupon } from "../../store/feature/offerSlice";
 import { FaArrowLeft, FaMinus, FaPlus, FaTrash, FaLock } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { HiTicket } from "react-icons/hi2";
+import { IoMdCheckmarkCircle } from "react-icons/io";
 
 const Cart = () => {
   const dispatch = useDispatch();
   const { cart, loading } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.user);
-  const { claimedCoupons } = useSelector((state) => state.offer);
+  const { claimedCoupons, selectedCoupons } = useSelector(
+    (state) => state.offer,
+  );
   const navigate = useNavigate();
 
   // Use backend-calculated values
@@ -24,6 +29,27 @@ const Cart = () => {
   const discount = cart?.discount || 0;
   const total = cart?.total || 0;
   const appliedCoupon = cart?.appliedCoupon;
+
+  // Sync selectedCoupons with applied coupon in cart on page load
+  useEffect(() => {
+    if (appliedCoupon && appliedCoupon.title && claimedCoupons.length > 0) {
+      // Find the coupon in claimedCoupons that matches the applied coupon
+      const matchingCoupon = claimedCoupons.find((c) => {
+        const coupon = c.couponId || c;
+        return coupon.title === appliedCoupon.title;
+      });
+
+      if (matchingCoupon) {
+        const couponId =
+          matchingCoupon.couponId?._id ||
+          matchingCoupon._id ||
+          matchingCoupon.id;
+        if (couponId && !selectedCoupons.includes(couponId)) {
+          dispatch(selectCoupon(couponId));
+        }
+      }
+    }
+  }, [appliedCoupon, claimedCoupons, dispatch, selectedCoupons]);
 
   useEffect(() => {
     if (user && user._id) {
@@ -62,25 +88,6 @@ const Cart = () => {
         console.error("Error removing item:", error);
         toast.error("Failed to remove item");
       }
-    }
-  };
-
-  const handleApplyCoupon = async (couponTitle) => {
-    try {
-      await dispatch(applyCouponToCart({ couponTitle })).unwrap();
-      toast.success("Coupon applied successfully");
-    } catch (error) {
-      // Error is handled by the thunk
-    }
-  };
-
-  const handleRemoveCoupon = async () => {
-    try {
-      // Pass empty string to toggle off the coupon (backend handles toggle logic)
-      await dispatch(applyCouponToCart({ couponTitle: "" })).unwrap();
-      toast.info("Coupon removed");
-    } catch (error) {
-      // Error is handled by the thunk
     }
   };
 
@@ -224,6 +231,145 @@ const Cart = () => {
 
                 {/* Right Side: Sidebar */}
                 <div className="lg:w-[380px] space-y-6 md:space-y-8">
+                  {/* Voucher Section */}
+                  {claimedCoupons.filter((c) => {
+                    const now = new Date().getTime();
+                    const couponData = c.couponId || c;
+                    const start = new Date(
+                      couponData.startDate || c.startDate,
+                    ).getTime();
+                    const end = new Date(
+                      couponData.expireDate || c.expirationDate || c.expireDate,
+                    ).getTime();
+                    return now >= start && now <= end;
+                  }).length > 0 && (
+                    <div className="p-4 border border-gray-200 rounded-3xl bg-white">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xs font-black text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                          <HiTicket className="text-teal-600 text-lg" />{" "}
+                          Available Vouchers
+                        </h3>
+                      </div>
+
+                      <div className="flex overflow-x-auto gap-3 scrollbar-hide pb-2">
+                        {claimedCoupons
+                          .filter((c) => {
+                            const now = new Date().getTime();
+                            const couponData = c.couponId || c;
+                            const start = new Date(
+                              couponData.startDate || c.startDate,
+                            ).getTime();
+                            const end = new Date(
+                              couponData.expireDate ||
+                                c.expirationDate ||
+                                c.expireDate,
+                            ).getTime();
+                            return now >= start && now <= end;
+                          })
+                          .map((claimedCoupon) => {
+                            const coupon =
+                              claimedCoupon.couponId || claimedCoupon;
+                            const couponId =
+                              coupon._id ||
+                              claimedCoupon._id ||
+                              claimedCoupon.id;
+
+                            // Get the coupon title for applying to cart
+                            const couponTitle =
+                              coupon.title || claimedCoupon.title;
+
+                            // Check if this specific coupon is currently applied to the cart (from backend)
+                            const isApplied =
+                              appliedCoupon &&
+                              appliedCoupon.title === couponTitle;
+
+                            return (
+                              <div
+                                key={couponId}
+                                onClick={async () => {
+                                  if (isApplied) {
+                                    // Already applied - remove it
+                                    dispatch(deselectCoupon(couponId));
+                                    try {
+                                      await dispatch(
+                                        applyCouponToCart({ couponTitle: "" }),
+                                      ).unwrap();
+                                      toast.info("Coupon removed");
+                                    } catch (error) {
+                                      // Re-select if failed
+                                      dispatch(selectCoupon(couponId));
+                                      toast.error("Failed to remove coupon");
+                                    }
+                                  } else {
+                                    // Not applied - apply it
+                                    // First deselect any other selected coupons
+                                    if (selectedCoupons.length > 0) {
+                                      selectedCoupons.forEach((id) => {
+                                        dispatch(deselectCoupon(id));
+                                      });
+                                    }
+                                    // Then select and apply this coupon
+                                    dispatch(selectCoupon(couponId));
+                                    try {
+                                      await dispatch(
+                                        applyCouponToCart({ couponTitle }),
+                                      ).unwrap();
+                                    } catch (error) {
+                                      // Rollback selection if application fails
+                                      dispatch(deselectCoupon(couponId));
+                                    }
+                                  }
+                                }}
+                                className={`flex-shrink-0 w-56 md:w-64 cursor-pointer relative border-2 rounded-xl p-4 transition-all ${
+                                  isApplied
+                                    ? "border-teal-500 bg-teal-50/30 shadow-md"
+                                    : "border-gray-100 bg-gray-50/50 hover:border-teal-300"
+                                }`}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div className="max-w-[140px] md:max-w-[160px]">
+                                    <h4
+                                      className={`text-xs font-bold truncate ${isApplied ? "text-teal-700" : "text-gray-700"}`}
+                                    >
+                                      {coupon.title || claimedCoupon.title}
+                                    </h4>
+                                    <p className="text-[10px] text-gray-500 mt-1 line-clamp-1">
+                                      {coupon.description ||
+                                        claimedCoupon.description}
+                                    </p>
+                                  </div>
+                                  <div
+                                    className={`text-xs font-black ${isApplied ? "text-teal-600" : "text-teal-500"}`}
+                                  >
+                                    {coupon.discountPercent ||
+                                      claimedCoupon.discountPercent}
+                                    %
+                                  </div>
+                                </div>
+                                {isApplied && (
+                                  <div className="absolute -top-2 -right-2 bg-teal-500 text-white rounded-full p-0.5 shadow-sm">
+                                    <IoMdCheckmarkCircle className="text-sm" />
+                                  </div>
+                                )}
+                                <div className="mt-2 pt-2 border-t border-dashed border-gray-300 flex justify-between items-center">
+                                  <span className="text-[9px] text-gray-400 font-medium">
+                                    Exp:{" "}
+                                    {new Date(
+                                      coupon.expireDate ||
+                                        claimedCoupon.expireDate ||
+                                        claimedCoupon.expirationDate,
+                                    ).toLocaleDateString()}
+                                  </span>
+                                  <span className="text-[9px] font-bold text-teal-600">
+                                    {isApplied ? "APPLIED" : "TAP TO APPLY"}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  )}
                   {/* Summary Card */}
                   <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-xl shadow-gray-200/50 lg:sticky lg:top-8">
                     <h3 className="text-xl font-bold text-gray-900 mb-6">
