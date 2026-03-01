@@ -7,20 +7,20 @@ const API_URL = process.env.REACT_APP_API_URL;
 // Async thunk for checkout
 export const checkoutOrder = createAsyncThunk(
   "order/checkoutOrder",
-  async ({ customer, courier }, { rejectWithValue }) => {
+  async ({ customer, courier }, { rejectWithValue, dispatch }) => {
     try {
       const response = await axios.post(
         `${API_URL}/checkout`,
         { customer, courier },
         { withCredentials: true },
       );
-      toast.success("Order placed successfully");
+      toast.success("Order placed successfully!");
       return response.data.order;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to checkout");
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to checkout",
-      );
+      const errorMessage =
+        error.response?.data?.message || "Failed to checkout";
+      toast.error(errorMessage);
+      return rejectWithValue(errorMessage);
     }
   },
 );
@@ -67,10 +67,22 @@ const orderSlice = createSlice({
   initialState: {
     orders: [],
     order: null,
+    invoice: null,
     loading: false,
     error: null,
+    checkoutSuccess: false,
   },
-  reducers: {},
+  reducers: {
+    clearOrderState: (state) => {
+      state.order = null;
+      state.invoice = null;
+      state.error = null;
+      state.checkoutSuccess = false;
+    },
+    resetCheckoutSuccess: (state) => {
+      state.checkoutSuccess = false;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Handle checkout
@@ -81,7 +93,21 @@ const orderSlice = createSlice({
       .addCase(checkoutOrder.fulfilled, (state, action) => {
         state.loading = false;
         state.order = action.payload;
+        state.invoice = {
+          orderNumber: action.payload.oId,
+          date: action.payload.createdAt,
+          customer: action.payload.customer,
+          items: action.payload.items,
+          pricing: {
+            subtotal: action.payload.subtotal,
+            discount: action.payload.discount,
+            shipping: action.payload.shippingCost,
+            total: action.payload.total,
+          },
+          status: action.payload.status,
+        };
         state.error = null;
+        state.checkoutSuccess = true;
       })
       .addCase(checkoutOrder.rejected, (state, action) => {
         state.loading = false;
@@ -94,7 +120,7 @@ const orderSlice = createSlice({
       })
       .addCase(getOrderInvoice.fulfilled, (state, action) => {
         state.loading = false;
-        state.order = action.payload;
+        state.invoice = action.payload;
         state.error = null;
       })
       .addCase(getOrderInvoice.rejected, (state, action) => {
@@ -118,4 +144,5 @@ const orderSlice = createSlice({
   },
 });
 
+export const { clearOrderState, resetCheckoutSuccess } = orderSlice.actions;
 export default orderSlice.reducer;

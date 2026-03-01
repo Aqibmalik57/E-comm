@@ -1,34 +1,104 @@
-import React, { useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useRef, useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import {
   FaPrint,
   FaDownload,
   FaCircleCheck,
   FaStore,
   FaTruckFast,
+  FaArrowLeft,
+  FaSpinner,
 } from "react-icons/fa6";
+import { getOrderInvoice } from "../../store/feature/orderSlice";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
 const Invoice = () => {
-  const location = useLocation();
+  const { oId } = useParams(); // Get order ID from URL parameter
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const invoiceRef = useRef();
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const order = location.state?.orderData || {
-    orderId: "KB-2026-0000",
-    date: new Date().toLocaleDateString(),
-    customer: {
-      name: "Valued Customer",
-      email: "customer@example.com",
-      phone: "+880 1234-5678",
-      address: "123 Green Road, Dhaka, Bangladesh",
-    },
-    items: [],
-    subtotal: 0,
-    shippingCost: 0,
-    discount: 0,
-    total: 0,
+  const { invoice, loading, error } = useSelector((state) => state.order);
+  const { user } = useSelector((state) => state.user);
+
+  // Fetch invoice data from API on mount
+  useEffect(() => {
+    if (oId && user) {
+      dispatch(getOrderInvoice(oId));
+    }
+  }, [oId, user, dispatch]);
+
+  // Handle loading state
+  if (loading && !invoice) {
+    return (
+      <div className="min-h-screen bg-[#F4F7F6] flex flex-col items-center justify-center">
+        <FaSpinner className="text-4xl text-teal-600 animate-spin mb-4" />
+        <p className="text-slate-500 animate-pulse">Loading invoice...</p>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error && !invoice) {
+    return (
+      <div className="min-h-screen bg-[#F4F7F6] flex flex-col items-center justify-center p-4">
+        <div className="bg-red-50 p-6 rounded-full mb-4">
+          <FaCircleCheck className="text-4xl text-red-400" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-800 mb-2">
+          Invoice Not Found
+        </h2>
+        <p className="text-slate-500 mb-6 text-center">{error}</p>
+        <button
+          onClick={() => navigate("/")}
+          className="bg-teal-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-teal-700 transition-colors"
+        >
+          Go Home
+        </button>
+      </div>
+    );
+  }
+
+  // Fallback if no invoice data
+  if (!invoice) {
+    return (
+      <div className="min-h-screen bg-[#F4F7F6] flex flex-col items-center justify-center p-4">
+        <h2 className="text-xl font-bold text-slate-800 mb-2">
+          No Invoice Data
+        </h2>
+        <p className="text-slate-500 mb-6 text-center">
+          We couldn't find invoice data for this order.
+        </p>
+        <button
+          onClick={() => navigate("/")}
+          className="bg-teal-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-teal-700 transition-colors"
+        >
+          Go Home
+        </button>
+      </div>
+    );
+  }
+
+  // Format the data from API
+  const orderData = {
+    orderId: invoice.orderNumber,
+    date: invoice.date
+      ? new Date(invoice.date).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : new Date().toLocaleDateString(),
+    customer: invoice.customer || {},
+    items: invoice.items || [],
+    subtotal: invoice.pricing?.subtotal || 0,
+    shippingCost: invoice.pricing?.shipping || 0,
+    discount: invoice.pricing?.discount || 0,
+    total: invoice.pricing?.total || 0,
+    status: invoice.status || "Processing",
   };
 
   const handleDownloadPDF = async () => {
@@ -51,7 +121,7 @@ const Invoice = () => {
       });
 
       pdf.addImage(imgData, "PNG", margin, margin, canvas.width, canvas.height);
-      pdf.save(`KachaBazar_Invoice_${order.orderId}.pdf`);
+      pdf.save(`Invoice_${orderData.orderId}.pdf`);
     } catch (error) {
       console.error("PDF Generation Error:", error);
     } finally {
@@ -59,11 +129,25 @@ const Invoice = () => {
     }
   };
 
+  // Get status color
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case "delivered":
+        return "text-green-500";
+      case "shipped":
+        return "text-blue-500";
+      case "cancelled":
+        return "text-red-500";
+      default:
+        return "text-emerald-400";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F4F7F6] py-6 md:py-12 px-4 font-sans print:bg-white print:py-0 print:px-0">
       {/* Action Bar */}
       <div className="max-w-4xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center md:items-end gap-6 print:hidden text-center md:text-left">
-        <div>
+        <div className="flex flex-col items-center md:items-start gap-2">
           <div className="flex items-center justify-center md:justify-start gap-2 text-emerald-600 font-bold text-sm uppercase tracking-widest mb-2">
             <FaCircleCheck /> Payment Successful
           </div>
@@ -72,6 +156,12 @@ const Invoice = () => {
           </h1>
         </div>
         <div className="flex w-full md:w-auto gap-3">
+          <button
+            onClick={() => navigate("/")}
+            className="flex-1 md:flex-none bg-white border px-4 md:px-6 py-2.5 rounded-full font-bold shadow-sm hover:bg-slate-50 flex items-center justify-center gap-2"
+          >
+            <FaArrowLeft /> Back
+          </button>
           <button
             onClick={() => window.print()}
             className="flex-1 md:flex-none bg-white border px-4 md:px-6 py-2.5 rounded-full font-bold shadow-sm hover:bg-slate-50 flex items-center justify-center gap-2"
@@ -119,20 +209,22 @@ const Invoice = () => {
                 Order Identifier
               </p>
               <p className="text-xl md:text-2xl font-mono font-medium tracking-tighter">
-                {order.orderId}
+                {orderData.orderId}
               </p>
               <div className="mt-4 flex md:justify-end gap-6 text-[11px] md:text-xs text-slate-400">
                 <div>
                   <p className="font-bold text-white uppercase text-[9px] mb-1">
                     Date
                   </p>
-                  <p>{order.date}</p>
+                  <p>{orderData.date}</p>
                 </div>
                 <div>
                   <p className="font-bold text-white uppercase text-[9px] mb-1">
                     Status
                   </p>
-                  <p className="text-emerald-400">Processing</p>
+                  <p className={getStatusColor(orderData.status)}>
+                    {orderData.status}
+                  </p>
                 </div>
               </div>
             </div>
@@ -148,13 +240,13 @@ const Invoice = () => {
               </h4>
               <div className="space-y-1">
                 <p className="text-base md:text-lg font-bold text-slate-900">
-                  {order.customer.name}
+                  {orderData.customer.name || "Customer"}
                 </p>
                 <p className="text-xs md:text-sm text-slate-500">
-                  {order.customer.email}
+                  {orderData.customer.email}
                 </p>
                 <p className="text-xs md:text-sm text-slate-500">
-                  {order.customer.phone}
+                  {orderData.customer.phone}
                 </p>
               </div>
             </div>
@@ -163,8 +255,13 @@ const Invoice = () => {
                 <FaTruckFast className="text-emerald-500" /> Delivery Address
               </h4>
               <p className="text-xs md:text-sm text-slate-600 leading-relaxed font-medium">
-                {order.customer.address}
+                {orderData.customer.address || "No address provided"}
               </p>
+              {orderData.customer.shippingMethod && (
+                <p className="text-xs md:text-sm text-teal-600 mt-2 font-medium">
+                  Shipping: {orderData.customer.shippingMethod}
+                </p>
+              )}
             </div>
           </div>
 
@@ -180,25 +277,25 @@ const Invoice = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {order.items.length > 0 ? (
-                  order.items.map((item, idx) => (
+                {orderData.items.length > 0 ? (
+                  orderData.items.map((item, idx) => (
                     <tr key={idx} className="group">
                       <td className="py-4 md:py-6">
                         <p className="font-bold text-slate-900 text-sm md:text-base line-clamp-1">
-                          {item.productId?.title}
+                          {item.title || "Product"}
                         </p>
-                        <p className="text-[9px] text-emerald-600 font-bold uppercase mt-0.5">
-                          Verified Item
+                        <p className="text-[9px] text-slate-400 font-medium mt-0.5">
+                          SKU: {item.pId || "N/A"}
                         </p>
                       </td>
                       <td className="py-4 md:py-6 text-center font-medium text-slate-600 text-sm">
                         ×{item.quantity}
                       </td>
                       <td className="py-4 md:py-6 text-right font-medium text-slate-600 text-sm whitespace-nowrap">
-                        ${item.productId?.price?.toFixed(2)}
+                        ${(item.price || 0).toFixed(2)}
                       </td>
                       <td className="py-4 md:py-6 text-right font-bold text-slate-900 text-sm whitespace-nowrap">
-                        ${(item.productId?.price * item.quantity).toFixed(2)}
+                        ${((item.price || 0) * item.quantity).toFixed(2)}
                       </td>
                     </tr>
                   ))
@@ -231,19 +328,19 @@ const Invoice = () => {
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500 font-medium">Subtotal</span>
                 <span className="font-bold text-slate-900">
-                  ${order.subtotal.toFixed(2)}
+                  ${orderData.subtotal.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500 font-medium">Shipping</span>
                 <span className="font-bold text-slate-900">
-                  ${order.shippingCost.toFixed(2)}
+                  ${orderData.shippingCost.toFixed(2)}
                 </span>
               </div>
-              {order.discount > 0 && (
+              {orderData.discount > 0 && (
                 <div className="flex justify-between text-sm text-emerald-600 font-bold">
                   <span>Discount</span>
-                  <span>-${order.discount.toFixed(2)}</span>
+                  <span>-${orderData.discount.toFixed(2)}</span>
                 </div>
               )}
               <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
@@ -251,7 +348,7 @@ const Invoice = () => {
                   Total Paid
                 </span>
                 <span className="text-3xl md:text-4xl font-black text-emerald-600 tracking-tighter">
-                  ${order.total.toFixed(2)}
+                  ${orderData.total.toFixed(2)}
                 </span>
               </div>
             </div>

@@ -115,13 +115,15 @@ const LayoutWrapper = ({ children }) => {
     "/faqs",
     "/checkout",
     "/Invoice-order-success",
+    "/invoice",
   ];
 
   const isDynamicRoute =
     location.pathname.startsWith("/category/") ||
     location.pathname.startsWith("/product/") ||
     location.pathname.startsWith("/singleUser/") ||
-    location.pathname.startsWith("/updateUser/");
+    location.pathname.startsWith("/updateUser/") ||
+    location.pathname.startsWith("/invoice/");
 
   const isValidPath = validPaths.includes(location.pathname) || isDynamicRoute;
 
@@ -218,6 +220,14 @@ function App() {
             />
             <Route
               path="/Invoice-order-success"
+              element={
+                <ProtectedRoute>
+                  <Invoice />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/invoice/:oId"
               element={
                 <ProtectedRoute>
                   <Invoice />

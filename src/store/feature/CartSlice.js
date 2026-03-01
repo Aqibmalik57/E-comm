@@ -154,6 +154,11 @@ const cartSlice = createSlice({
         total: 0,
         appliedCoupon: null,
       };
+      state.error = null;
+    },
+    resetCartState: (state) => {
+      state.loading = false;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -253,5 +258,5 @@ const cartSlice = createSlice({
   },
 });
 
-export const { clearCart } = cartSlice.actions;
+export const { clearCart, resetCartState } = cartSlice.actions;
 export default cartSlice.reducer;

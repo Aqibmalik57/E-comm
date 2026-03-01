@@ -8,10 +8,12 @@ import {
   FaLock,
   FaChevronRight,
   FaPercent,
+  FaArrowLeft,
 } from "react-icons/fa6";
-import { applyCouponToCart } from "../../store/feature/CartSlice";
+import { applyCouponToCart, fetchCart } from "../../store/feature/CartSlice";
+import { checkoutOrder } from "../../store/feature/orderSlice";
 import { getMyClaimedCoupons } from "../../store/feature/offerSlice";
-import { toast } from "react-toastify";
+import { clearCart } from "../../store/feature/CartSlice";
 import { FaTicketAlt, FaTimes } from "react-icons/fa";
 
 const Checkout = () => {
@@ -21,6 +23,7 @@ const Checkout = () => {
   const { cart, loading: cartLoading } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.user);
   const { claimedCoupons } = useSelector((state) => state.offer);
+  const { loading: orderLoading } = useSelector((state) => state.order);
 
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [shippingMethod, setShippingMethod] = useState("standard");
@@ -29,9 +32,9 @@ const Checkout = () => {
   const [showCouponModal, setShowCouponModal] = useState(false);
 
   const deliveryOptions = {
-    standard: { name: "Standard", price: 0, provider: "FedEx" },
-    express: { name: "Express", price: 15.0, provider: "DHL" },
-    overnight: { name: "Priority", price: 35.0, provider: "UPS" },
+    standard: { name: "Standard", cost: 0, provider: "FedEx" },
+    express: { name: "Express", cost: 15.0, provider: "DHL" },
+    overnight: { name: "Priority", cost: 35.0, provider: "UPS" },
   };
 
   // Load claimed coupons on mount
@@ -55,15 +58,25 @@ const Checkout = () => {
       await dispatch(applyCouponToCart({ couponTitle: coupon.title })).unwrap();
       setSelectedCoupon(coupon);
       setShowCouponModal(false);
-      toast.success(`Coupon "${coupon.title}" applied successfully!`);
     } catch (error) {
       // Error is handled in the thunk
     }
   };
 
-  const handleRemoveCoupon = () => {
+  const handleRemoveCoupon = async () => {
+    if (selectedCoupon) {
+      try {
+        // Call the API with the same coupon to toggle it off (backend handles this)
+        await dispatch(
+          applyCouponToCart({ couponTitle: selectedCoupon.title }),
+        ).unwrap();
+        // Refresh cart to get updated amounts with discount removed
+        await dispatch(fetchCart());
+      } catch (error) {
+        // Error is handled in the thunk
+      }
+    }
     setSelectedCoupon(null);
-    toast.info("Coupon removed");
   };
 
   if (cartLoading && !cart) {
@@ -102,43 +115,55 @@ const Checkout = () => {
     );
   }
 
-  const shippingCost = deliveryOptions[shippingMethod]?.price || 0;
+  const courier = deliveryOptions[shippingMethod];
+  const shippingCost = courier?.cost || 0;
   const total = Math.max(0, subtotal - discount + shippingCost);
 
-  const handlePlaceOrder = (e) => {
+  // Handle form submission - calls backend API
+  const handlePlaceOrder = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
 
     const formData = new FormData(e.currentTarget);
-    const customerDetails = {
+
+    // Format customer details as per backend requirement
+    const customer = {
       name: formData.get("fullName") || user?.name,
       email: formData.get("email") || user?.email,
       phone: formData.get("phone"),
       address: `${formData.get("address")}, ${formData.get("city")}, ${formData.get("state")} ${formData.get("zip")}`,
     };
 
-    setTimeout(() => {
-      setIsProcessing(false);
-      navigate("/Invoice-order-success", {
+    // Format courier as per backend requirement
+    const courierData = {
+      name: courier.name,
+      cost: courier.cost,
+    };
+
+    try {
+      // Call the backend checkout API
+      const result = await dispatch(
+        checkoutOrder({
+          customer,
+          courier: courierData,
+        }),
+      ).unwrap();
+
+      // Clear the cart after successful checkout
+      dispatch(clearCart());
+
+      // Navigate to invoice page with the order oId
+      navigate(`/invoice/${result.oId}`, {
         state: {
-          orderData: {
-            items,
-            total,
-            subtotal,
-            shippingCost,
-            discount,
-            customer: customerDetails,
-            orderId:
-              "ORD-" + Math.random().toString(36).toUpperCase().substring(2, 9),
-            date: new Date().toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            }),
-          },
+          orderId: result.oId,
         },
       });
-    }, 2000);
+    } catch (error) {
+      // Error is already handled in the thunk with toast
+      console.error("Checkout error:", error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const sectionClass =
@@ -147,29 +172,23 @@ const Checkout = () => {
     "w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all bg-white";
   const labelClass = "text-xs font-semibold text-slate-600 mb-1.5 block";
 
-  if (!items || items.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 gap-4 text-center">
-        <p className="text-slate-500">Your cart is empty</p>
-        <button
-          onClick={() => navigate("/")}
-          className="bg-slate-900 text-white px-6 py-2 rounded-lg"
-        >
-          Go Shopping
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-[#F9FBFC] font-sans text-slate-900">
-      <header className="bg-white border-b border-slate-200 z-50">
+      <header className="bg-white border-b border-slate-200 z-50 sticky top-0">
         <div className="max-w-6xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FaLock className="text-teal-600 text-sm" />
-            <span className="font-bold text-slate-800 tracking-tight">
-              Checkout
-            </span>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              <FaArrowLeft className="text-slate-600" />
+            </button>
+            <div className="flex items-center gap-2">
+              <FaLock className="text-teal-600 text-sm" />
+              <span className="font-bold text-slate-800 tracking-tight">
+                Checkout
+              </span>
+            </div>
           </div>
         </div>
       </header>
@@ -301,7 +320,7 @@ const Checkout = () => {
                         {opt.name}
                       </p>
                       <p className="text-xs font-semibold text-teal-700 mt-1">
-                        {opt.price === 0 ? "Free" : `$${opt.price.toFixed(2)}`}
+                        {opt.cost === 0 ? "Free" : `$${opt.cost.toFixed(2)}`}
                       </p>
                     </div>
                   </button>
@@ -418,29 +437,26 @@ const Checkout = () => {
                   <div key={idx} className="py-4 flex gap-4 items-center group">
                     <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-50 border border-slate-100 rounded-lg p-2 flex-shrink-0 flex items-center justify-center transition-transform group-hover:scale-105">
                       <img
-                        src={item.productId?.imageUrl}
-                        alt={item.productId?.title}
+                        src={item.imageUrl}
+                        alt={item.title}
                         className="max-w-full max-h-full object-contain mix-blend-multiply"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="text-xs md:text-sm font-bold text-slate-800 leading-tight mb-1 truncate">
-                        {item.productId?.title}
+                        {item.title}
                       </h4>
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-[10px] font-medium px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">
                           Qty: {item.quantity}
                         </span>
                         <span className="text-[10px] text-slate-400 font-medium">
-                          ${(item.productId?.price || 0).toFixed(2)} / unit
+                          ${(item.price || 0).toFixed(2)} / unit
                         </span>
                       </div>
                     </div>
                     <div className="text-sm font-black text-slate-900 whitespace-nowrap">
-                      $
-                      {((item.productId?.price || 0) * item.quantity).toFixed(
-                        2,
-                      )}
+                      ${((item.price || 0) * item.quantity).toFixed(2)}
                     </div>
                   </div>
                 ))}
@@ -479,10 +495,10 @@ const Checkout = () => {
 
               <button
                 type="submit"
-                disabled={isProcessing}
+                disabled={isProcessing || orderLoading}
                 className="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-lg font-bold text-sm transition-all mt-6 md:mt-8 disabled:bg-slate-300 flex items-center justify-center gap-2"
               >
-                {isProcessing ? (
+                {isProcessing || orderLoading ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
