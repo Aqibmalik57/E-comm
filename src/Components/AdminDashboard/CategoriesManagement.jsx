@@ -10,6 +10,7 @@ import {
   FaImage,
   FaExclamationTriangle,
   FaRedo,
+  FaTags,
 } from "react-icons/fa";
 import {
   getAllCategories,
@@ -27,11 +28,12 @@ const CategoriesManagement = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [fetchError, setFetchError] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
-    image: "",
+    subcategories: "",
+    imageUrl: "",
   });
 
   const loadCategories = async () => {
@@ -46,13 +48,11 @@ const CategoriesManagement = () => {
 
   useEffect(() => {
     loadCategories();
-  });
+  }, []);
 
-  // Filter categories
-  const filteredCategories = categories?.filter(
-    (category) =>
-      category.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category.description?.toLowerCase().includes(searchTerm.toLowerCase()),
+  // Filter categories by name
+  const filteredCategories = categories?.filter((category) =>
+    category.name?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleInputChange = (e) => {
@@ -60,12 +60,31 @@ const CategoriesManagement = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleImageUrlChange = (e) => {
+    const url = e.target.value;
+    setImagePreview(url);
+    setFormData((prev) => ({ ...prev, imageUrl: url }));
+  };
+
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setFormData((prev) => ({ ...prev, imageUrl: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: "",
-      description: "",
-      image: "",
+      subcategories: "",
+      imageUrl: "",
     });
+    setImagePreview("");
     setEditingCategory(null);
   };
 
@@ -78,26 +97,41 @@ const CategoriesManagement = () => {
     setEditingCategory(category);
     setFormData({
       name: category.name || "",
-      description: category.description || "",
-      image: category.image || "",
+      subcategories: category.subcategories?.join(", ") || "",
+      imageUrl: category.imageUrl || "",
     });
+    setImagePreview(category.imageUrl || "");
     setShowModal(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Convert subcategories string to array
+    const subcategoriesArray = formData.subcategories
+      ? formData.subcategories
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+
+    const categoryData = {
+      name: formData.name,
+      subcategories: subcategoriesArray,
+      image: formData.imageUrl,
+    };
+
     try {
       if (editingCategory) {
         await dispatch(
           updateCategory({
             categoryId: editingCategory._id,
-            updateData: formData,
+            updateData: categoryData,
           }),
         ).unwrap();
         toast.success("Category updated successfully");
       } else {
-        await dispatch(createCategory(formData)).unwrap();
+        await dispatch(createCategory(categoryData)).unwrap();
         toast.success("Category created successfully");
       }
 
@@ -197,7 +231,7 @@ const CategoriesManagement = () => {
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search categories..."
+            placeholder="Search categories by name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
@@ -215,9 +249,9 @@ const CategoriesManagement = () => {
             >
               {/* Category Image */}
               <div className="h-40 bg-gradient-to-br from-[#10b981] to-green-600 relative flex items-center justify-center">
-                {category.image ? (
+                {category.imageUrl ? (
                   <img
-                    src={category.image}
+                    src={category.imageUrl}
                     alt={category.name}
                     className="w-full h-full object-cover"
                   />
@@ -225,22 +259,51 @@ const CategoriesManagement = () => {
                   <FaFolder className="text-white text-5xl opacity-50" />
                 )}
                 <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-                <h3 className="absolute bottom-4 left-4 text-white font-bold text-xl">
+                <h3 className="absolute bottom-4 left-4 text-white font-bold text-xl capitalize">
                   {category.name}
                 </h3>
               </div>
 
               {/* Category Info */}
               <div className="p-4">
-                <p className="text-sm text-gray-500 mb-4 line-clamp-2">
-                  {category.description || "No description available"}
-                </p>
+                {/* Subcategories */}
+                {category.subcategories &&
+                  category.subcategories.length > 0 && (
+                    <div className="mb-3">
+                      <div className="flex items-center mb-2">
+                        <FaTags className="text-gray-400 text-xs mr-1" />
+                        <span className="text-xs text-gray-500">
+                          Subcategories ({category.subcategories.length})
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {category.subcategories
+                          .slice(0, 3)
+                          .map((sub, index) => (
+                            <span
+                              key={index}
+                              className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded capitalize"
+                            >
+                              {sub}
+                            </span>
+                          ))}
+                        {category.subcategories.length > 3 && (
+                          <span className="text-xs text-gray-400">
+                            +{category.subcategories.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                 {/* Stats */}
                 <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                   <span>Products: {category.productCount || 0}</span>
                   <span>
-                    Created: {new Date(category.createdAt).toLocaleDateString()}
+                    Created:{" "}
+                    {category.createdAt
+                      ? new Date(category.createdAt).toLocaleDateString()
+                      : "N/A"}
                   </span>
                 </div>
 
@@ -284,8 +347,8 @@ const CategoriesManagement = () => {
 
       {/* Create/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-xl font-bold text-gray-800">
                 {editingCategory ? "Edit Category" : "Create New Category"}
@@ -303,39 +366,76 @@ const CategoriesManagement = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none capitalize"
                   placeholder="e.g., Electronics"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
+                  Subcategories
                 </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
+                <input
+                  type="text"
+                  name="subcategories"
+                  value={formData.subcategories}
                   onChange={handleInputChange}
-                  rows="3"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
-                  placeholder="Brief description of the category..."
+                  placeholder="e.g., mobile, laptop, accessories (comma separated)"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Separate subcategories with commas
+                </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Image URL
+                  Category Image *
                 </label>
-                <div className="relative">
-                  <FaImage className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <div className="space-y-2">
+                  {/* Image URL Input */}
                   <input
                     type="url"
-                    name="image"
-                    value={formData.image}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
-                    placeholder="https://example.com/image.jpg"
+                    name="imageUrl"
+                    value={formData.imageUrl}
+                    onChange={handleImageUrlChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                    placeholder="Or enter image URL"
                   />
+
+                  {/* File Upload */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileChange}
+                      className="hidden"
+                      id="category-image-upload"
+                    />
+                    <label
+                      htmlFor="category-image-upload"
+                      className="cursor-pointer flex flex-col items-center"
+                    >
+                      <FaImage className="text-gray-400 text-3xl mb-2" />
+                      <span className="text-sm text-gray-500">
+                        Click to upload an image
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Image Preview */}
+                  {imagePreview && (
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500 mb-1">Preview:</p>
+                      <div className="w-32 h-32 rounded-lg overflow-hidden border border-gray-200">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

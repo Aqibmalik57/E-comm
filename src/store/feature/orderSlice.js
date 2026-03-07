@@ -7,7 +7,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 // Async thunk for checkout
 export const checkoutOrder = createAsyncThunk(
   "order/checkoutOrder",
-  async ({ customer, courier }, { rejectWithValue, dispatch }) => {
+  async ({ customer, courier }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
         `${API_URL}/checkout`,
@@ -56,6 +56,66 @@ export const getMyOrders = createAsyncThunk(
       toast.error(error.response?.data?.message || "Failed to get orders");
       return rejectWithValue(
         error.response?.data?.message || "Failed to get orders",
+      );
+    }
+  },
+);
+
+// Async thunk for getting all orders (Admin)
+export const getAllOrders = createAsyncThunk(
+  "order/getAllOrders",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/allOrders`, {
+        withCredentials: true,
+      });
+      return response.data.orders;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to get all orders");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to get all orders",
+      );
+    }
+  },
+);
+
+// Async thunk for updating order status (Admin)
+export const updateOrderStatus = createAsyncThunk(
+  "order/updateOrderStatus",
+  async ({ orderId, status }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        `${API_URL}/updateOrderStatus/${orderId}`,
+        { status },
+        { withCredentials: true },
+      );
+      toast.success(response.data.message);
+      return response.data.order;
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to update order status",
+      );
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update order status",
+      );
+    }
+  },
+);
+
+// Async thunk for deleting an order (Admin)
+export const deleteOrder = createAsyncThunk(
+  "order/deleteOrder",
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(`${API_URL}/deleteOrder/${orderId}`, {
+        withCredentials: true,
+      });
+      toast.success(response.data.message);
+      return orderId;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete order");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to delete order",
       );
     }
   },
@@ -138,6 +198,55 @@ const orderSlice = createSlice({
         state.error = null;
       })
       .addCase(getMyOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Handle get all orders (Admin)
+      .addCase(getAllOrders.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllOrders.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orders = action.payload;
+        state.error = null;
+      })
+      .addCase(getAllOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Handle update order status (Admin)
+      .addCase(updateOrderStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateOrderStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.orders.findIndex(
+          (order) => order._id === action.payload._id,
+        );
+        if (index !== -1) {
+          state.orders[index] = action.payload;
+        }
+        state.error = null;
+      })
+      .addCase(updateOrderStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Handle delete order (Admin)
+      .addCase(deleteOrder.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteOrder.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orders = state.orders.filter(
+          (order) => order._id !== action.payload,
+        );
+        state.error = null;
+      })
+      .addCase(deleteOrder.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

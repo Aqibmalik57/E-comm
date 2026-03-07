@@ -3,7 +3,8 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import { Provider } from "react-redux";
-import store from "./store/store";
+import { PersistGate } from "redux-persist/integration/react";
+import { persistor, store } from "./store/store";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Imageprovider from "./Components/Context/imagesContext";
@@ -17,10 +18,12 @@ root.render(
   <>
     <GoogleOAuthProvider clientId={googleClientId}>
       <Provider store={store}>
-        <Imageprovider>
-          <App />
-          <ToastContainer position="top-center" />
-        </Imageprovider>
+        <PersistGate loading={null} persistor={persistor}>
+          <Imageprovider>
+            <App />
+            <ToastContainer position="top-center" />
+          </Imageprovider>
+        </PersistGate>
       </Provider>
     </GoogleOAuthProvider>
   </>,

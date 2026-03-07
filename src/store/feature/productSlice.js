@@ -171,6 +171,26 @@ export const deleteReview = createAsyncThunk(
   },
 );
 
+// delete any user review (Admin) thunk
+export const deleteUserReview = createAsyncThunk(
+  "product/deleteUserReview",
+  async ({ productId, reviewId }, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(
+        `${API_URL}/review/delete/${productId}/${reviewId}`,
+        { withCredentials: true },
+      );
+      toast.success(response.data.message);
+      return response.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to delete review",
+      );
+    }
+  },
+);
+
 const initialState = {
   product: null,
   error: null,
@@ -290,6 +310,20 @@ const productSlice = createSlice({
       .addCase(deleteReview.rejected, (state, action) => {
         state.loading = false;
         state.product = null;
+        state.error = action.payload;
+      })
+      // delete user review (Admin) cases
+      .addCase(deleteUserReview.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteUserReview.fulfilled, (state, action) => {
+        state.loading = false;
+        state.product = action.payload;
+        state.error = null;
+      })
+      .addCase(deleteUserReview.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       });
   },

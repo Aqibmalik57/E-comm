@@ -135,7 +135,7 @@ export const updateUserRole = createAsyncThunk(
   "user/updateUserRole",
   async ({ userId, role }, { rejectWithValue }) => {
     try {
-      const response = await axios.post(
+      const response = await axios.put(
         `${API_URL}/updateRole/${userId}`,
         { role },
         { withCredentials: true },

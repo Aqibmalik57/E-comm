@@ -86,6 +86,51 @@ export const getMyClaimedCoupons = createAsyncThunk(
   },
 );
 
+// update coupon thunk (Admin)
+export const updateCoupon = createAsyncThunk(
+  "offer/updateCoupon",
+  async ({ couponId, couponData }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        `${API_URL}/update-coupon/${couponId}`,
+        couponData,
+        {
+          withCredentials: true,
+        },
+      );
+      toast.success(response.data.message);
+      return response.data.coupon;
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+      return rejectWithValue(
+        error.response?.data?.message || "An unknown error occurred",
+      );
+    }
+  },
+);
+
+// delete coupon thunk (Admin)
+export const deleteCoupon = createAsyncThunk(
+  "offer/deleteCoupon",
+  async (couponId, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(
+        `${API_URL}/delete-coupon/${couponId}`,
+        {
+          withCredentials: true,
+        },
+      );
+      toast.success(response.data.message);
+      return couponId;
+    } catch (error) {
+      toast.error(error.response?.data?.message);
+      return rejectWithValue(
+        error.response?.data?.message || "An unknown error occurred",
+      );
+    }
+  },
+);
+
 const initialState = {
   availableCoupons: [],
   claimedCoupons: [],
@@ -179,6 +224,37 @@ const offerSlice = createSlice({
         state.claimedCoupons = action.payload;
       })
       .addCase(getMyClaimedCoupons.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // update coupon (Admin)
+      .addCase(updateCoupon.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateCoupon.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.availableCoupons.findIndex(
+          (coupon) => coupon._id === action.payload._id,
+        );
+        if (index !== -1) {
+          state.availableCoupons[index] = action.payload;
+        }
+      })
+      .addCase(updateCoupon.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // delete coupon (Admin)
+      .addCase(deleteCoupon.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteCoupon.fulfilled, (state, action) => {
+        state.loading = false;
+        state.availableCoupons = state.availableCoupons.filter(
+          (coupon) => coupon._id !== action.payload,
+        );
+      })
+      .addCase(deleteCoupon.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

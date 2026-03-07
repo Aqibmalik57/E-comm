@@ -52,7 +52,7 @@ const UsersManagement = () => {
 
   useEffect(() => {
     loadUsers();
-  });
+  }, []);
 
   // Filter users
   const filteredUsers = users?.filter((user) => {

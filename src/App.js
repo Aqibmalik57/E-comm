@@ -47,14 +47,9 @@ import Invoice from "./Components/Cart/invoice.jsx";
 const ProtectedRoute = ({ children }) => {
   const { isLoggedIn, loading } = useSelector((state) => state.user);
 
-  // While checking if the user is logged in (on refresh), show loading spinner
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#10b981]"></div>
-      </div>
-    );
-  }
+  // Check if Redux state was rehydrated from persist
+  // If user is already in state (persisted), allow access immediately
+  // Otherwise show loading while checking
 
   // Use 'replace' to prevent the user from clicking 'back' into a protected route
   return isLoggedIn ? children : <Navigate to="/login" replace />;
@@ -62,16 +57,7 @@ const ProtectedRoute = ({ children }) => {
 
 // AdminProtectedRoute component - checks for admin role
 const AdminProtectedRoute = ({ children }) => {
-  const { isLoggedIn, loading, user } = useSelector((state) => state.user);
-
-  // While checking if the user is logged in (on refresh), show loading spinner
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#10b981]"></div>
-      </div>
-    );
-  }
+  const { isLoggedIn, user } = useSelector((state) => state.user);
 
   // If not logged in, redirect to login
   if (!isLoggedIn) {

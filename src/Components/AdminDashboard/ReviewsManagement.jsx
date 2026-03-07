@@ -12,7 +12,10 @@ import {
   FaExclamationTriangle,
   FaRedo,
 } from "react-icons/fa";
-import { getAllProducts, deleteReview } from "../../store/feature/productSlice";
+import {
+  getAllProducts,
+  deleteUserReview,
+} from "../../store/feature/productSlice";
 
 const ReviewsManagement = () => {
   const dispatch = useDispatch();
@@ -38,17 +41,17 @@ const ReviewsManagement = () => {
 
   useEffect(() => {
     loadReviews();
-  });
+  }, []);
 
-  // Extract all reviews from products
+  // Extract all reviews from products with product info
   const allReviews =
     products?.reduce((acc, product) => {
       if (product.reviews && product.reviews.length > 0) {
         const productReviews = product.reviews.map((review) => ({
           ...review,
           productId: product._id,
-          productName: product.name,
-          productImage: product.images?.[0],
+          productName: product.title,
+          productImage: product.imageUrl,
         }));
         return [...acc, ...productReviews];
       }
@@ -58,8 +61,8 @@ const ReviewsManagement = () => {
   // Filter reviews
   const filteredReviews = allReviews.filter((review) => {
     const matchesSearch =
-      review.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      review.comment?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      review.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      review.text?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       review.productName?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesRating =
@@ -78,7 +81,7 @@ const ReviewsManagement = () => {
   const handleDelete = async (reviewId, productId) => {
     if (deleteConfirm === reviewId) {
       try {
-        await dispatch(deleteReview({ reviewId, productId })).unwrap();
+        await dispatch(deleteUserReview({ reviewId, productId })).unwrap();
         setDeleteConfirm(null);
         toast.success("Review deleted successfully");
         loadReviews();
@@ -262,14 +265,16 @@ const ReviewsManagement = () => {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center">
                       <div className="w-8 h-8 bg-[#10b981] rounded-full flex items-center justify-center text-white font-bold mr-2">
-                        {review.name?.charAt(0).toUpperCase()}
+                        {review.user?.name?.charAt(0).toUpperCase() || "U"}
                       </div>
                       <div>
                         <p className="font-medium text-gray-800">
-                          {review.name}
+                          {review.user?.name || "Anonymous User"}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {new Date(review.createdAt).toLocaleDateString()}
+                          {review.createdAt
+                            ? new Date(review.createdAt).toLocaleDateString()
+                            : "Unknown date"}
                         </p>
                       </div>
                     </div>
@@ -281,12 +286,14 @@ const ReviewsManagement = () => {
                     </div>
                   </div>
 
-                  <p className="text-gray-600 mb-3">{review.comment}</p>
+                  <p className="text-gray-600 mb-3">{review.text}</p>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center text-sm text-gray-500">
                       <FaUser className="mr-1" />
-                      <span>User ID: {review.user?.slice(-8) || "N/A"}</span>
+                      <span>
+                        User ID: {review.user?._id?.slice(-8) || "N/A"}
+                      </span>
                     </div>
                     <button
                       onClick={() => handleDelete(review._id, review.productId)}

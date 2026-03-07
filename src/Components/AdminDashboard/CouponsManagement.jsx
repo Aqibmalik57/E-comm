@@ -14,7 +14,12 @@ import {
   FaExclamationTriangle,
   FaRedo,
 } from "react-icons/fa";
-import { getAllCoupons, createCoupon } from "../../store/feature/offerSlice";
+import {
+  getAllCoupons,
+  createCoupon,
+  updateCoupon,
+  deleteCoupon,
+} from "../../store/feature/offerSlice";
 
 const CouponsManagement = () => {
   const dispatch = useDispatch();
@@ -51,7 +56,7 @@ const CouponsManagement = () => {
 
   useEffect(() => {
     loadCoupons();
-  });
+  }, []);
 
   // Filter coupons
   const filteredCoupons = availableCoupons?.filter(
@@ -113,7 +118,9 @@ const CouponsManagement = () => {
 
     try {
       if (editingCoupon) {
-        // Update coupon - would need updateCoupon thunk
+        await dispatch(
+          updateCoupon({ couponId: editingCoupon._id, couponData }),
+        ).unwrap();
         toast.success("Coupon updated successfully");
       } else {
         await dispatch(createCoupon(couponData)).unwrap();
@@ -129,10 +136,14 @@ const CouponsManagement = () => {
 
   const handleDelete = async (couponId) => {
     if (deleteConfirm === couponId) {
-      // Note: Delete coupon API might need to be added to the slice
+      try {
+        await dispatch(deleteCoupon(couponId)).unwrap();
+        toast.success("Coupon deleted successfully");
+        loadCoupons();
+      } catch (err) {
+        toast.error(err || "Failed to delete coupon");
+      }
       setDeleteConfirm(null);
-      toast.success("Coupon deleted successfully");
-      loadCoupons();
     } else {
       setDeleteConfirm(couponId);
       setTimeout(() => setDeleteConfirm(null), 3000);

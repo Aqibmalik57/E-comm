@@ -14,7 +14,7 @@ import {
   FaExclamationTriangle,
   FaRedo,
 } from "react-icons/fa";
-import { getMyOrders, getOrderInvoice } from "../../store/feature/orderSlice";
+import { getAllOrders, getOrderInvoice } from "../../store/feature/orderSlice";
 
 const OrdersManagement = () => {
   const dispatch = useDispatch();
@@ -32,7 +32,7 @@ const OrdersManagement = () => {
   const loadOrders = async () => {
     setFetchError(null);
     try {
-      await dispatch(getMyOrders()).unwrap();
+      await dispatch(getAllOrders()).unwrap();
     } catch (err) {
       setFetchError(err || "Failed to load orders");
       toast.error("Failed to load orders. Please try again.");
@@ -41,7 +41,7 @@ const OrdersManagement = () => {
 
   useEffect(() => {
     loadOrders();
-  });
+  }, []);
 
   // Filter orders
   const filteredOrders = orders?.filter((order) => {

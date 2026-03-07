@@ -11,6 +11,7 @@ import {
   FaStar,
   FaBox,
   FaRedo,
+  FaTag,
 } from "react-icons/fa";
 import {
   getAllProducts,
@@ -31,17 +32,18 @@ const ProductsManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [imagePreview, setImagePreview] = useState([]);
+  const [imagePreview, setImagePreview] = useState("");
 
   const [formData, setFormData] = useState({
-    name: "",
+    title: "",
     description: "",
     price: "",
     stock: "",
     category: "",
-    images: [],
-    rating: 0,
-    numOfReviews: 0,
+    discount: "",
+    tags: "",
+    subCategory: "",
+    imageUrl: "",
   });
 
   const itemsPerPage = 10;
@@ -59,16 +61,17 @@ const ProductsManagement = () => {
 
   useEffect(() => {
     loadProducts();
-  });
+  }, []);
 
-  // Filter products
+  // Filter products - search by title or description
   const filteredProducts = products?.filter((product) => {
     const matchesSearch =
-      product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
+    const categoryName = product.category?.name || product.category;
     const matchesCategory =
-      categoryFilter === "all" || product.category === categoryFilter;
+      categoryFilter === "all" || categoryName === categoryFilter;
 
     return matchesSearch && matchesCategory;
   });
@@ -76,7 +79,6 @@ const ProductsManagement = () => {
   // Pagination
   const totalPages = Math.ceil((filteredProducts?.length || 0) / itemsPerPage);
   const paginatedProducts = filteredProducts?.slice(
-    (currentPage - 1) * itemsPerPage,
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
@@ -86,25 +88,37 @@ const ProductsManagement = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    const previews = files.map((file) => URL.createObjectURL(file));
-    setImagePreview(previews);
-    setFormData((prev) => ({ ...prev, images: files }));
+  const handleImageUrlChange = (e) => {
+    const url = e.target.value;
+    setImagePreview(url);
+    setFormData((prev) => ({ ...prev, imageUrl: url }));
+  };
+
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setFormData((prev) => ({ ...prev, imageUrl: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const resetForm = () => {
     setFormData({
-      name: "",
+      title: "",
       description: "",
       price: "",
       stock: "",
       category: "",
-      images: [],
-      rating: 0,
-      numOfReviews: 0,
+      discount: "",
+      tags: "",
+      subCategory: "",
+      imageUrl: "",
     });
-    setImagePreview([]);
+    setImagePreview("");
     setEditingProduct(null);
   };
 
@@ -115,17 +129,19 @@ const ProductsManagement = () => {
 
   const openEditModal = (product) => {
     setEditingProduct(product);
+    const categoryName = product.category?.name || product.category || "";
     setFormData({
-      name: product.name || "",
+      title: product.title || "",
       description: product.description || "",
       price: product.price || "",
       stock: product.stock || "",
-      category: product.category || "",
-      images: [],
-      rating: product.rating || 0,
-      numOfReviews: product.numOfReviews || 0,
+      category: categoryName,
+      discount: product.discount || "",
+      tags: product.tags?.join(", ") || "",
+      subCategory: product.subCategory || "",
+      imageUrl: product.imageUrl || "",
     });
-    setImagePreview(product.images || []);
+    setImagePreview(product.imageUrl || "");
     setShowModal(true);
   };
 
@@ -136,6 +152,7 @@ const ProductsManagement = () => {
       ...formData,
       price: Number(formData.price),
       stock: Number(formData.stock),
+      discount: Number(formData.discount) || 0,
     };
 
     try {
@@ -221,7 +238,7 @@ const ProductsManagement = () => {
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder="Search products by title or description..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
@@ -255,10 +272,10 @@ const ProductsManagement = () => {
             >
               {/* Product Image */}
               <div className="h-48 bg-gray-100 relative">
-                {product.images?.[0] ? (
+                {product.imageUrl ? (
                   <img
-                    src={product.images[0]}
-                    alt={product.name}
+                    src={product.imageUrl}
+                    alt={product.title}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -267,6 +284,11 @@ const ProductsManagement = () => {
                   </div>
                 )}
                 <div className="absolute top-2 right-2 flex gap-1">
+                  {product.discount > 0 && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                      {product.discount}% OFF
+                    </span>
+                  )}
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
                       product.stock > 10
@@ -286,26 +308,50 @@ const ProductsManagement = () => {
               {/* Product Info */}
               <div className="p-4">
                 <h3 className="font-semibold text-gray-800 mb-1 truncate">
-                  {product.name}
+                  {product.title}
                 </h3>
                 <p className="text-sm text-gray-500 mb-2 line-clamp-2">
                   {product.description}
                 </p>
 
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-lg font-bold text-[#10b981]">
-                    ${product.price}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-[#10b981]">
+                      ${product.price}
+                    </span>
+                    {product.discount > 0 && (
+                      <span className="text-sm text-gray-400 line-through">
+                        $
+                        {(product.price * (1 + product.discount / 100)).toFixed(
+                          2,
+                        )}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center text-yellow-500">
                     <FaStar className="mr-1" />
-                    <span className="text-sm">{product.rating || 0}</span>
+                    <span className="text-sm">{product.ratings || 0}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                  <span>{product.category}</span>
-                  <span>{product.numOfReviews || 0} reviews</span>
+                <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
+                  <span>{product.category?.name || product.category}</span>
+                  <span>{product.reviews?.length || 0} reviews</span>
                 </div>
+
+                {product.tags && product.tags.length > 0 && (
+                  <div className="flex items-center gap-1 mb-3 flex-wrap">
+                    <FaTag className="text-gray-400 text-xs" />
+                    {product.tags.slice(0, 3).map((tag, index) => (
+                      <span
+                        key={index}
+                        className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex gap-2">
@@ -382,15 +428,16 @@ const ProductsManagement = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Product Name *
+                    Product Title *
                   </label>
                   <input
                     type="text"
-                    name="name"
-                    value={formData.name}
+                    name="title"
+                    value={formData.title}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                    placeholder="Enter product title"
                   />
                 </div>
 
@@ -417,6 +464,20 @@ const ProductsManagement = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Sub Category
+                </label>
+                <input
+                  type="text"
+                  name="subCategory"
+                  value={formData.subCategory}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                  placeholder="e.g., vegetables, fruits"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Description
                 </label>
                 <textarea
@@ -425,10 +486,11 @@ const ProductsManagement = () => {
                   onChange={handleInputChange}
                   rows="3"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                  placeholder="Product description..."
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Price ($) *
@@ -442,6 +504,7 @@ const ProductsManagement = () => {
                     min="0"
                     step="0.01"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                    placeholder="0.00"
                   />
                 </div>
 
@@ -457,51 +520,90 @@ const ProductsManagement = () => {
                     required
                     min="0"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                    placeholder="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Discount (%)
+                  </label>
+                  <input
+                    type="number"
+                    name="discount"
+                    value={formData.discount}
+                    onChange={handleInputChange}
+                    min="0"
+                    max="100"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                    placeholder="0"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Product Images
+                  Tags
                 </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    id="product-images"
-                  />
-                  <label
-                    htmlFor="product-images"
-                    className="cursor-pointer flex flex-col items-center"
-                  >
-                    <FaImage className="text-gray-400 text-3xl mb-2" />
-                    <span className="text-sm text-gray-500">
-                      Click to upload images
-                    </span>
-                  </label>
-                </div>
+                <input
+                  type="text"
+                  name="tags"
+                  value={formData.tags}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                  placeholder="fresh, organic, local (comma separated)"
+                />
+              </div>
 
-                {/* Image Previews */}
-                {imagePreview.length > 0 && (
-                  <div className="flex gap-2 mt-2 flex-wrap">
-                    {imagePreview.map((img, index) => (
-                      <div
-                        key={index}
-                        className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200"
-                      >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Product Image
+                </label>
+                <div className="space-y-2">
+                  {/* Image URL Input */}
+                  <input
+                    type="url"
+                    name="imageUrl"
+                    value={formData.imageUrl}
+                    onChange={handleImageUrlChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                    placeholder="Or enter image URL"
+                  />
+
+                  {/* File Upload */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileChange}
+                      className="hidden"
+                      id="product-image-upload"
+                    />
+                    <label
+                      htmlFor="product-image-upload"
+                      className="cursor-pointer flex flex-col items-center"
+                    >
+                      <FaImage className="text-gray-400 text-3xl mb-2" />
+                      <span className="text-sm text-gray-500">
+                        Click to upload an image
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Image Preview */}
+                  {imagePreview && (
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500 mb-1">Preview:</p>
+                      <div className="w-32 h-32 rounded-lg overflow-hidden border border-gray-200">
                         <img
-                          src={img}
-                          alt={`Preview ${index + 1}`}
+                          src={imagePreview}
+                          alt="Preview"
                           className="w-full h-full object-cover"
                         />
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4 border-t border-gray-200">
