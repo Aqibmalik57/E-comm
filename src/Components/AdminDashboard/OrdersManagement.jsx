@@ -13,12 +13,20 @@ import {
   FaClock,
   FaExclamationTriangle,
   FaRedo,
+  FaTrash,
 } from "react-icons/fa";
-import { getAllOrders, getOrderInvoice } from "../../store/feature/orderSlice";
+import {
+  getAllOrders,
+  getOrderInvoice,
+  updateOrderStatus,
+  deleteOrder,
+} from "../../store/feature/orderSlice";
 
 const OrdersManagement = () => {
   const dispatch = useDispatch();
-  const { orders, loading, error } = useSelector((state) => state.order);
+  const { orders, loading, error, counts, totalRevenue } = useSelector(
+    (state) => state.order,
+  );
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -26,13 +34,17 @@ const OrdersManagement = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [fetchError, setFetchError] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [updatingStatus, setUpdatingStatus] = useState(null);
 
   const itemsPerPage = 10;
 
-  const loadOrders = async () => {
+  // Load orders with optional status filter
+  const loadOrders = async (status = statusFilter) => {
     setFetchError(null);
     try {
-      await dispatch(getAllOrders()).unwrap();
+      const params = status !== "all" ? { status } : {};
+      await dispatch(getAllOrders(params)).unwrap();
     } catch (err) {
       setFetchError(err || "Failed to load orders");
       toast.error("Failed to load orders. Please try again.");
@@ -43,17 +55,22 @@ const OrdersManagement = () => {
     loadOrders();
   }, []);
 
-  // Filter orders
+  // Handle status filter change
+  const handleStatusFilterChange = (newStatus) => {
+    setStatusFilter(newStatus);
+    setCurrentPage(1);
+    loadOrders(newStatus);
+  };
+
+  // Filter orders by search term
   const filteredOrders = orders?.filter((order) => {
     const matchesSearch =
       order._id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.oId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.customer?.email?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === "all" || order.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   // Pagination
@@ -65,14 +82,16 @@ const OrdersManagement = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case "delivered":
+      case "Delivered":
         return <FaCheckCircle className="text-green-500" />;
-      case "shipped":
+      case "Shipped":
         return <FaTruck className="text-blue-500" />;
-      case "processing":
+      case "Processing":
         return <FaClock className="text-yellow-500" />;
-      case "cancelled":
+      case "Cancelled":
         return <FaTimesCircle className="text-red-500" />;
+      case "Pending":
+        return <FaClock className="text-gray-500" />;
       default:
         return <FaBox className="text-gray-500" />;
     }
@@ -80,14 +99,16 @@ const OrdersManagement = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "delivered":
+      case "Delivered":
         return "bg-green-100 text-green-700";
-      case "shipped":
+      case "Shipped":
         return "bg-blue-100 text-blue-700";
-      case "processing":
+      case "Processing":
         return "bg-yellow-100 text-yellow-700";
-      case "cancelled":
+      case "Cancelled":
         return "bg-red-100 text-red-700";
+      case "Pending":
+        return "bg-gray-100 text-gray-700";
       default:
         return "bg-gray-100 text-gray-700";
     }
@@ -104,6 +125,41 @@ const OrdersManagement = () => {
       toast.success("Invoice downloaded successfully");
     } catch (err) {
       toast.error(err || "Failed to download invoice");
+    }
+  };
+
+  // Handle status update
+  const handleStatusUpdate = async (orderId, newStatus) => {
+    setUpdatingStatus(orderId);
+    try {
+      await dispatch(
+        updateOrderStatus({ orderId, status: newStatus }),
+      ).unwrap();
+      // Refresh the order details if modal is open
+      if (selectedOrder && selectedOrder._id === orderId) {
+        const updatedOrder = orders.find((o) => o._id === orderId);
+        if (updatedOrder) {
+          setSelectedOrder({ ...updatedOrder, status: newStatus });
+        }
+      }
+    } catch (err) {
+      // Error is handled in the thunk
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+
+  // Handle delete order
+  const handleDeleteOrder = async (orderId) => {
+    try {
+      await dispatch(deleteOrder(orderId)).unwrap();
+      setShowDeleteConfirm(null);
+      if (selectedOrder && selectedOrder._id === orderId) {
+        setShowOrderModal(false);
+        setSelectedOrder(null);
+      }
+    } catch (err) {
+      // Error is handled in the thunk
     }
   };
 
@@ -135,7 +191,7 @@ const OrdersManagement = () => {
             {fetchError || error || "An error occurred while loading orders."}
           </p>
           <button
-            onClick={loadOrders}
+            onClick={() => loadOrders()}
             className="flex items-center justify-center px-6 py-3 bg-[#10b981] text-white rounded-lg hover:bg-green-700 transition-colors mx-auto"
           >
             <FaRedo className="mr-2" />
@@ -157,7 +213,7 @@ const OrdersManagement = () => {
           <p className="text-gray-500 mt-1">Track and manage customer orders</p>
         </div>
         <button
-          onClick={loadOrders}
+          onClick={() => loadOrders()}
           className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
           title="Refresh Orders"
         >
@@ -183,41 +239,41 @@ const OrdersManagement = () => {
             <FaFilter className="text-gray-400" />
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => handleStatusFilterChange(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
             >
               <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="processing">Processing</option>
-              <option value="shipped">Shipped</option>
-              <option value="delivered">Delivered</option>
-              <option value="cancelled">Cancelled</option>
+              <option value="Pending">Pending</option>
+              <option value="Processing">Processing</option>
+              <option value="Shipped">Shipped</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Cancelled">Cancelled</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* Orders Stats */}
+      {/* Orders Stats - Using API counts and totalRevenue */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           {
             label: "Total Orders",
-            value: orders?.length || 0,
+            value: counts?.total || orders?.length || 0,
             color: "bg-blue-500",
           },
           {
             label: "Pending",
-            value: orders?.filter((o) => o.status === "pending").length || 0,
+            value: counts?.pending || 0,
             color: "bg-yellow-500",
           },
           {
             label: "Delivered",
-            value: orders?.filter((o) => o.status === "delivered").length || 0,
+            value: counts?.delivered || 0,
             color: "bg-green-500",
           },
           {
             label: "Revenue",
-            value: `$${orders?.reduce((sum, o) => sum + (o.total || 0), 0).toFixed(2)}`,
+            value: `$${(totalRevenue || 0).toFixed(2)}`,
             color: "bg-purple-500",
           },
         ].map((stat, index) => (
@@ -271,7 +327,9 @@ const OrdersManagement = () => {
                   >
                     <td className="px-6 py-4">
                       <span className="font-mono text-sm text-gray-600">
-                        #{order._id?.slice(-8).toUpperCase()}
+                        #
+                        {order.oId?.slice(-8).toUpperCase() ||
+                          order._id?.slice(-8).toUpperCase()}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -289,20 +347,25 @@ const OrdersManagement = () => {
                     </td>
                     <td className="px-6 py-4">
                       <span className="font-semibold text-gray-800">
-                        ${order.total || calculateOrderTotal(order).toFixed(2)}
+                        $
+                        {(order.total || calculateOrderTotal(order)).toFixed(2)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          order.status,
-                        )}`}
+                      <select
+                        value={order.status || "Pending"}
+                        onChange={(e) =>
+                          handleStatusUpdate(order._id, e.target.value)
+                        }
+                        disabled={updatingStatus === order._id}
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium cursor-pointer ${getStatusColor(order.status)}`}
                       >
-                        {getStatusIcon(order.status)}
-                        <span className="ml-1 capitalize">
-                          {order.status || "Pending"}
-                        </span>
-                      </span>
+                        <option value="Pending">Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -319,6 +382,13 @@ const OrdersManagement = () => {
                           title="Download Invoice"
                         >
                           <FaFileInvoice size={18} />
+                        </button>
+                        <button
+                          onClick={() => setShowDeleteConfirm(order._id)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete Order"
+                        >
+                          <FaTrash size={18} />
                         </button>
                       </div>
                     </td>
@@ -378,16 +448,16 @@ const OrdersManagement = () => {
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold text-gray-800">
-                  Order #{selectedOrder._id?.slice(-8).toUpperCase()}
+                  Order #
+                  {selectedOrder.oId?.slice(-8).toUpperCase() ||
+                    selectedOrder._id?.slice(-8).toUpperCase()}
                 </h3>
                 <p className="text-sm text-gray-500">
                   Placed on {new Date(selectedOrder.createdAt).toLocaleString()}
                 </p>
               </div>
               <span
-                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                  selectedOrder.status,
-                )}`}
+                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedOrder.status)}`}
               >
                 {getStatusIcon(selectedOrder.status)}
                 <span className="ml-1 capitalize">
@@ -443,10 +513,10 @@ const OrdersManagement = () => {
                     >
                       <div className="flex items-center">
                         <div className="w-12 h-12 bg-gray-200 rounded-lg mr-3 flex items-center justify-center">
-                          {item.image ? (
+                          {item.imageUrl ? (
                             <img
-                              src={item.image}
-                              alt={item.name}
+                              src={item.imageUrl}
+                              alt={item.title}
                               className="w-full h-full object-cover rounded-lg"
                             />
                           ) : (
@@ -455,7 +525,7 @@ const OrdersManagement = () => {
                         </div>
                         <div>
                           <p className="font-medium text-gray-800">
-                            {item.name}
+                            {item.title || item.name}
                           </p>
                           <p className="text-sm text-gray-500">
                             ${item.price} x {item.quantity}
@@ -476,47 +546,47 @@ const OrdersManagement = () => {
                   <div className="flex justify-between">
                     <span className="text-gray-500">Subtotal</span>
                     <span className="font-medium text-gray-800">
-                      ${calculateOrderTotal(selectedOrder).toFixed(2)}
+                      $
+                      {(
+                        selectedOrder.subtotal ||
+                        calculateOrderTotal(selectedOrder)
+                      ).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Discount</span>
+                    <span className="font-medium text-green-600">
+                      -${(selectedOrder.discount || 0).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">Shipping</span>
                     <span className="font-medium text-gray-800">
-                      ${selectedOrder.shippingCost?.toFixed(2) || "0.00"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Tax</span>
-                    <span className="font-medium text-gray-800">
-                      ${selectedOrder.tax?.toFixed(2) || "0.00"}
+                      ${(selectedOrder.shippingCost || 0).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-200">
                     <span className="text-gray-800">Total</span>
                     <span className="text-[#10b981]">
                       $
-                      {selectedOrder.total?.toFixed(2) ||
-                        calculateOrderTotal(selectedOrder).toFixed(2)}
+                      {(
+                        selectedOrder.total ||
+                        calculateOrderTotal(selectedOrder)
+                      ).toFixed(2)}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Payment Info */}
+              {/* Shipping Method */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-semibold text-gray-800 mb-2">
-                  Payment Information
+                  Shipping Information
                 </h4>
                 <p className="text-sm text-gray-600">
                   Method:{" "}
                   <span className="font-medium">
-                    {selectedOrder.paymentMethod || "N/A"}
-                  </span>
-                </p>
-                <p className="text-sm text-gray-600">
-                  Status:{" "}
-                  <span className="font-medium">
-                    {selectedOrder.paymentStatus || "N/A"}
+                    {selectedOrder.customer?.shippingMethod || "N/A"}
                   </span>
                 </p>
               </div>
@@ -535,6 +605,41 @@ const OrdersManagement = () => {
               >
                 <FaFileInvoice className="mr-2" />
                 Download Invoice
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                <FaExclamationTriangle className="text-3xl text-red-500" />
+              </div>
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 text-center mb-2">
+              Delete Order?
+            </h3>
+            <p className="text-gray-600 text-center mb-6">
+              Are you sure you want to delete this order? This action cannot be
+              undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteOrder(showDeleteConfirm)}
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center justify-center"
+              >
+                <FaTrash className="mr-2" />
+                Delete
               </button>
             </div>
           </div>

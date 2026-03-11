@@ -1,50 +1,42 @@
-# Implementation Plan: User Slice & Admin APIs Integration
+# TODO: Update Order and Cart slices for API compatibility
 
-## ✅ COMPLETED
+## Task Summary
 
-## Information Gathered
+Update orderSlice.js and OrdersManagement.jsx to work properly with the backend APIs.
 
-### Backend API Endpoints (from UserController.js):
+## Steps:
 
-1. `POST /googlelogin` - Google Login
-2. `POST /signup` - User Registration
-3. `POST /login` - User Login
-4. `GET /allUsers` - Get All Users (Admin)
-5. `POST /logout` - Logout
-6. `GET /myprofile` - Get My Profile
-7. `PUT /updateprofile` - Update Profile
-8. `PUT /updatePass` - Update Password
-9. `GET /singleuser/:id` - Get Single User (Admin)
-10. `PUT /updateRole/:id` - Update User Role (Admin)
-11. `DELETE /deleteUser/:id` - Delete User (Admin)
-12. `DELETE /deleteProfile` - Delete Own Profile
-13. `PUT /updateUserProfile/:id` - Update User Profile (Admin)
-14. `POST /forgotPassword` - Forgot Password
-15. `POST /resetPassword/:token` - Reset Password
+- [x] 1. Update orderSlice.js - Add counts and totalRevenue handling
+- [x] 2. Update OrdersManagement.jsx - Fix status filter, add update/delete functionality
+- [x] 3. Update CartSlice.js - Fix API endpoints
 
-## ✅ Changes Made
+## Completed Changes:
 
-### 1. Fixed userSlice.js
+### 1. orderSlice.js:
 
-- Changed `updateUserRole` from POST to PUT method to match the backend API
-- All other API endpoints were already correctly configured
+- Updated API endpoints to use correct paths (`/orders/checkout`, `/orders/invoice`, etc.)
+- Added `counts` and `totalRevenue` to initial state
+- Updated `getAllOrders` to accept optional filter params (status, sort)
+- Updated `getAllOrders.fulfilled` to handle response with `counts` and `totalRevenue`
+- Added counts recalculation in `updateOrderStatus.fulfilled` and `deleteOrder.fulfilled`
 
-### 2. Fixed ProductsManagement.jsx
+### 2. OrdersManagement.jsx:
 
-- Fixed the pagination bug in `paginatedProducts` slice function (removed duplicate parameter)
+- Fixed status filter values (now uses capitalized: "Pending", "Processing", "Shipped", "Delivered", "Cancelled")
+- Added `updateOrderStatus` import and functionality
+- Added `deleteOrder` import and functionality
+- Added inline status update dropdown in table
+- Added delete confirmation modal
+- Updated stats section to use API response counts and totalRevenue
+- Fixed order items to display `imageUrl` and `title` fields
+- Added shipping method display in order details modal
 
-## Files Edited:
+### 3. CartSlice.js:
 
-1. `src/store/feature/userSlice.js` - Fixed updateUserRole HTTP method (POST → PUT)
-2. `src/Components/AdminDashboard/ProductsManagement.jsx` - Fixed pagination bug
-
-## Verified Integrations:
-
-- ✅ UserSlice - All 15 API endpoints implemented
-- ✅ UsersManagement - Integrated with fetchUsers, deleteUser, updateUserRole
-- ✅ ProductsManagement - Integrated with getAllProducts, createProduct, updateProduct, deleteProduct
-- ✅ CategoriesManagement - Integrated with getAllCategories, createCategory, updateCategory, deleteCategory
-- ✅ CouponsManagement - Integrated with getAllCoupons, createCoupon, updateCoupon, deleteCoupon
-- ✅ OrdersManagement - Integrated with getAllOrders, getOrderInvoice, updateOrderStatus
-- ✅ ReviewsManagement - Integrated with getAllProducts, deleteReview
-- ✅ Store - All reducers properly configured
+- Updated API endpoints:
+  - `/cart` → `/cart/fetch-cart`
+  - `/add/cart` → `/cart/add`
+  - `/increase-quantity` → `/cart/increase-quantity`
+  - `/decrease-quantity` → `/cart/decrease-quantity`
+  - `/remove-item` → `/cart/remove-item`
+  - `/apply-coupon` → `/cart/apply-coupon`

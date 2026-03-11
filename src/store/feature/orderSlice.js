@@ -17,15 +17,14 @@ export const checkoutOrder = createAsyncThunk(
       toast.success("Order placed successfully!");
       return response.data.order;
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Failed to checkout";
-      toast.error(errorMessage);
-      return rejectWithValue(errorMessage);
+      const message = error.response?.data?.message || "Checkout failed";
+      toast.error(message);
+      return rejectWithValue(message);
     }
   },
 );
 
-// Async thunk for getting order invoice
+// 2. Get Single Invoice (User/Admin) - GET /invoice/:oId
 export const getOrderInvoice = createAsyncThunk(
   "order/getOrderInvoice",
   async (oId, { rejectWithValue }) => {
@@ -35,15 +34,14 @@ export const getOrderInvoice = createAsyncThunk(
       });
       return response.data.invoice;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to get invoice");
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to get invoice",
-      );
+      const message = error.response?.data?.message || "Failed to load invoice";
+      toast.error(message);
+      return rejectWithValue(message);
     }
   },
 );
 
-// Async thunk for getting my orders
+// 3. Get Personal Orders (User) - GET /my-orders
 export const getMyOrders = createAsyncThunk(
   "order/getMyOrders",
   async (_, { rejectWithValue }) => {
@@ -53,33 +51,36 @@ export const getMyOrders = createAsyncThunk(
       });
       return response.data.orders;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to get orders");
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to get orders",
-      );
+      const message =
+        error.response?.data?.message || "Failed to fetch your orders";
+      return rejectWithValue(message);
     }
   },
 );
 
-// Async thunk for getting all orders (Admin)
+// 4. Get All Orders (Admin) - GET /allOrders
 export const getAllOrders = createAsyncThunk(
   "order/getAllOrders",
-  async (_, { rejectWithValue }) => {
+  async ({ status, sort } = {}, { rejectWithValue }) => {
     try {
+      const params = {};
+      if (status && status !== "all") params.status = status;
+      if (sort) params.sort = sort;
+
       const response = await axios.get(`${API_URL}/allOrders`, {
+        params,
         withCredentials: true,
       });
-      return response.data.orders;
+      // Backend returns: { success, counts, totalRevenue, orders }
+      return response.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to get all orders");
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to get all orders",
-      );
+      const message = error.response?.data?.message || "Admin: Access Denied";
+      return rejectWithValue(message);
     }
   },
 );
 
-// Async thunk for updating order status (Admin)
+// 5. Update Order Status (Admin) - PUT /updateOrderStatus/:orderId
 export const updateOrderStatus = createAsyncThunk(
   "order/updateOrderStatus",
   async ({ orderId, status }, { rejectWithValue }) => {
@@ -89,20 +90,17 @@ export const updateOrderStatus = createAsyncThunk(
         { status },
         { withCredentials: true },
       );
-      toast.success(response.data.message);
+      toast.success(`Order updated to ${status}`);
       return response.data.order;
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to update order status",
-      );
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update order status",
-      );
+      const message = error.response?.data?.message || "Update failed";
+      toast.error(message);
+      return rejectWithValue(message);
     }
   },
 );
 
-// Async thunk for deleting an order (Admin)
+// 6. Delete Order (Admin) - DELETE /deleteOrder/:orderId
 export const deleteOrder = createAsyncThunk(
   "order/deleteOrder",
   async (orderId, { rejectWithValue }) => {
@@ -113,14 +111,12 @@ export const deleteOrder = createAsyncThunk(
       toast.success(response.data.message);
       return orderId;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to delete order");
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to delete order",
-      );
+      const message = error.response?.data?.message || "Delete failed";
+      toast.error(message);
+      return rejectWithValue(message);
     }
   },
 );
-
 // Create the order slice
 const orderSlice = createSlice({
   name: "order",
@@ -131,6 +127,16 @@ const orderSlice = createSlice({
     loading: false,
     error: null,
     checkoutSuccess: false,
+    // Admin specific
+    counts: {
+      total: 0,
+      pending: 0,
+      processing: 0,
+      shipped: 0,
+      delivered: 0,
+      cancelled: 0,
+    },
+    totalRevenue: 0,
   },
   reducers: {
     clearOrderState: (state) => {
@@ -208,7 +214,17 @@ const orderSlice = createSlice({
       })
       .addCase(getAllOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders = action.payload;
+        // Backend returns: { success: true, counts, totalRevenue, orders }
+        state.orders = action.payload.orders || [];
+        state.counts = action.payload.counts || {
+          total: 0,
+          pending: 0,
+          processing: 0,
+          shipped: 0,
+          delivered: 0,
+          cancelled: 0,
+        };
+        state.totalRevenue = action.payload.totalRevenue || 0;
         state.error = null;
       })
       .addCase(getAllOrders.rejected, (state, action) => {
@@ -228,6 +244,21 @@ const orderSlice = createSlice({
         if (index !== -1) {
           state.orders[index] = action.payload;
         }
+        // Also update the counts based on new status
+        if (state.counts && action.payload.status) {
+          // Recalculate counts based on current orders
+          state.counts = {
+            total: state.orders.length,
+            pending: state.orders.filter((o) => o.status === "Pending").length,
+            processing: state.orders.filter((o) => o.status === "Processing")
+              .length,
+            shipped: state.orders.filter((o) => o.status === "Shipped").length,
+            delivered: state.orders.filter((o) => o.status === "Delivered")
+              .length,
+            cancelled: state.orders.filter((o) => o.status === "Cancelled")
+              .length,
+          };
+        }
         state.error = null;
       })
       .addCase(updateOrderStatus.rejected, (state, action) => {
@@ -244,6 +275,18 @@ const orderSlice = createSlice({
         state.orders = state.orders.filter(
           (order) => order._id !== action.payload,
         );
+        // Recalculate counts
+        state.counts = {
+          total: state.orders.length,
+          pending: state.orders.filter((o) => o.status === "Pending").length,
+          processing: state.orders.filter((o) => o.status === "Processing")
+            .length,
+          shipped: state.orders.filter((o) => o.status === "Shipped").length,
+          delivered: state.orders.filter((o) => o.status === "Delivered")
+            .length,
+          cancelled: state.orders.filter((o) => o.status === "Cancelled")
+            .length,
+        };
         state.error = null;
       })
       .addCase(deleteOrder.rejected, (state, action) => {
