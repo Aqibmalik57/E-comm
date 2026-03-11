@@ -11,6 +11,10 @@ import {
   FaExclamationTriangle,
   FaRedo,
   FaTags,
+  FaBox,
+  FaLayerGroup,
+  FaCalendar,
+  FaFilter,
 } from "react-icons/fa";
 import {
   getAllCategories,
@@ -29,6 +33,7 @@ const CategoriesManagement = () => {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [fetchError, setFetchError] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [viewMode, setViewMode] = useState("grid");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -36,19 +41,33 @@ const CategoriesManagement = () => {
     imageUrl: "",
   });
 
-  const loadCategories = async () => {
+  const loadCategories = async (showError = true) => {
     setFetchError(null);
     try {
-      await dispatch(getAllCategories()).unwrap();
+      const result = await dispatch(getAllCategories()).unwrap();
+      return result;
     } catch (err) {
       setFetchError(err || "Failed to load categories");
-      toast.error("Failed to load categories. Please try again.");
+      if (showError) {
+        toast.error("Failed to load categories. Please try again.");
+      }
+      throw err;
     }
   };
 
   useEffect(() => {
     loadCategories();
   }, []);
+
+  // Calculate category stats
+  const categoryStats = {
+    total: categories?.length || 0,
+    totalSubcategories:
+      categories?.reduce(
+        (acc, cat) => acc + (cat.subcategories?.length || 0),
+        0,
+      ) || 0,
+  };
 
   // Filter categories by name
   const filteredCategories = categories?.filter((category) =>
@@ -160,6 +179,15 @@ const CategoriesManagement = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
   if (loading && !categories?.length) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -172,9 +200,11 @@ const CategoriesManagement = () => {
   if (fetchError || error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-8">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-8 max-w-md w-full text-center">
-          <FaExclamationTriangle className="mx-auto text-5xl text-red-500 mb-4" />
-          <h2 className="text-xl font-bold text-gray-800 mb-2">
+        <div className="bg-gradient-to-br from-red-50 to-orange-50 border border-red-200 rounded-2xl p-8 lg:p-10 max-w-md w-full text-center shadow-lg">
+          <div className="w-16 lg:w-20 h-16 lg:h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-5 lg:mb-6">
+            <FaExclamationTriangle className="text-3xl lg:text-4xl text-red-500" />
+          </div>
+          <h2 className="text-xl lg:text-2xl font-bold text-gray-800 mb-3">
             Failed to Load Categories
           </h2>
           <p className="text-gray-600 mb-6">
@@ -184,9 +214,9 @@ const CategoriesManagement = () => {
           </p>
           <button
             onClick={loadCategories}
-            className="flex items-center justify-center px-6 py-3 bg-[#10b981] text-white rounded-lg hover:bg-green-700 transition-colors mx-auto"
+            className="flex items-center justify-center px-6 lg:px-8 py-3 lg:py-4 bg-gradient-to-r from-[#10b981] to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg mx-auto font-semibold"
           >
-            <FaRedo className="mr-2" />
+            <FaRedo className={`mr-2 ${loading ? "animate-spin" : ""}`} />
             Retry Loading
           </button>
         </div>
@@ -199,25 +229,27 @@ const CategoriesManagement = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">
             Categories Management
           </h1>
           <p className="text-gray-500 mt-1">
-            Organize your products with categories
+            Organize your products with categories •{" "}
+            {filteredCategories?.length || 0} categories
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={loadCategories}
-            className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            disabled={loading}
+            className="flex items-center px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 hover:border-[#10b981] transition-all shadow-sm text-sm"
             title="Refresh Categories"
           >
-            <FaRedo className="mr-2" />
-            Refresh
+            <FaRedo className={`mr-2 ${loading ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">Refresh</span>
           </button>
           <button
             onClick={openCreateModal}
-            className="flex items-center px-4 py-2 bg-[#10b981] text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="flex items-center px-4 py-2.5 bg-[#10b981] text-white rounded-xl hover:bg-green-700 transition-all shadow-md hover:shadow-lg text-sm"
           >
             <FaPlus className="mr-2" />
             Add Category
@@ -225,17 +257,78 @@ const CategoriesManagement = () => {
         </div>
       </div>
 
+      {/* Analytics Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <FaFolder className="text-blue-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800">
+            {categoryStats.total}
+          </p>
+          <p className="text-sm text-gray-500">Total Categories</p>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <FaLayerGroup className="text-purple-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800">
+            {categoryStats.totalSubcategories}
+          </p>
+          <p className="text-sm text-gray-500">Subcategories</p>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <FaBox className="text-green-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800">
+            {categories?.reduce(
+              (acc, cat) => acc + (cat.productCount || 0),
+              0,
+            ) || 0}
+          </p>
+          <p className="text-sm text-gray-500">Total Products</p>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <FaTags className="text-yellow-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800">
+            {categories?.filter((cat) => cat.subcategories?.length > 0)
+              .length || 0}
+          </p>
+          <p className="text-sm text-gray-500">With Subcategories</p>
+        </div>
+      </div>
+
       {/* Search */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-        <div className="relative">
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search categories by name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
-          />
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1 relative">
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search categories by name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+            />
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-xl">
+            <FaCalendar className="text-[#10b981]" />
+            <span>{new Date().toLocaleDateString()}</span>
+          </div>
         </div>
       </div>
 
@@ -245,7 +338,7 @@ const CategoriesManagement = () => {
           filteredCategories.map((category) => (
             <div
               key={category._id}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group"
             >
               {/* Category Image */}
               <div className="h-40 bg-gradient-to-br from-[#10b981] to-green-600 relative flex items-center justify-center">
@@ -262,6 +355,27 @@ const CategoriesManagement = () => {
                 <h3 className="absolute bottom-4 left-4 text-white font-bold text-xl capitalize">
                   {category.name}
                 </h3>
+                {/* Quick Actions Overlay */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <button
+                    onClick={() => openEditModal(category)}
+                    className="p-3 bg-white rounded-lg text-gray-700 hover:bg-[#10b981] hover:text-white transition-colors"
+                    title="Edit"
+                  >
+                    <FaEdit size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(category._id)}
+                    className={`p-3 rounded-lg transition-colors ${
+                      deleteConfirm === category._id
+                        ? "bg-red-500 text-white"
+                        : "bg-white text-red-500 hover:bg-red-500 hover:text-white"
+                    }`}
+                    title="Delete"
+                  >
+                    <FaTrash size={16} />
+                  </button>
+                </div>
               </div>
 
               {/* Category Info */}
@@ -298,27 +412,25 @@ const CategoriesManagement = () => {
 
                 {/* Stats */}
                 <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                  <span>Products: {category.productCount || 0}</span>
-                  <span>
-                    Created:{" "}
-                    {category.createdAt
-                      ? new Date(category.createdAt).toLocaleDateString()
-                      : "N/A"}
+                  <span className="flex items-center">
+                    <FaBox className="mr-1" />
+                    {category.productCount || 0} products
                   </span>
+                  <span>{formatDate(category.createdAt)}</span>
                 </div>
 
                 {/* Actions */}
                 <div className="flex gap-2">
                   <button
                     onClick={() => openEditModal(category)}
-                    className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                    className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm"
                   >
                     <FaEdit className="mr-1" />
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(category._id)}
-                    className={`flex-1 flex items-center justify-center px-3 py-2 rounded-lg transition-colors ${
+                    className={`flex-1 flex items-center justify-center px-3 py-2 rounded-lg transition-colors text-sm ${
                       deleteConfirm === category._id
                         ? "bg-red-500 text-white"
                         : "bg-red-50 text-red-600 hover:bg-red-100"
@@ -347,17 +459,17 @@ const CategoriesManagement = () => {
 
       {/* Create/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-xl font-bold text-gray-800">
                 {editingCategory ? "Edit Category" : "Create New Category"}
               </h3>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Category Name *
                 </label>
                 <input
@@ -366,13 +478,13 @@ const CategoriesManagement = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none capitalize"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none capitalize"
                   placeholder="e.g., Electronics"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Subcategories
                 </label>
                 <input
@@ -380,7 +492,7 @@ const CategoriesManagement = () => {
                   name="subcategories"
                   value={formData.subcategories}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
                   placeholder="e.g., mobile, laptop, accessories (comma separated)"
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -389,22 +501,22 @@ const CategoriesManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category Image *
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Category Image
                 </label>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {/* Image URL Input */}
                   <input
                     type="url"
                     name="imageUrl"
                     value={formData.imageUrl}
                     onChange={handleImageUrlChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
                     placeholder="Or enter image URL"
                   />
 
                   {/* File Upload */}
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                  <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center">
                     <input
                       type="file"
                       accept="image/*"
@@ -426,8 +538,8 @@ const CategoriesManagement = () => {
                   {/* Image Preview */}
                   {imagePreview && (
                     <div className="mt-2">
-                      <p className="text-sm text-gray-500 mb-1">Preview:</p>
-                      <div className="w-32 h-32 rounded-lg overflow-hidden border border-gray-200">
+                      <p className="text-sm text-gray-500 mb-2">Preview:</p>
+                      <div className="w-32 h-32 rounded-xl overflow-hidden border border-gray-200">
                         <img
                           src={imagePreview}
                           alt="Preview"
@@ -439,20 +551,20 @@ const CategoriesManagement = () => {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <div className="flex gap-4 pt-4 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
                     resetForm();
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                  className="flex-1 px-5 py-3 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-[#10b981] text-white rounded-lg hover:bg-green-700"
+                  className="flex-1 px-5 py-3 bg-[#10b981] text-white rounded-xl hover:bg-green-700 font-medium shadow-md hover:shadow-lg transition-all"
                 >
                   {editingCategory ? "Update Category" : "Create Category"}
                 </button>

@@ -144,64 +144,29 @@ const ReviewsManagement = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">
             Reviews Management
           </h1>
           <p className="text-gray-500 mt-1">
-            Monitor and manage product reviews
+            Monitor and manage product reviews • {allReviews.length} total
+            reviews
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={loadReviews}
-            className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            disabled={loading}
+            className="flex items-center px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 hover:border-[#10b981] transition-all shadow-sm text-sm"
             title="Refresh Reviews"
           >
-            <FaRedo className="mr-2" />
-            Refresh
+            <FaRedo className={`mr-2 ${loading ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">Refresh</span>
           </button>
-          <div className="bg-[#10b981] text-white px-4 py-2 rounded-lg flex items-center">
-            <FaComment className="mr-2" />
-            <span className="font-semibold">
-              {allReviews.length} Total Reviews
-            </span>
-          </div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search reviews by user, comment, or product..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <FaFilter className="text-gray-400" />
-            <select
-              value={ratingFilter}
-              onChange={(e) => setRatingFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
-            >
-              <option value="all">All Ratings</option>
-              <option value="5">5 Stars</option>
-              <option value="4">4 Stars</option>
-              <option value="3">3 Stars</option>
-              <option value="2">2 Stars</option>
-              <option value="1">1 Star</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Reviews Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+      {/* Analytics Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {[5, 4, 3, 2, 1].map((rating) => {
           const count = allReviews.filter((r) => r.rating === rating).length;
           const percentage =
@@ -210,7 +175,7 @@ const ReviewsManagement = () => {
           return (
             <div
               key={rating}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4"
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow"
             >
               <div className="flex items-center mb-2">
                 <span className="font-bold text-gray-800 mr-2">{rating}</span>
@@ -226,6 +191,49 @@ const ReviewsManagement = () => {
             </div>
           );
         })}
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1 relative">
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search reviews by user, comment, or product..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <FaFilter className="text-gray-400" />
+              <select
+                value={ratingFilter}
+                onChange={(e) => {
+                  setRatingFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+              >
+                <option value="all">All Ratings</option>
+                <option value="5">5 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="2">2 Stars</option>
+                <option value="1">1 Star</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-xl">
+              <FaComment className="text-[#10b981]" />
+              <span>{filteredReviews?.length || 0} reviews</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Reviews List */}

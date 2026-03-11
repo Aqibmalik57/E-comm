@@ -13,6 +13,10 @@ import {
   FaCheck,
   FaExclamationTriangle,
   FaRedo,
+  FaClock,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaChartLine,
 } from "react-icons/fa";
 import {
   getAllCoupons,
@@ -33,6 +37,30 @@ const CouponsManagement = () => {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [copiedCode, setCopiedCode] = useState(null);
   const [fetchError, setFetchError] = useState(null);
+  const [viewMode, setViewMode] = useState("grid");
+
+  // Helper function to check if coupon is active
+  const isCouponActive = (coupon) => {
+    const now = new Date().getTime();
+    const start = new Date(coupon.startDate).getTime();
+    const end = new Date(coupon.expireDate).getTime();
+    return now >= start && now <= end;
+  };
+
+  // Calculate coupon analytics
+  const couponStats = {
+    total: availableCoupons?.length || 0,
+    active: availableCoupons?.filter((c) => isCouponActive(c)).length || 0,
+    expired: availableCoupons?.filter((c) => !isCouponActive(c)).length || 0,
+    totalDiscount:
+      availableCoupons?.reduce((acc, c) => acc + (c.discountPercent || 0), 0) ||
+      0,
+    totalClaims:
+      availableCoupons?.reduce(
+        (acc, c) => acc + (c.claimedBy?.length || 0),
+        0,
+      ) || 0,
+  };
 
   const [formData, setFormData] = useState({
     title: "",
@@ -157,13 +185,6 @@ const CouponsManagement = () => {
     toast.success("Coupon code copied to clipboard");
   };
 
-  const isCouponActive = (coupon) => {
-    const now = new Date().getTime();
-    const start = new Date(coupon.startDate).getTime();
-    const end = new Date(coupon.expireDate).getTime();
-    return now >= start && now <= end;
-  };
-
   if (loading && !availableCoupons?.length) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -227,17 +248,86 @@ const CouponsManagement = () => {
         </div>
       </div>
 
+      {/* Analytics Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-pink-100 rounded-lg">
+              <FaTicketAlt className="text-pink-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800">
+            {couponStats.total}
+          </p>
+          <p className="text-sm text-gray-500">Total Coupons</p>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <FaCheckCircle className="text-green-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800">
+            {couponStats.active}
+          </p>
+          <p className="text-sm text-gray-500">Active</p>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-red-100 rounded-lg">
+              <FaTimesCircle className="text-red-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800">
+            {couponStats.expired}
+          </p>
+          <p className="text-sm text-gray-500">Expired</p>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <FaPercentage className="text-purple-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800">
+            {couponStats.totalDiscount}%
+          </p>
+          <p className="text-sm text-gray-500">Total Discount</p>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-2">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <FaChartLine className="text-blue-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-gray-800">
+            {couponStats.totalClaims}
+          </p>
+          <p className="text-sm text-gray-500">Total Claims</p>
+        </div>
+      </div>
+
       {/* Search */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-        <div className="relative">
-          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search coupons by code or description..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
-          />
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1 relative">
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search coupons by code or description..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#10b981] focus:border-transparent outline-none"
+            />
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-xl">
+            <FaCalendar className="text-[#10b981]" />
+            <span>{new Date().toLocaleDateString()}</span>
+          </div>
         </div>
       </div>
 

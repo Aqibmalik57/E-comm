@@ -110,6 +110,11 @@ const Navbar = () => {
               {t("navbar.myAccount")}
             </Link>
           </li>
+          {user?.role === "admin" && (
+            <li className="border-r-2 w-28 border-neutral-500 text-center text-green-600">
+              <Link to="/admin">{t("navbar.adminPanel")}</Link>
+            </li>
+          )}
           <li className="w-16 flex justify-center">
             {!user ? (
               <Link

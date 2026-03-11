@@ -22,6 +22,8 @@ import CategoriesManagement from "./Components/AdminDashboard/CategoriesManageme
 import OrdersManagement from "./Components/AdminDashboard/OrdersManagement";
 import CouponsManagement from "./Components/AdminDashboard/CouponsManagement";
 import ReviewsManagement from "./Components/AdminDashboard/ReviewsManagement";
+import Settings from "./Components/AdminDashboard/Settings";
+import HelpSupport from "./Components/AdminDashboard/HelpSupport";
 import SingleUserProfile from "./Components/Profile/SingleUserProfile";
 import UpdatePassword from "./Components/UpdateProfile/updatePassword";
 import UpdateUserProfile from "./Components/AdminDashboard/UpdateUserProfile";
@@ -45,7 +47,7 @@ import Invoice from "./Components/Cart/invoice.jsx";
 
 // ProtectedRoute component
 const ProtectedRoute = ({ children }) => {
-  const { isLoggedIn, loading } = useSelector((state) => state.user);
+  const { isLoggedIn } = useSelector((state) => state.user);
 
   // Check if Redux state was rehydrated from persist
   // If user is already in state (persisted), allow access immediately
@@ -237,6 +239,8 @@ function App() {
               <Route path="orders" element={<OrdersManagement />} />
               <Route path="coupons" element={<CouponsManagement />} />
               <Route path="reviews" element={<ReviewsManagement />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="help" element={<HelpSupport />} />
             </Route>
           </Routes>
         </LayoutWrapper>

@@ -215,6 +215,10 @@ const productSlice = createSlice({
       .addCase(createProduct.fulfilled, (state, action) => {
         state.loading = false;
         state.product = action.payload.product;
+        // Add new product to products array for immediate sync
+        if (action.payload.product) {
+          state.products.unshift(action.payload.product);
+        }
       })
       .addCase(createProduct.rejected, (state, action) => {
         state.loading = false;
@@ -278,6 +282,15 @@ const productSlice = createSlice({
       .addCase(updateProduct.fulfilled, (state, action) => {
         state.loading = false;
         state.product = action.payload;
+        // Update product in products array for immediate sync
+        if (action.payload && action.payload._id) {
+          const index = state.products.findIndex(
+            (p) => p._id === action.payload._id,
+          );
+          if (index !== -1) {
+            state.products[index] = action.payload;
+          }
+        }
       })
       .addCase(updateProduct.rejected, (state, action) => {
         state.loading = false;
