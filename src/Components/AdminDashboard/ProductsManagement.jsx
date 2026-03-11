@@ -178,12 +178,34 @@ const ProductsManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const productData = {
-      ...formData,
-      price: Number(formData.price),
-      stock: Number(formData.stock),
-      discount: Number(formData.discount) || 0,
-    };
+    // Use FormData for file upload
+    const productData = new FormData();
+    productData.append("title", formData.title);
+    productData.append("description", formData.description);
+    productData.append("price", Number(formData.price));
+    productData.append("stock", Number(formData.stock));
+    productData.append("category", formData.category);
+    productData.append("discount", Number(formData.discount) || 0);
+    productData.append("tags", formData.tags);
+    productData.append("subCategory", formData.subCategory);
+
+    // Append image file if selected
+    const fileInput = document.getElementById("product-image-upload");
+    if (fileInput && fileInput.files[0]) {
+      productData.append("image", fileInput.files[0]);
+    } else if (formData.imageUrl && formData.imageUrl.startsWith("data:")) {
+      // If user selected a file, it should be in the file input
+      // This is a fallback - convert base64 to blob if needed
+      try {
+        const response = await fetch(formData.imageUrl);
+        const blob = await response.blob();
+        const ext = blob.type.split("/")[1];
+        productData.append("image", blob, `product.${ext}`);
+      } catch (err) {
+        // If conversion fails, try sending as base64 string
+        productData.append("image", formData.imageUrl);
+      }
+    }
 
     try {
       if (editingProduct) {

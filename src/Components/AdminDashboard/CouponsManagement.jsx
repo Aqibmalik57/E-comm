@@ -13,7 +13,6 @@ import {
   FaCheck,
   FaExclamationTriangle,
   FaRedo,
-  FaClock,
   FaCheckCircle,
   FaTimesCircle,
   FaChartLine,
@@ -37,7 +36,6 @@ const CouponsManagement = () => {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [copiedCode, setCopiedCode] = useState(null);
   const [fetchError, setFetchError] = useState(null);
-  const [viewMode, setViewMode] = useState("grid");
 
   // Helper function to check if coupon is active
   const isCouponActive = (coupon) => {

@@ -11,6 +11,9 @@ export const createProduct = createAsyncThunk(
     try {
       const response = await axios.post(`${API_URL}/createProduct`, info, {
         withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
       toast.success(response.data.message);
       return response.data;
@@ -89,11 +92,18 @@ export const updateProduct = createAsyncThunk(
   "product/updateProduct",
   async ({ productId, updateData }, { rejectWithValue }) => {
     try {
+      // Check if updateData is FormData and set appropriate headers
+      const isFormData = updateData instanceof FormData;
       const response = await axios.put(
         `${API_URL}/update/product/${productId}`,
         updateData,
         {
           withCredentials: true,
+          headers: isFormData
+            ? {
+                "Content-Type": "multipart/form-data",
+              }
+            : {},
         },
       );
       toast.success(response.data.message);
